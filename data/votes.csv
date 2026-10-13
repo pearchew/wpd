@@ -1,0 +1,45 @@
+date,ticker,voter,vote,conviction,note
+2026-08-10,NVDA,A,Include,High,
+2026-08-10,NVDA,B,Include,High,
+2026-08-10,NVDA,C,Include,Medium,
+2026-08-10,MSFT,A,Include,High,
+2026-08-10,MSFT,B,Watch,Medium,Waiting for Q1 earnings
+2026-08-10,MSFT,C,Include,Medium,
+2026-09-14,MSFT,B,Include,High,Copilot seat data changed my mind
+2026-08-10,XOM,A,Include,High,
+2026-08-10,XOM,B,Watch,Medium,Waiting for Q3 earnings
+2026-08-10,XOM,C,Include,High,
+2026-08-11,NEE,A,Include,High,
+2026-08-11,NEE,B,Include,Medium,
+2026-08-11,NEE,C,Watch,Medium,Rate sensitivity
+2026-08-11,JNJ,A,Include,Medium,
+2026-08-11,JNJ,B,Include,High,
+2026-08-11,JNJ,C,Include,Medium,
+2026-08-11,CAT,A,Watch,Medium,Priced for the cycle
+2026-08-11,CAT,B,Include,High,
+2026-08-11,CAT,C,Watch,Medium,
+2026-08-12,JPM,A,Include,High,
+2026-08-12,JPM,B,Watch,Medium,NII has peaked
+2026-08-12,JPM,C,Watch,Medium,NII has peaked
+2026-08-12,COST,A,Watch,Low,Model not finished
+2026-08-12,COST,B,Watch,Low,Model not finished
+2026-08-12,COST,C,Watch,Low,Model not finished
+2026-08-12,IEF,A,Include,High,
+2026-08-12,IEF,B,Include,Medium,
+2026-08-12,IEF,C,Include,Medium,
+2026-08-12,LQD,A,Watch,Medium,Spreads are tight
+2026-08-12,LQD,B,Include,Medium,
+2026-08-12,LQD,C,Include,Medium,
+2026-08-13,GLD,A,Include,Medium,
+2026-08-13,GLD,B,Include,High,
+2026-08-13,GLD,C,Watch,Medium,Scorecard only 3/5
+2026-08-13,MES,A,Include,Medium,
+2026-08-13,MES,B,Include,High,
+2026-08-13,MES,C,Include,Medium,
+2026-08-13,MCL,A,Watch,Low,Backwardation helps but vol is huge
+2026-08-13,MCL,B,Reject,Medium,Margin calls
+2026-08-13,MCL,C,Include,Medium,
+2026-08-13,SPY261218P640,A,Include,Medium,Cheap hedge
+2026-08-13,SPY261218P640,B,Watch,Low,
+2026-08-13,SPY261218P640,C,Watch,Low,
+2026-09-28,JPM,A,Watch,Medium,Accepting the NII point

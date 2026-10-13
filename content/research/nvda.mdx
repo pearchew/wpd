@@ -1,0 +1,47 @@
+---
+ticker: NVDA
+name: NVIDIA
+assetClass: Equities
+method: DCF
+status: published
+author: B
+updated: 2026-10-08
+fairValue: 212.14
+thesis: Data-centre demand outlasts the current capex wave because inference
+  workloads keep compounding.
+sellTrigger: Fair value reached, or hyperscaler capex guidance is cut two quarters in a row.
+model: /models/nvda-dcf.xlsx
+keyOutputs:
+  - label: Terminal value share of EV
+    value: 72%
+  - label: Implied revenue CAGR
+    value: 19.8%
+---
+
+## Valuation
+
+We value NVIDIA with a five-year, two-stage discounted cash flow. At the 10/13 close of **$181.32**, our fair value is **$212.14** (+17.0%). This is **dummy analysis**: replace it with your own model.
+
+| Assumption | Base case |
+| --- | ---: |
+| Revenue CAGR (5y) | 22.0% |
+| Operating margin (year 5) | 58.0% |
+| WACC | 9.5% |
+| Terminal growth | 3.5% |
+| Terminal value share of EV | 72% |
+
+### Sensitivity: fair value by WACC and terminal growth
+
+| WACC \ g | 3.0% | 3.5% | 4.0% |
+| --- | ---: | ---: | ---: |
+| 9.0% | $212 | $231 | $255 |
+| 9.5% | $196 | **$212** | $231 |
+| 10.0% | $182 | $196 | $212 |
+
+## What the price implies
+
+A reverse DCF says the market price already discounts roughly **19.8%** revenue growth a year for five years. We assume 22.0%, which is where the upside comes from.
+
+## Biggest risk
+
+Customer concentration: four buyers are most of data-centre revenue, and they are all building their own chips.

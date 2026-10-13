@@ -1,0 +1,41 @@
+---
+ticker: MES
+name: Micro E-mini S&P 500 future (Dec)
+assetClass: Derivatives
+method: Cost of carry
+status: published
+author: B
+updated: 2026-10-02
+fairValue: 6744.5
+thesis: Long micro S&P futures give cheap equity beta; contango is the cost of
+  carry, not a signal.
+sellTrigger: Margin call, or the contract rolls with basis wider than 1.5%.
+model: /models/mes-future.xlsx
+keyOutputs:
+  - label: Roll yield
+    value: −2.7% / yr
+  - label: Leverage
+    value: 13.4×
+---
+
+## Valuation
+
+Futures are priced by cost of carry: fair futures price = spot × e^((r − y) × T). At the 10/13 close of **$6677.72**, our fair value is **$6744.50** (+1.0%).
+
+| Metric | Value |
+| --- | ---: |
+| Spot reference | $6645.20 |
+| Futures price | $6677.72 |
+| Basis (F − S) | +$32.52 |
+| Roll yield (annualised) | −2.7% |
+| Notional per contract | $33,389 |
+| Initial margin | $2,500 |
+| Leverage | 13.4× |
+
+## What the price implies
+
+The curve is in **contango**, so holding the contract costs roughly 2.7% a year before price moves.
+
+## Biggest risk
+
+A 1.5% index drop wipes out the excess margin and triggers a margin call.

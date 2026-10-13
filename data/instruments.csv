@@ -1,0 +1,17 @@
+ticker,name,asset_class,currency,feed_symbol,kind,multiplier,underlying,underlying_scale,expiry,strike,option_type,margin,maint_margin
+MSFT,Microsoft,Equities,USD,MSFT,stock,1,,,,,,,
+NVDA,NVIDIA,Equities,USD,NVDA,stock,1,,,,,,,
+JPM,JPMorgan Chase,Equities,USD,JPM,stock,1,,,,,,,
+NEE,NextEra Energy,Equities,USD,NEE,stock,1,,,,,,,
+JNJ,Johnson & Johnson,Equities,USD,JNJ,stock,1,,,,,,,
+CAT,Caterpillar,Equities,USD,CAT,stock,1,,,,,,,
+COST,Costco,Equities,USD,COST,stock,1,,,,,,,
+XOM,Exxon Mobil,Equities,USD,XOM,stock,1,,,,,,,
+IEF,iShares 7-10 Year Treasury Bond ETF,Fixed Income,USD,IEF,etf,1,,,,,,,
+LQD,iShares iBoxx Investment Grade Corporate Bond ETF,Fixed Income,USD,LQD,etf,1,,,,,,,
+GLD,SPDR Gold Shares,Commodities,USD,GLD,etf,1,,,,,,,
+SPY,SPDR S&P 500 ETF (benchmark),Equities,USD,SPY,etf,1,,,,,,,
+USO,United States Oil Fund (reference for MCL),Commodities,USD,USO,etf,1,,,,,,,
+MES,Micro E-mini S&P 500 future (Dec),Derivatives,USD,MES=F,future,5,SPY,10,2026-12-18,,,2500,2000
+MCL,Micro WTI crude future (Nov),Derivatives,USD,MCL=F,future,100,USO,1,2026-11-20,,,2000,1500
+SPY261218P640,SPY Dec 18 2026 640 put,Derivatives,USD,SPY261218P00640000,option,100,SPY,,2026-12-18,640,put,,
