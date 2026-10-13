@@ -103,10 +103,3 @@ export const ResearchFrontmatterSchema = z
     message: "published research needs fairValue and sellTrigger",
   });
 export type ResearchFrontmatter = z.infer<typeof ResearchFrontmatterSchema>;
-
-export const CheckinFrontmatterSchema = z.object({
-  date: isoDate,
-  title: z.string().min(1),
-  type: z.enum(["weekly", "post-mortem"]).default("weekly"),
-});
-export type CheckinFrontmatter = z.infer<typeof CheckinFrontmatterSchema>;

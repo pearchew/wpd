@@ -285,82 +285,29 @@ TOTAL                100.0%  $103.42 +3.42%
 ================================================================================
  WDP FUND              Home · Research · Inside the Fund            [A] [B] [C]
 ================================================================================
-                                Inside the Fund
-  How the fund is run: the paper book, the committee's decisions and the team.
 
-▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-▒ PAPER BOOK · Paper — not real capital                        (amber accent) ▒
-▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+                               Inside the Fund
+                      How the fund decides what to own.
 
-    Account $4,440 (initial margin + premium)  ·  Equity $4,405  ·  P&L −$35
-    $4,600 ┤               ╭──╮
-    $4,500 ┤        ╭──────╯  ╰──╮
-    $4,440 ●────────╯            ╰────╮          ╭─────╮
-    $4,400 ┤                          ╰──────────╯     ╰────● $4,405
-           Oct 20                   ▲ Nov 4 margin call              Nov 13
+          HOUSE RULES                           DECISION THRESHOLDS
+   · No position above 25%               Include  fair value ≥ 15% above price
+   · At least three asset classes                 (stocks), or lowers vol / raises
+   · Include needs 2 of 3 votes; the              Sharpe at a 10% weight
+     owner's vote alone never carries     Watch    0–15% upside
+   · No trade under about $5              Reject   fair value below price, or the
+   · Sell trigger written at entry                 risk case fails
 
-  ┌─ MES · Micro E-mini S&P 500 · long 1 ─────────────────────────── [B] B ──
-  │ Entry 6,820   Mark 6,905   P&L +$425   Return on margin +17.0%
-  │ Notional $34,525   Leverage 13.8×   Basis +12 pts
-  │ Roll yield −0.4% (contango)   Margin-call days: none
-  │
-  ┌─ MCL · Micro WTI crude · long 1 ──────────────────────────────── [C] C ──
-  │ Entry $71.20   Mark $68.90   P&L −$230   Return on margin −20.9%
-  │ Notional $6,890   Leverage 6.3×   Basis −$0.35
-  │ Roll yield +0.9%/mo (backwardation)   Margin-call days: Nov 4
-  │
-  ┌─ SPY Dec 19 600 put · long 1 ─────────────────────────────────── [A] A ──
-  │ Premium $8.40   Mark $6.10   P&L −$230   Return on premium −27.4%
-  │ Black-Scholes $6.45 vs market $6.10   Implied vol 15.2%
-  │ Today's move −$23  =  Δ −$18   Θ −$9   Vega +$4
-  │
-
-
-                              INVESTMENT COMMITTEE
+                                Vote history
+              Newest first. A change of mind is a new vote.
+                  Asset: [ All ▾ ]  Voter: [ All ▾ ]  [ Filter ]
  ──────────────────────────────────────────────────────────────────────────────
-  HOUSE RULES
-  · No position above 25%            · At least three asset classes
-  · Include needs 2 of 3 votes; the owner's vote alone never carries it
-  · No trade under about $5          · Sell trigger written at entry
-
-     DECISION THRESHOLDS
-     Include  fair value ≥ 15% above price (stocks), or lowers vol / raises
-              Sharpe at a 10% weight (bonds, gold)
-     Watch    0–15% upside
-     Reject   fair value below price, or the risk case fails
-
- VOTE HISTORY  newest first                  Asset: [ All ▾ ]  Voter: [ All ▾ ]
- DATE     ASSET  VOTER  VOTE      CONVICTION  NOTE
- Nov 9    MSFT   [B]    Include   High        Copilot seat data changed my mind
- Nov 2    COST   [C]    Watch     Low         Model not finished
- Oct 25   JPM    [A]    Watch     Medium      NII has peaked
- Oct 18   XOM    [A]    Include   High
- Oct 18   XOM    [B]    Watch     Medium      Waiting for Q3 earnings
- Oct 18   XOM    [C]    Include   High
- ...                                                            Show all 42 →
-
-    WEEKLY CHECK-INS
-    ▸ Week 4 · Nov 10   NAV reconciled to broker; added missing JNJ dividend
-    ▸ Week 3 · Nov 3    MCL margin call (paper); GLD bought at 7.4%
-    ▸ Week 2 · Oct 27   Rebalance: trimmed NVDA back to 11%
-    ▸ Week 1 · Oct 20   Launch, $100 deployed across 11 holdings
-    ┆ Month-one post-mortem: coming Nov 19 ┆
-
-
-                                    THE TEAM
+     DATE      ASSET   VOTER   VOTE      CONVICTION   NOTE
  ──────────────────────────────────────────────────────────────────────────────
-    ████████                  ████████                  ▄▄▄▄▄▄▄▄
-   █▀▀▀▀▀▀▀▀█                █▀▀▀▀▀▀▀▀█                ██████████
-   █ ■    ■ █                █[■]─[■] █                █ ■    ■ █
-   █   ▄▄   █                █   ▄▄   █                █    ▄   █
-   █  ▀▀▀▀  █                █   ──   █                █  ╰──╯  █
-    ▀▀▀▀▀▀▀▀                  ▀▀▀▀▀▀▀▀                  ▀▀▀▀▀▀▀▀
-
-   Person A                  Person B                  Person C
-   Short bio placeholder,    Short bio placeholder,    Short bio placeholder,
-   one or two lines.         one or two lines.         one or two lines.
-   Research: MSFT · JPM ·    Research: NVDA · JNJ ·    Research: COST · XOM ·
-   NEE · IEF · SPY put       CAT · GLD · MES           LQD · MCL
+   Sep 28     JPM     [A]     Watch     Medium       Accepting the NII point
+   Sep 14     MSFT    [B]     Include   High         Copilot seat data changed
+   Aug 13     MCL     [B]     Reject    Medium       Margin calls
+   ...
+                         Show all 44 votes →
 
 ================================================================================
  The WDP Fund is a student learning exercise, not investment advice.

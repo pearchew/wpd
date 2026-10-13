@@ -4,14 +4,12 @@ import Papa from "papaparse";
 import { parse as parseYaml } from "yaml";
 import type { ZodType } from "zod";
 import {
-  CheckinFrontmatterSchema,
   InstrumentSchema,
   MetaSchema,
   ResearchFrontmatterSchema,
   TeamSchema,
   TradeSchema,
   VoteSchema,
-  type CheckinFrontmatter,
   type Instrument,
   type Meta,
   type ResearchFrontmatter,
@@ -76,27 +74,4 @@ export function researchDocs(): ResearchDoc[] {
       const front = ResearchFrontmatterSchema.parse(data);
       return { slug: file.replace(/\.mdx$/, ""), front, body };
     });
-}
-
-export interface CheckinDoc {
-  slug: string;
-  front: CheckinFrontmatter;
-  body: string;
-}
-
-export function checkinDocs(): CheckinDoc[] {
-  const dir = path.join(/*turbopackIgnore: true*/ ROOT, "content/checkins");
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".mdx"))
-    .map((file) => {
-      const { data, body } = splitFrontmatter(fs.readFileSync(path.join(dir, file), "utf8"));
-      return {
-        slug: file.replace(/\.mdx$/, ""),
-        front: CheckinFrontmatterSchema.parse(data),
-        body,
-      };
-    })
-    .sort((a, b) => b.front.date.localeCompare(a.front.date));
 }

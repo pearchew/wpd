@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { checkinDocs, instruments, meta, researchDocs, team, trades, votes } from "./data";
+import { instruments, meta, researchDocs, team, trades, votes } from "./data";
 import {
   buildTimeline,
   dailyReturns,
@@ -439,4 +439,3 @@ export function researchCards(d: FundData): ResearchCard[] {
   });
 }
 
-export { checkinDocs };

@@ -13,7 +13,7 @@ npm test           # ledger, NAV, options and committee-rule tests
 npm run build      # validates data first, then builds
 ```
 
-Out of the box the site runs on **dummy data**: a deterministic fake market (`lib/prices/dummy.ts`), a sample ledger, votes, check-ins and write-ups for the playbook's 14 instruments. A banner says so on every page. Nothing else is needed.
+Out of the box the site runs on **dummy data**: a deterministic fake market (`lib/prices/dummy.ts`), a sample ledger, votes and write-ups for the playbook's 14 instruments. A banner says so on every page. Nothing else is needed.
 
 ## Pages
 
@@ -22,7 +22,7 @@ Out of the box the site runs on **dummy data**: a deterministic fake market (`li
 | `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real), hero tiles, fund vs SPY, winners/losers, holdings, allocation and risk, research teaser |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
-| `/fund` | Inside the Fund: paper book, house rules, vote history, check-ins, post-mortem, team |
+| `/fund` | Inside the Fund: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -31,7 +31,6 @@ Everything we write or decide is a file in this repo. Only market data goes in S
 
 ```
 content/research/<ticker>.mdx   one write-up per asset (frontmatter + MDX body)
-content/checkins/*.mdx          weekly notes and the month-one post-mortem
 data/trades.csv                 every buy, sell, dividend, deposit, paper trade
 data/votes.csv                  every committee vote
 data/instruments.csv            ticker, name, class, currency, feed symbol, contract details

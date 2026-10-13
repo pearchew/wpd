@@ -4,7 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { checkinDocs, instruments, meta, researchDocs, team, trades, votes } from "../lib/data";
+import { instruments, meta, researchDocs, team, trades, votes } from "../lib/data";
 
 const errors: string[] = [];
 const fail = (msg: string) => errors.push(msg);
@@ -24,7 +24,6 @@ const ledger = guarded("data/trades.csv", trades);
 const voteRows = guarded("data/votes.csv", votes);
 const people = guarded("data/team.csv", team);
 const docs = guarded("content/research", researchDocs);
-guarded("content/checkins", checkinDocs);
 
 if (inst) {
   const seen = new Set<string>();

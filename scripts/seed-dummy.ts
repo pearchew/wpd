@@ -469,27 +469,6 @@ async function models() {
 }
 
 // ---------------------------------------------------------------------------
-// Check-ins
-// ---------------------------------------------------------------------------
-const checkins: [string, string, string, string][] = [
-  ["week-01", "2026-08-17", "Week 1: Launch", "Launched with $100 spread across eleven holdings. Orders placed as dollar amounts, limit orders, during US hours. Opened paper positions in MES, MCL and a SPY put the next day."],
-  ["week-02", "2026-08-24", "Week 2: First look", "Everything matches the broker. NVDA is already the biggest mover; nobody is allowed to talk about trimming yet."],
-  ["week-03", "2026-08-31", "Week 3: Dividend season", "First dividends are due next week. Reminder: record every cash event the day it lands, not at reconciliation."],
-  ["week-04", "2026-09-07", "Week 4: Month one nears", "Quiet week. The MCL position had its first margin-call day; discussed whether paper margin calls should change real behaviour (no)."],
-  ["week-05", "2026-09-14", "Week 5: Rebalance", "Trimmed NVDA back toward 10% and added to GLD. Reconciled the NAV to the broker statement and found a missing JNJ dividend."],
-  ["week-06", "2026-09-28", "Week 6: Vote changes", "JPM stays on Watch; A accepted the net-interest-income argument. MSFT moved to Include after B reread the Copilot data."],
-  ["week-07", "2026-10-05", "Week 7: Research push", "Four write-ups finished and merged. COST is the last equity without a published model."],
-  ["week-08", "2026-10-12", "Week 8: Reconcile", "NAV reconciled with the broker. Nothing to trade. Agreed to stop checking the chart daily."],
-];
-for (const [slugName, date, title, text] of checkins) {
-  w(`content/checkins/${slugName}.mdx`, `---\ndate: ${date}\ntitle: "${title}"\ntype: weekly\n---\n\n${text}\n`);
-}
-w(
-  "content/checkins/post-mortem-month-1.mdx",
-  `---\ndate: 2026-09-21\ntitle: "Month-one post-mortem"\ntype: post-mortem\n---\n\n**What worked:** the ledger discipline. Every trade and dividend was recorded the day it happened, so reconciliation took ten minutes.\n\n**What didn't:** we voted on assets before the models existed, so two verdicts were opinions. From now on a vote needs a published write-up.\n\n**Next month:** finish COST, revisit the MCL position size, and decide whether the paper book should have its own committee rule.\n`,
-);
-
-// ---------------------------------------------------------------------------
 // Avatars + favicon
 // ---------------------------------------------------------------------------
 type Grid = string[][];

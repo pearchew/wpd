@@ -965,21 +965,6 @@ a.rcard:hover {
 }
 
 /* ---- fund page ----------------------------------------------------------- */
-.paper-band {
-  background: var(--amber-soft);
-  border: 1px solid var(--amber);
-  color: var(--ink);
-  padding: 14px 18px;
-  margin: 8px 0 24px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.paper-band strong {
-  color: var(--amber);
-}
 .paper-card {
   background: var(--card);
   border: 1px solid var(--rule);
@@ -1050,50 +1035,6 @@ a.rcard:hover {
   background: var(--card);
   color: var(--ink);
   border: 1px solid var(--rule);
-}
-.checkin {
-  border-top: 1px solid var(--rule);
-  text-align: center;
-}
-.checkin summary {
-  cursor: pointer;
-  padding: 10px 4px;
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-}
-.checkin .prose {
-  padding: 0 4px 14px;
-  max-width: none;
-}
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-@media (max-width: 720px) {
-  .team-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.member {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.member .pixel-img {
-  border: 3px solid var(--ink);
-}
-.member ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  justify-content: center;
-  font-size: 0.85rem;
 }
 .empty {
   color: var(--muted);

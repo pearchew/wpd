@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Face } from "@/components/Face";
-import { PaperCard } from "@/components/PaperCard";
-import { PerformanceChart } from "@/components/PerformanceChart";
-import { Prose } from "@/components/Prose";
 import { VoteTable } from "@/components/VoteTable";
-import { paperChart } from "@/lib/charts";
-import { checkinDocs } from "@/lib/data";
-import { addMonthsISO, fmtDate } from "@/lib/dates";
 import { getFundData } from "@/lib/fund";
-import { money, signedMoney, tone } from "@/lib/format";
-import { coverage, displayTicker } from "@/lib/team";
+import { displayTicker } from "@/lib/team";
 import { voteHistory } from "@/lib/verdict";
 
 export const metadata: Metadata = { title: "Inside the Fund" };
@@ -30,11 +22,6 @@ export default async function InsideTheFund({
 }) {
   const sp = await searchParams;
   const d = await getFundData();
-  const chart = paperChart(d);
-  const checkins = checkinDocs();
-  const postMortem = checkins.find((c) => c.front.type === "post-mortem");
-  const weekly = checkins.filter((c) => c.front.type === "weekly");
-  const covered = coverage();
 
   const tickers = [...new Set(d.votes.map((v) => v.ticker))].sort();
   const filtered = voteHistory(d.votes).filter(
@@ -42,40 +29,14 @@ export default async function InsideTheFund({
   );
   const shown = sp.all ? filtered : filtered.slice(0, 12);
 
-  const p = d.tl.paper;
-  const last = p.pnl.length - 1;
-  const postMortemDue = addMonthsISO(d.launch, 1);
-
   return (
     <main className="page">
       <section className="hero" style={{ paddingBottom: 8 }}>
         <h1>Inside the Fund</h1>
-        <p className="tagline" style={{ marginBottom: 0 }}>The paper book, the committee&apos;s decisions and the team.</p>
-      </section>
-
-      <section className="section" data-view="paper" id="paper-book">
-        <div className="section-head">
-          <h2>Paper book</h2>
-        </div>
-        <div className="paper-band">
-          <strong>Paper — not real capital.</strong>
-          <span>
-            {money(p.base[last], 0)} posted as margin and premium · equity {money(p.equity[last], 0)} ·{" "}
-            <span className={tone(p.pnl[last])}>{signedMoney(p.pnl[last], 0)} P&L</span>
-          </span>
-        </div>
-        <PerformanceChart data={chart.data} series={chart.series} markers={chart.markers} mode="usd" note={chart.note} />
-        <div className="stack" style={{ marginTop: 24 }}>
-          {d.paper.map((pos) => (
-            <PaperCard key={pos.ticker} p={pos} />
-          ))}
-        </div>
+        <p className="tagline" style={{ marginBottom: 0 }}>How the fund decides what to own.</p>
       </section>
 
       <section className="section" id="committee">
-        <div className="section-head">
-          <h2>Investment committee</h2>
-        </div>
         <div className="rules-grid">
           <div>
             <h3>House rules</h3>
@@ -90,9 +51,14 @@ export default async function InsideTheFund({
             </ul>
           </div>
         </div>
+      </section>
 
-        <h3 style={{ margin: "36px 0 12px" }}>Vote history</h3>
-        <form className="filter-form" method="get" action="/fund#committee">
+      <section className="section">
+        <div className="section-head">
+          <h2>Vote history</h2>
+          <p className="sub">Newest first. A change of mind is a new vote, so the old ones stay visible.</p>
+        </div>
+        <form className="filter-form" method="get" action="/fund">
           <label>
             Asset{" "}
             <select name="ticker" defaultValue={sp.ticker ?? ""}>
@@ -112,61 +78,11 @@ export default async function InsideTheFund({
         <VoteTable votes={shown} showTicker empty="No votes match." />
         {!sp.all && filtered.length > shown.length && (
           <p style={{ marginTop: 12 }}>
-            <Link href={`/fund?all=1${sp.ticker ? `&ticker=${sp.ticker}` : ""}${sp.voter ? `&voter=${sp.voter}` : ""}#committee`}>
+            <Link href={`/fund?all=1${sp.ticker ? `&ticker=${sp.ticker}` : ""}${sp.voter ? `&voter=${sp.voter}` : ""}`}>
               Show all {filtered.length} votes →
             </Link>
           </p>
         )}
-
-        <h3 style={{ margin: "36px 0 8px" }}>Weekly check-ins</h3>
-        {weekly.length === 0 && <p className="empty">No check-ins yet.</p>}
-        {weekly.map((c) => (
-          <details className="checkin" key={c.slug}>
-            <summary>
-              <span className="muted">{fmtDate(c.front.date, true)}</span>
-              <b>{c.front.title}</b>
-            </summary>
-            <Prose source={c.body} />
-          </details>
-        ))}
-
-        <h3 style={{ margin: "36px 0 8px" }}>Post-mortem</h3>
-        {postMortem ? (
-          <details className="checkin" open>
-            <summary>
-              <span className="muted">{fmtDate(postMortem.front.date, true)}</span>
-              <b>{postMortem.front.title}</b>
-            </summary>
-            <Prose source={postMortem.body} />
-          </details>
-        ) : (
-          <p className="empty">Month-one post-mortem due {fmtDate(postMortemDue, true)}.</p>
-        )}
-      </section>
-
-      <section className="section" id="team">
-        <div className="section-head">
-          <h2>The team</h2>
-        </div>
-        <div className="team-grid">
-          {d.team.map((m) => (
-            <div className="member" key={m.initials}>
-              <Face initials={m.initials} size={128} />
-              <h3>{m.name}</h3>
-              <p className="muted" style={{ margin: 0, maxWidth: 280 }}>{m.bio}</p>
-              <ul>
-                {(covered[m.initials] ?? []).map((t) => {
-                  const published = d.research.get(t)?.front.status === "published";
-                  return (
-                    <li key={t}>
-                      {published ? <Link href={`/research/${t.toLowerCase()}`}>{displayTicker(t)}</Link> : <span className="muted">{displayTicker(t)}</span>}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </div>
       </section>
     </main>
   );
