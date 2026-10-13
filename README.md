@@ -55,7 +55,7 @@ Edit files in GitHub's web editor, open a pull request, and Vercel posts a previ
 
 ## Going live
 
-1. **Supabase:** create a project and run [supabase/schema.sql](supabase/schema.sql) in its SQL editor. Put the project URL and service-role key in `.env.local`, then `npm run db:check` confirms the tables exist.
+1. **Supabase:** the `wdp-fund` project exists and its tables are created (the same SQL is in `supabase/migrations/`). For a new project, run [supabase/schema.sql](supabase/schema.sql) in its SQL editor. Put the project URL and service-role key in `.env.local`, then `npm run db:check` confirms the tables exist.
 2. **Vercel:** import the repo and set the variables from [.env.example](.env.example): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRICE_API_KEY`, `CRON_SECRET`, and optionally `RESEND_API_KEY` + `ALERT_EMAIL` for failure emails.
 3. As soon as the two Supabase variables exist, the site reads real closes and the demo banner disappears. `vercel.json` schedules the daily job.
 4. **Replace the dummy data:** `data/trades.csv`, `votes.csv`, `team.csv`, `meta.json`, the research files, models and avatars are all samples. `npm run seed:dummy` regenerates them (it overwrites, so only run it on a scratch branch).
