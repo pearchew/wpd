@@ -311,6 +311,9 @@ export const getFundData = cache(async (): Promise<FundData> => {
 // View-dependent selections
 // ---------------------------------------------------------------------------
 
+/** Home-page lists only show positions we have published research on. */
+export const hasActiveResearch = (r: HoldingRow): boolean => r.research?.status === "published";
+
 /** What the winners/losers grid ranks, by view. */
 export function rankedRows(d: FundData, view: View): HoldingRow[] {
   const real = d.real;
@@ -321,7 +324,7 @@ export function rankedRows(d: FundData, view: View): HoldingRow[] {
   }));
   const paperOwn: HoldingRow[] = d.paper.map((p) => ({ ...p, returnPct: p.returnOnMargin }));
   const rows = view === "real" ? real : view === "combined" ? [...real, ...paperScaled] : paperOwn;
-  return [...rows].sort((a, b) => b.returnPct - a.returnPct);
+  return rows.filter(hasActiveResearch).sort((a, b) => b.returnPct - a.returnPct);
 }
 
 export interface Allocation {

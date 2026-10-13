@@ -12,7 +12,7 @@ export function ResearchTeaser({ cards }: { cards: ResearchCard[] }) {
   return (
     <div>
       {ASSET_CLASSES.map((cls, i) => {
-        const items = cards.filter((c) => c.assetClass === cls).sort((a, b) => a.ticker.localeCompare(b.ticker));
+        const items = cards.filter((c) => c.assetClass === cls && c.status === "published").sort((a, b) => a.ticker.localeCompare(b.ticker));
         return (
           <details className="teaser" key={cls} open={i === 0}>
             <summary>

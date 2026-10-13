@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Face } from "./Face";
 import { VerdictPill } from "./Verdict";
-import type { FundData, HoldingRow, PaperRow, View } from "@/lib/fund";
+import { hasActiveResearch, type FundData, type HoldingRow, type PaperRow, type View } from "@/lib/fund";
 import { money, signedMoney, signedPct, tone, pct } from "@/lib/format";
 import { displayTicker } from "@/lib/team";
 
@@ -71,6 +71,9 @@ export function HoldingsTable({ d, view }: { d: FundData; view: View }) {
           })),
         ]
       : d.real;
+  // Only positions with published research are listed; the rest are rolled into one line so the total still adds up.
+  const shown = rows.filter(hasActiveResearch);
+  const hidden = rows.filter((r) => !hasActiveResearch(r));
   const total = view === "combined" ? d.navCombined : d.nav;
   const ret = view === "combined" ? d.combinedReturn : d.fundReturn;
 
@@ -90,7 +93,15 @@ export function HoldingsTable({ d, view }: { d: FundData; view: View }) {
           </tr>
         </thead>
         <tbody>
-          <RealRows rows={rows} />
+          <RealRows rows={shown} />
+          {hidden.length > 0 && (
+            <tr>
+              <td className="left muted" colSpan={2}>Other, no published research ({hidden.map((h) => h.ticker).join(", ")})</td>
+              <td className="muted">{pct(hidden.reduce((s, h) => s + h.weight, 0))}</td>
+              <td className="muted">{money(hidden.reduce((s, h) => s + h.value, 0))}</td>
+              <td colSpan={4} />
+            </tr>
+          )}
           <tr>
             <td className="left muted">Cash</td>
             <td className="muted">·</td>
