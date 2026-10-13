@@ -26,7 +26,6 @@ function Tile({ row, rank, badge, side, view }: { row: HoldingRow; rank: number;
         <small className={t}>{signedMoney(row.pnl)}</small>
       </div>
       <Sparkline values={row.spark} />
-      <div className="wl-note">{row.research?.status === "published" ? row.research.thesis : row.research ? "Analysis in progress" : ""}</div>
       <div style={{ display: "flex", justifyContent: "flex-end", minHeight: 20 }}>
         {row.research && <Face initials={row.research.author} size={20} />}
       </div>

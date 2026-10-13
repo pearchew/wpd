@@ -527,15 +527,6 @@ a.wl-tile:hover {
   font-size: 0.85rem;
   font-weight: 500;
 }
-.wl-note {
-  font-size: 0.82rem;
-  color: var(--muted);
-  min-height: 2.6em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .rank-badge {
   font-family: var(--font-pixel);
   font-size: 0.55rem;
