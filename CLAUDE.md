@@ -9,3 +9,4 @@ Spec is [docs/PRD.md](docs/PRD.md); page sketches are [docs/wireframes.md](docs/
 - Numbers use tabular figures; the pixel font (`.pixel`) is for small labels only, never numbers or body text.
 - Keep the layout centred and usable at 375px with no page-level horizontal scroll (wide tables scroll inside `.table-wrap`).
 - `npm run seed:dummy` overwrites all sample data. Don't run it once real data is in.
+- Light theme is the default; dark mode is opt-in via the toggle (stored in localStorage), not the OS setting.

@@ -22,25 +22,6 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #14130f;
-    --card: #1b1a15;
-    --ink: #ece6d6;
-    --muted: #a39d8c;
-    --rule: #35322a;
-    --accent: #8fb0ff;
-    --accent-soft: #1f2a44;
-    --on-accent: #14130f;
-    --gain: #4cc38a;
-    --loss: #ef6b5f;
-    --amber: #e0a73d;
-    --amber-soft: #3a2f16;
-    --combined: #9aa7c4;
-    color-scheme: dark;
-  }
-}
-
 :root[data-theme="dark"] {
   --paper: #14130f;
   --card: #1b1a15;
