@@ -6,8 +6,8 @@ export interface FeedClose {
 }
 
 export interface PriceFeed {
-  /** Latest daily closes for each symbol (a few recent days, newest last). */
-  fetchCloses(symbols: string[]): Promise<FeedClose[]>;
+  /** Daily closes for each symbol: the latest `days` trading days (default 5). */
+  fetchCloses(symbols: string[], days?: number): Promise<FeedClose[]>;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -20,7 +20,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export class TwelveDataFeed implements PriceFeed {
   constructor(private apiKey: string, private batch = 8, private pauseMs = 61_000) {}
 
-  async fetchCloses(symbols: string[]): Promise<FeedClose[]> {
+  async fetchCloses(symbols: string[], days = 5): Promise<FeedClose[]> {
     const out: FeedClose[] = [];
     for (let i = 0; i < symbols.length; i += this.batch) {
       if (i > 0) await sleep(this.pauseMs);
@@ -28,7 +28,7 @@ export class TwelveDataFeed implements PriceFeed {
       const url = new URL("https://api.twelvedata.com/time_series");
       url.searchParams.set("symbol", group.join(","));
       url.searchParams.set("interval", "1day");
-      url.searchParams.set("outputsize", "5");
+      url.searchParams.set("outputsize", String(days));
       url.searchParams.set("apikey", this.apiKey);
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`Twelve Data HTTP ${res.status}`);
