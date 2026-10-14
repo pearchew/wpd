@@ -23,7 +23,9 @@ const db = createClient(url, key, { auth: { persistSession: false } });
 
 const m = meta();
 const list = instruments();
-const launch = m.launchDate ?? firstTradeDate(trades());
+const ledger = trades();
+const launch =
+  m.launchDate ?? (ledger.length ? firstTradeDate(ledger) : new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10));
 // ~30 days of history before launch gives the risk numbers something to start from
 const defaultDays = Math.ceil(((Date.now() - Date.parse(launch)) / 86_400_000) * (5 / 7)) + 25;
 const days = Number(process.argv[2]) || defaultDays;

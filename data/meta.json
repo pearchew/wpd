@@ -1,7 +1,7 @@
 {
   "launchDate": null,
   "reportingCurrency": "USD",
-  "lastReconciled": "2026-10-12",
+  "lastReconciled": null,
   "riskFreeRate": 0.04,
   "benchmark": "SPY",
   "maxPositionWeight": 0.25

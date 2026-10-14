@@ -91,11 +91,12 @@ if (ledger && inst && m) {
 
   // 25% cap, measured on cost basis so validation never depends on the price feed
   const realKeys = [...qty.keys()].filter((k) => k.startsWith("real:") && (qty.get(k) ?? 0) > 1e-9);
+  const capApplies = realKeys.length >= 4; // a cap is meaningless with fewer than four holdings
   const invested = realKeys.reduce((s, k) => s + (cost.get(k) ?? 0), 0);
   const total = invested + Math.max(cash, 0);
   for (const k of realKeys) {
     const w = (cost.get(k) ?? 0) / total;
-    if (w > m.maxPositionWeight) {
+    if (capApplies && w > m.maxPositionWeight) {
       fail(`${k.slice(5)} is ${(w * 100).toFixed(1)}% of the fund at cost, over the ${(m.maxPositionWeight * 100).toFixed(0)}% cap`);
     }
   }

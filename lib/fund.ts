@@ -110,8 +110,12 @@ export interface FundData {
   votes: Vote[];
   instruments: Map<string, Instrument>;
   events: { real: ChartEvent[]; paper: ChartEvent[] };
-  fundSharpe: number;
-  spySharpe: number;
+  /** undefined until there are enough days of history to mean anything */
+  fundSharpe?: number;
+  spySharpe?: number;
+  /** full close history per ticker (including days before launch), aligned to `allDates` */
+  fullCloses: Record<string, number[]>;
+  allDates: string[];
 }
 
 function downsample(xs: number[], max = 40): number[] {
@@ -167,7 +171,8 @@ export const getFundData = cache(async (): Promise<FundData> => {
       research: researchInfo(pos.ticker),
       verdict,
       upside: fv ? fv / price - 1 : undefined,
-      spark: downsample(prices.closes[pos.ticker].slice(startIdx)),
+      // Right after a purchase there is nothing to draw yet, so show the lead-up instead.
+      spark: downsample(prices.closes[pos.ticker].slice(prices.dates.length - startIdx < 5 ? -30 : startIdx)),
     };
   };
 
@@ -302,8 +307,10 @@ export const getFundData = cache(async (): Promise<FundData> => {
     votes: voteRows,
     instruments: imap,
     events: { real: eventMap("real"), paper: eventMap("paper") },
-    fundSharpe: sharpe(fundRets, m.riskFreeRate),
-    spySharpe: sharpe(spyRets, m.riskFreeRate),
+    fundSharpe: fundRets.length >= 20 ? sharpe(fundRets, m.riskFreeRate) : undefined,
+    spySharpe: fundRets.length >= 20 ? sharpe(spyRets, m.riskFreeRate) : undefined,
+    fullCloses: prices.closes,
+    allDates: prices.dates,
   };
 });
 
@@ -346,7 +353,8 @@ export function allocation(d: FundData, view: View): Allocation {
   const add = (k: string, v: number) => sliceMap.set(k, (sliceMap.get(k) ?? 0) + v);
 
   const retsFor = (ticker: string, sign = 1): number[] => {
-    return dailyReturns(d.closes[ticker]).map((r) => r * sign);
+    // Asset-level risk uses the last ~6 months of closes, including days before launch.
+    return dailyReturns(d.fullCloses[ticker].slice(-126)).map((r) => r * sign);
   };
 
   if (view !== "paper") {
@@ -384,7 +392,7 @@ export function allocation(d: FundData, view: View): Allocation {
     portfolioVol: rb.portfolioVol,
     weightedAvgVol: rb.weightedAvgVol,
     diversificationBenefit: rb.diversificationBenefit,
-    sharpe: view === "paper" ? undefined : view === "combined" ? sharpe(dailyReturns(d.combinedIndex), d.meta.riskFreeRate) : d.fundSharpe,
+    sharpe: view === "paper" ? undefined : view === "combined" ? (d.combinedIndex.length > 20 ? sharpe(dailyReturns(d.combinedIndex), d.meta.riskFreeRate) : undefined) : d.fundSharpe,
     spySharpe: view === "paper" ? undefined : d.spySharpe,
     note:
       view === "paper"

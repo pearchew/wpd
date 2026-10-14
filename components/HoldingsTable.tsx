@@ -102,13 +102,15 @@ export function HoldingsTable({ d, view }: { d: FundData; view: View }) {
               <td colSpan={4} />
             </tr>
           )}
-          <tr>
-            <td className="left muted">Cash</td>
-            <td className="muted">·</td>
-            <td>{pct(d.cash / d.nav)}</td>
-            <td>{money(d.cash)}</td>
-            <td colSpan={4} />
-          </tr>
+          {d.cash > 0.005 && (
+            <tr>
+              <td className="left muted">Cash</td>
+              <td className="muted">·</td>
+              <td>{pct(d.cash / d.nav)}</td>
+              <td>{money(d.cash)}</td>
+              <td colSpan={4} />
+            </tr>
+          )}
         </tbody>
         <tfoot>
           <tr>

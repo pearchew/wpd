@@ -42,7 +42,12 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
   // Chart from our first purchase (or launch, for assets we only research).
   const buyDate = tradeStart(d, f.ticker);
   const startIdx = Math.max(0, buyDate ? d.dates.indexOf(buyDate) : 0);
-  const series = d.dates.slice(startIdx).map((date, i) => ({ date, price: closes[i + startIdx] }));
+  // Too few days since purchase to draw a line: show the lead-up from the full history instead.
+  const sparse = d.dates.length - startIdx < 5;
+  const full = d.fullCloses[f.ticker] ?? [];
+  const series = sparse
+    ? d.allDates.slice(-60).map((date, i, arr) => ({ date, price: full[full.length - arr.length + i] }))
+    : d.dates.slice(startIdx).map((date, i) => ({ date, price: closes[i + startIdx] }));
   const buy = buyDate ? { date: buyDate, price: closes[startIdx] } : undefined;
 
   const title = f.ticker.length > 8 ? f.name : `${f.name} (${f.ticker})`;

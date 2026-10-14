@@ -13,13 +13,13 @@ npm test           # ledger, NAV, options and committee-rule tests
 npm run build      # validates data first, then builds
 ```
 
-Out of the box the site runs on **dummy data**: a deterministic fake market (`lib/prices/dummy.ts`), a sample ledger, votes and write-ups for the playbook's 14 instruments. A banner says so on every page. Nothing else is needed.
+The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set (see below). Without them it falls back to a deterministic fake market (`lib/prices/dummy.ts`) with a banner, so the repo still runs on a fresh clone. The fake prices will not match the real fills in `data/trades.csv`, so the numbers are only sensible against Supabase.
 
 ## Pages
 
 | Route | What |
 | --- | --- |
-| `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real), hero tiles, fund vs SPY, winners/losers, holdings, allocation and risk, research teaser |
+| `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, winners/losers, holdings, allocation and risk, research teaser |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/fund` | Inside the Fund: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
@@ -58,7 +58,7 @@ Edit files in GitHub's web editor, open a pull request, and Vercel posts a previ
 1. **Supabase:** the `wdp-fund` project exists and its tables are created (the same SQL is in `supabase/migrations/`). For a new project, run [supabase/schema.sql](supabase/schema.sql) in its SQL editor. Put the project URL and service-role key in `.env.local`, then `npm run db:check` confirms the tables exist.
 2. **Vercel:** import the repo and set the variables from [.env.example](.env.example): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRICE_API_KEY`, `CRON_SECRET`, and optionally `RESEND_API_KEY` + `ALERT_EMAIL` for failure emails.
 3. As soon as the two Supabase variables exist, the site reads real closes and the demo banner disappears. `vercel.json` schedules the daily job.
-4. **Replace the dummy data:** `data/trades.csv`, `votes.csv`, `team.csv`, `meta.json`, the research files, models and avatars are all samples. `npm run seed:dummy` regenerates them (it overwrites, so only run it on a scratch branch).
+4. **Current data:** `data/trades.csv` holds one placeholder share each of NVDA and MSFT bought at the 2026-10-14 close, and `content/research/` has placeholder reports for both. Replace them with the real ledger and write-ups as you go. `votes.csv` and `team.csv` are placeholders too.
 
 The price feed is behind one interface in [lib/feed](lib/feed/index.ts); Twelve Data is wired up. Check that it covers every ticker you hold (futures and options symbols especially) before relying on it, and note the free plan's 8-requests-a-minute limit. Run `npm run db:backfill` once to load history since launch (the daily job only fetches the last few days), then `npm run db:check` to see the latest close for every instrument.
 

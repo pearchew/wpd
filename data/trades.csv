@@ -1,25 +1,4 @@
 date,book,ticker,action,shares,price,fees,currency,notional_slice,note
-2026-08-17,real,CASH,deposit,,100,,USD,,Starting capital
-2026-08-17,real,NVDA,buy,0.0591,152.36,0,USD,,Initial
-2026-08-17,real,MSFT,buy,0.018,528.33,0,USD,,Initial
-2026-08-17,real,XOM,buy,0.0885,101.69,0,USD,,Initial
-2026-08-17,real,COST,buy,0.0096,941.61,0,USD,,Initial
-2026-08-17,real,CAT,buy,0.0229,392.49,0,USD,,Initial
-2026-08-17,real,JNJ,buy,0.0576,156.32,0,USD,,Initial
-2026-08-17,real,JPM,buy,0.0299,300.8,0,USD,,Initial
-2026-08-17,real,NEE,buy,0.1114,80.8,0,USD,,Initial
-2026-08-17,real,GLD,buy,0.0193,336.15,0,USD,,Initial
-2026-08-17,real,IEF,buy,0.0835,95.83,0,USD,,Initial
-2026-08-17,real,LQD,buy,0.0733,109.13,0,USD,,Initial
-2026-09-14,real,NVDA,sell,0.012,166.49,0,USD,,Trim back toward 10%
-2026-09-14,real,GLD,buy,0.0057,351.82,0,USD,,Rebalance into gold
-2026-09-02,real,IEF,dividend,,0.03,,USD,,Dividend
-2026-09-02,real,LQD,dividend,,0.03,,USD,,Dividend
-2026-09-08,real,JNJ,dividend,,0.07,,USD,,Dividend
-2026-09-15,real,XOM,dividend,,0.06,,USD,,Dividend
-2026-10-01,real,IEF,dividend,,0.03,,USD,,Dividend
-2026-10-01,real,LQD,dividend,,0.03,,USD,,Dividend
-2026-10-01,real,JPM,dividend,,0.05,,USD,,Dividend
-2026-08-18,paper,MES,buy,1,6515.74,,USD,10,Long front-month
-2026-08-18,paper,MCL,buy,1,56.8,,USD,10,Long front-month
-2026-08-18,paper,SPY261218P640,buy,1,18.33,,USD,5,Portfolio hedge
+2026-10-14,real,CASH,deposit,,759.67,,USD,,Starting capital (placeholder: sized to buy one share of each)
+2026-10-14,real,NVDA,buy,1,222.69,0,USD,,Placeholder: one share at the 2026-10-14 close
+2026-10-14,real,MSFT,buy,1,536.98,0,USD,,Placeholder: one share at the 2026-10-14 close

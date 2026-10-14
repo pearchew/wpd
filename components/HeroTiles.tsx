@@ -55,7 +55,7 @@ export function HeroTiles({ d, view }: { d: FundData; view: View }) {
       </div>
       <p className="stamp">
         As of {fmtDate(d.asOf, true)}, US close
-        {view !== "paper" && <> · Reconciled with broker: {fmtDate(d.meta.lastReconciled, true)}</>}
+        {view !== "paper" && d.meta.lastReconciled && <> · Reconciled with broker: {fmtDate(d.meta.lastReconciled, true)}</>}
       </p>
     </>
   );

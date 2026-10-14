@@ -54,7 +54,7 @@ export function WinnersLosers({ d, view }: { d: FundData; view: View }) {
             rank={i + 1}
             side="single"
             view={view}
-            badge={i === 0 ? "crown" : i === rows.length - 1 && rows.length > 1 ? "skull" : undefined}
+            badge={i === 0 && r.returnPct > 0 ? "crown" : i === rows.length - 1 && rows.length > 1 && r.returnPct < 0 ? "skull" : undefined}
           />
         ))}
       </div>
@@ -66,12 +66,12 @@ export function WinnersLosers({ d, view }: { d: FundData; view: View }) {
     <div className="stack">
       <div className="wl-grid">
         {winners.map((r, i) => (
-          <Tile key={r.ticker} row={r} rank={i + 1} side="win" view={view} badge={i === 0 ? "crown" : undefined} />
+          <Tile key={r.ticker} row={r} rank={i + 1} side="win" view={view} badge={i === 0 && r.returnPct > 0 ? "crown" : undefined} />
         ))}
       </div>
       <div className="wl-grid">
         {losers.map((r, i) => (
-          <Tile key={r.ticker} row={r} rank={rows.length - i} side="lose" view={view} badge={i === 0 ? "skull" : undefined} />
+          <Tile key={r.ticker} row={r} rank={rows.length - i} side="lose" view={view} badge={i === 0 && r.returnPct < 0 ? "skull" : undefined} />
         ))}
       </div>
     </div>

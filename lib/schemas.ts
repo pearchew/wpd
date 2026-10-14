@@ -74,7 +74,7 @@ export const MetaSchema = z.object({
   /** null → the first trade date in trades.csv */
   launchDate: isoDate.nullable(),
   reportingCurrency: z.string().length(3),
-  lastReconciled: isoDate,
+  lastReconciled: isoDate.nullable(),
   riskFreeRate: z.number().min(0).max(0.25),
   benchmark: z.string().min(1),
   maxPositionWeight: z.number().gt(0).max(1),

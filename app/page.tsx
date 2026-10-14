@@ -9,9 +9,11 @@ import { chartFor } from "@/lib/charts";
 import { allocation, getFundData, parseView, researchCards } from "@/lib/fund";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {
-  // No ?view= means Real, so a fresh visit never lands on paper numbers by accident.
-  const view = parseView((await searchParams).view);
   const d = await getFundData();
+  // No ?view= means Real, so a fresh visit never lands on paper numbers by accident.
+  // With no paper positions there is nothing to toggle, so the toggle and the other views disappear.
+  const hasPaper = d.paper.length > 0;
+  const view = hasPaper ? parseView((await searchParams).view) : "real";
   const chart = chartFor(d, view);
   const alloc = allocation(d, view);
   const cards = researchCards(d);
@@ -25,7 +27,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ v
       <section className="hero">
         <h1>WDP Fund</h1>
         <p className="tagline">Conviction backed by fundamentals.</p>
-        <ViewToggle view={view} />
+        {hasPaper && <ViewToggle view={view} />}
         <p className={`view-label${view === "paper" ? " paper" : ""}`}>{viewLabel(d, view)}</p>
         <HeroTiles d={d} view={view} />
       </section>
@@ -35,7 +37,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ v
           <h2>{chartTitle}</h2>
           <p className="sub">{chartSub}</p>
         </div>
-        <PerformanceChart data={chart.data} series={chart.series} markers={chart.markers} mode={chart.mode} note={chart.note} />
+        {chart.data.length < 2 ? (
+          <p className="empty">The chart starts once there are two days of history. Check back after tomorrow&apos;s close.</p>
+        ) : (
+          <PerformanceChart data={chart.data} series={chart.series} markers={chart.markers} mode={chart.mode} note={chart.note} />
+        )}
       </section>
 
       <section className="section">

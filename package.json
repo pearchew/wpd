@@ -10,7 +10,6 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "seed:dummy": "tsx scripts/seed-dummy.ts",
     "db:check": "tsx --env-file-if-exists=.env.local scripts/check-supabase.mts",
     "db:backfill": "tsx --env-file-if-exists=.env.local scripts/backfill-prices.mts"
   },
@@ -34,7 +33,6 @@
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "exceljs": "^4.4.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.0",
     "vitest": "^5.0.4"
