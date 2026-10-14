@@ -27,6 +27,8 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 
 ## Where things live
 
+> Collaborators: jump to [Updating the site](#updating-the-site-guide-for-collaborators) for the step-by-step guide.
+
 Everything we write or decide is a file in this repo. Only market data goes in Supabase. Holdings are never stored: they are replayed from the ledger.
 
 ```
@@ -42,16 +44,243 @@ public/avatars/                 8-bit faces
 
 Ledger conventions: `deposit`, `withdrawal` and `fee` rows carry the amount in the **price** column. `dividend` with no `shares` is a total amount; with `shares` it is per share. `split` puts the ratio in `shares`. A rebalance is sell rows plus buy rows; never edit or delete old rows. Paper trades use `book=paper` and set `notional_slice`, the dollars of the fund the position represents in the Combined view.
 
-## Update workflows
+## Updating the site (guide for collaborators)
 
-Edit files in GitHub's web editor, open a pull request, and Vercel posts a preview. If validation fails, the build fails and the previous version stays live.
+You never need to touch code to run the fund. Everything we decide is a plain file in this repo, and the site rebuilds itself whenever a change is merged.
 
-- **Add analysis:** create `content/research/<ticker>.mdx` (set `status: in-progress` to show a placeholder card early), upload the model to `public/models/`, flip to `status: published`, merge.
-- **Change positions:** add one row per broker fill to `data/trades.csv`.
-- **Record a vote:** add one row per voter to `data/votes.csv`; a change of mind is a new row.
-- **Weekly reconciliation:** compare site NAV to the broker, add any missing dividend or fee row, update `lastReconciled` in `data/meta.json`.
+### Which file do I edit?
 
-`npm run validate` checks known tickers, dates, voters, authors, the 25% cap, required frontmatter, model files and derivative fields. It runs automatically before every build.
+| I want to… | Edit | Section |
+| --- | --- | --- |
+| Record a buy, sell, dividend, deposit, withdrawal, fee or split | `data/trades.csv` | [Trades](#record-a-trade) |
+| Track a new stock, ETF, future or option | `data/instruments.csv` | [New asset](#add-a-new-asset-to-the-site) |
+| Write or update a research report | `content/research/<ticker>.mdx` | [Reports](#write-or-update-a-research-report) |
+| Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
+| Record a committee vote or a change of mind | `data/votes.csv` | [Votes](#record-a-committee-vote) |
+| Change a name, bio or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
+| Mark the NAV as reconciled with the broker | `data/meta.json` | [Reconcile](#weekly-reconciliation) |
+| Change the house rules or thresholds shown on Inside the Fund | `app/fund/page.tsx` | [Rules](#change-the-house-rules-text) |
+
+Anything else (layout, colours, new pages) is a code change. Ask the owner.
+
+### How every change works
+
+1. **Open the file on GitHub.** Go to the repo, browse to the file, and click the pencil icon (**Edit this file**). To add a new file use **Add file → Create new file**, and to upload one use **Add file → Upload files**.
+2. **Make your edit** (details for each file below).
+3. **Commit to a new branch.** Click **Commit changes…**, write a short message such as `Add NVDA buy`, choose **Create a new branch for this commit and start a pull request**, then **Propose changes**.
+4. **Open the pull request.** Click **Create pull request**.
+5. **Wait for the checks.** After a minute or two Vercel comments on the pull request:
+   - ✅ **Ready** with a **Preview** link: open it and check your change looks right.
+   - ❌ **Failed**: your data has a mistake. Click **Details** and read the build log. It says exactly what is wrong, for example `✗ trades.csv row 5: unknown ticker AMZN`. Fix it by editing the file again on the same branch; the check re-runs.
+6. **Get a second pair of eyes.** For research reports, a teammate reads the preview and comments as a sceptic before merging.
+7. **Merge.** Click **Merge pull request**. Within a couple of minutes the live site updates.
+
+If a check fails, the live site is unaffected: the previous version stays up until a good change is merged.
+
+> **If the Vercel check says the deployment is blocked** (it can happen on the free plan with a private repo when the commit author isn't the Vercel account owner), tell the owner. They can merge it, or redeploy from the Vercel dashboard.
+
+### Rules for the CSV files
+
+- One row per line, commas between columns, **no spaces after commas**, no blank lines in the middle.
+- Dates are `YYYY-MM-DD`. Numbers have no `$` signs or thousands separators.
+- If a text field contains a comma, wrap that field in double quotes.
+- Leave a column empty by writing nothing between the commas (`,,`). Keep the right number of commas on every row.
+- **Never edit or delete old trade or vote rows.** The history is the point. To correct a mistake, add a new row that reverses it.
+
+### Record a trade
+
+Open `data/trades.csv`. Add one row per broker fill at the bottom, using the **shares and price from the broker's confirmation**. The columns are:
+
+```
+date,book,ticker,action,shares,price,fees,currency,notional_slice,note
+```
+
+| Action | What to fill in | Example row |
+| --- | --- | --- |
+| Deposit | `ticker` = `CASH`, amount in the **price** column | `2026-10-20,real,CASH,deposit,,50,,USD,,Top-up` |
+| Buy | shares, price per share, fees | `2026-10-20,real,JNJ,buy,0.1234,160.25,0,USD,,New position` |
+| Sell | shares sold, price per share | `2026-10-27,real,NVDA,sell,0.05,230.10,0,USD,,Trim to 10%` |
+| Dividend | amount received in the **price** column, shares empty | `2026-11-03,real,MSFT,dividend,,0.04,,USD,,Quarterly dividend` |
+| Withdrawal | `ticker` = `CASH`, amount in **price** | `2026-11-10,real,CASH,withdrawal,,20,,USD,,Taking money out` |
+| Fee | `ticker` = `CASH`, amount in **price** | `2026-11-10,real,CASH,fee,,0.50,,USD,,FX charge` |
+| Stock split | the ratio in **shares** (2 for a 2-for-1) | `2026-12-01,real,NVDA,split,2,,,USD,,2-for-1 split` |
+
+Things to know:
+
+- **A rebalance is just sell rows plus buy rows.** Add both.
+- **Cash can't go negative.** If you buy more than the cash on hand, add a deposit row first (same date or earlier). The check will fail otherwise.
+- **You can't sell more than you hold.**
+- **Record every cash event.** Missing dividends and fees are the usual reason the site's NAV drifts away from the broker's.
+- **The ticker must already be in `data/instruments.csv`** and must have prices in the database. See the next section for a new asset.
+- **No position above 25%** once the fund holds four or more positions. The check fails if one is over.
+- **Paper trades** (futures and options, no real money) use `book` = `paper` and fill in `notional_slice`, the dollars of the fund the position stands in for in the Combined view. They need `kind`, `underlying`, `expiry` and margin details in `instruments.csv`. The Paper and Combined views appear automatically as soon as there is a paper row.
+
+### Add a new asset to the site
+
+The site needs a price history for every asset before you record a trade in it, otherwise the page will fail to load. Do it in this order:
+
+1. **Add the instrument.** Open `data/instruments.csv` and add a row. For a normal stock or ETF, copy an existing row and change the first five columns:
+   ```
+   ticker,name,asset_class,currency,feed_symbol,kind,multiplier,underlying,underlying_scale,expiry,strike,option_type,margin,maint_margin
+   JNJ,Johnson & Johnson,Equities,USD,JNJ,stock,1,,,,,,,
+   ```
+   - `asset_class` must be exactly one of `Equities`, `Fixed Income`, `Commodities`, `Derivatives`.
+   - `feed_symbol` is the symbol the price provider uses (usually the ticker).
+   - `kind` is `stock`, `etf`, `future` or `option`.
+2. **Merge that pull request first**, then ask the **owner** to load the prices: they run `npm run db:backfill` on their machine, or click **Run** on the cron job in Vercel (Settings → Cron Jobs). The daily job picks up the new ticker automatically from then on.
+3. **Then** open a second pull request with the trade (and the report).
+
+### Write or update a research report
+
+Each asset has one file: `content/research/<ticker>.mdx`, with the ticker in **lower case** (`msft.mdx`, `nvda.mdx`).
+
+**To add a new report:** use **Add file → Create new file**, type the path `content/research/jnj.mdx` (typing the slashes creates the folders), and paste this template:
+
+```
+---
+ticker: JNJ
+name: Johnson & Johnson
+assetClass: Equities
+method: Two-stage DDM
+status: in-progress
+author: B
+updated: 2026-10-20
+fairValue: 182
+thesis: One sentence on why we own it, shown on the site.
+sellTrigger: Fair value reached, or a talc settlement above $15bn.
+model: /models/jnj-ddm.xlsx
+keyOutputs:
+  - label: Sustainable growth
+    value: 9.9%
+---
+
+## Valuation
+
+Write the analysis here in plain text. Use a table for the assumptions:
+
+| Assumption | Base case |
+| --- | ---: |
+| Cost of equity | 7.0% |
+| Terminal growth | 3.0% |
+
+## What the price implies
+
+Reverse DCF or implied growth.
+
+## Biggest risk
+
+What would make us wrong.
+```
+
+What each field means:
+
+| Field | Notes |
+| --- | --- |
+| `ticker` | Must be in `instruments.csv`, same letters as the file name. |
+| `assetClass` | Must match the one in `instruments.csv`. |
+| `method` | Free text, e.g. `DCF`, `Residual income / P/B`, `Two-stage DDM`, `Scorecard`. |
+| `status` | `in-progress` shows a greyed "Analysis in progress" card on the Research page only. `published` shows it everywhere (Home, holdings table, Research). |
+| `author` | The writer's initials, as in `data/team.csv` (`A`, `B` or `C`). A byline is per report. |
+| `updated` | Change it to today's date whenever you edit the report. |
+| `fairValue` | Your model's fair value per share. **Required to publish.** |
+| `thesis` | One sentence, shown on cards and the asset page. |
+| `sellTrigger` | **Required to publish.** Written when we buy, not after. |
+| `model` | Optional link to the Excel file in `public/models/`. If set, the file must exist. |
+| `keyOutputs` | Optional headline numbers for the method (up to four look best). |
+
+**To update an existing report:** open the file, edit the text or numbers, bump `updated`, and follow the normal pull request flow.
+
+**To upload the Excel model:** use **Add file → Upload files**, upload into `public/models/`, and set `model: /models/<file name>.xlsx` in the report.
+
+**To publish:** change `status: in-progress` to `status: published` (with `fairValue` and `sellTrigger` filled in) and merge.
+
+Tips for the report body:
+
+- It is Markdown with `##` headings and `|` tables. Use `**bold**` and `-` bullet lists.
+- ⚠️ **Do not type `<` or `{` `}` in the text.** The report format reads them as code and the build fails. Write "less than" instead of `<`, and avoid curly brackets.
+- A fair value of any kind is only as good as the model behind it. Don't publish a number you can't defend.
+
+### Record a committee vote
+
+Open `data/votes.csv` and add **one row per voter**:
+
+```
+date,ticker,voter,vote,conviction,note
+2026-10-20,JNJ,A,Include,High,Pipeline looks strong
+2026-10-20,JNJ,B,Watch,Medium,Waiting for earnings
+2026-10-20,JNJ,C,Include,Medium,
+```
+
+- `voter` is the person's initials from `data/team.csv`.
+- `vote` is `Include`, `Watch` or `Reject`. `conviction` is `High`, `Medium` or `Low`.
+- **A change of mind is a new row**, never an edit. Each person's **latest** vote counts, and older rows stay in the history.
+- You can vote on an asset we don't hold yet; it just needs to be in `instruments.csv`.
+- **How the verdict is decided:** `Include` needs 2 of the 3 latest votes, and the report's author voting `Include` alone never carries it (at least one other person has to agree). Two `Reject`s mean `Reject`. Everything else is `Watch`.
+
+### Weekly reconciliation
+
+Once a week, compare the site's NAV with the broker statement.
+
+1. If they differ, find the missing row (usually a dividend, a fee or an FX charge) and add it to `data/trades.csv`.
+2. When they match, open `data/meta.json` and set `"lastReconciled"` to today's date, e.g. `"lastReconciled": "2026-10-20"`. Until you do, the site doesn't show a "Reconciled with broker" date.
+
+### Change the team
+
+- **Name or bio:** edit the row in `data/team.csv` (`initials,name,bio,avatar`). The initials are used by every report and vote, so don't change them.
+- **Pixel face:** upload a square image into `public/avatars/` (a 16×16 pixel drawing saved as SVG or PNG works best, e.g. from Piskel) and set the `avatar` column to `/avatars/<file name>`.
+
+### Change the house rules text
+
+The rules and thresholds on **Inside the Fund** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce: the 25% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
+
+### Other settings in `data/meta.json`
+
+| Field | What it does |
+| --- | --- |
+| `launchDate` | `null` means "the date of the first trade". Set a date to index the fund and SPY to 100 on that day instead. |
+| `reportingCurrency` | The currency NAV is shown in (`USD`). |
+| `riskFreeRate` | Used for the Sharpe ratio (`0.04` is 4%). |
+| `benchmark` | The comparison ticker (`SPY`); it must be in `instruments.csv`. |
+| `maxPositionWeight` | The position cap used by the checks (`0.25`). |
+
+### What the site does by itself
+
+- **Prices:** a daily job fetches the closing prices each weekday at 21:30 UTC (after the US close) and stores them in the database. Nobody needs to enter prices.
+- **NAV, returns, charts, risk:** calculated from `data/trades.csv` and those prices. They change every day without any edit.
+- **After a merge:** the site redeploys in a minute or two. Pages refresh their prices on their own.
+
+### Troubleshooting
+
+| What you see | Why | Fix |
+| --- | --- | --- |
+| The Vercel check fails with `unknown ticker` | The ticker isn't in `data/instruments.csv` | Add it first (see "Add a new asset") |
+| `cash goes negative` | A buy is larger than the cash on hand | Add a deposit row, or reduce the buy |
+| `sells more X than is held` | A sell exceeds the holding | Check the share count |
+| `… over the 25% cap` | One position is too big | Reduce it, or check the numbers |
+| `published research needs fairValue and sellTrigger` | Missing field | Fill both in, or set `status: in-progress` |
+| `model file … does not exist` | The `model:` path doesn't match an uploaded file | Upload the file or fix the name |
+| A report page errors or the build fails with no validation message | A `<` or `{` in the report text | Remove or reword it |
+| The site shows an error for one ticker | No prices stored for it yet | Ask the owner to run the price backfill |
+| NAV doesn't match the broker | A missing dividend, fee or FX charge | Add the row, then reconcile |
+
+### Owner-only tasks
+
+These need the secret keys, so they aren't part of the normal pull request flow:
+
+- Vercel environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRICE_API_KEY`, `CRON_SECRET`), set under Settings → Environment Variables. Never put them in the repo.
+- Loading price history for new assets: `npm run db:backfill`.
+- Checking the database and daily job: `npm run db:check`, or Vercel → Settings → Cron Jobs → **Run**.
+
+### Running it on your own computer (optional)
+
+```bash
+git clone https://github.com/pearchew/wpd.git && cd wpd
+npm install
+npm run validate   # checks every data file, the same check Vercel runs
+npm run dev        # http://localhost:3000
+```
+
+Without the secret keys the site shows made-up prices and an orange demo banner, which is fine for checking that your files parse and the pages render. It will not show real returns.
 
 ## Going live
 
