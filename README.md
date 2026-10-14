@@ -73,11 +73,22 @@ Anything else (layout, colours, new pages) is a code change. Ask the owner.
    - ✅ **Ready** with a **Preview** link: open it and check your change looks right.
    - ❌ **Failed**: your data has a mistake. Click **Details** and read the build log. It says exactly what is wrong, for example `✗ trades.csv row 5: unknown ticker AMZN`. Fix it by editing the file again on the same branch; the check re-runs.
 6. **Get a second pair of eyes.** For research reports, a teammate reads the preview and comments as a sceptic before merging.
-7. **Merge.** Click **Merge pull request**. Within a couple of minutes the live site updates.
+7. **Ask the owner to merge** (see the caveat below). Within a couple of minutes of merging, the live site updates.
 
 If a check fails, the live site is unaffected: the previous version stays up until a good change is merged.
 
-> **If the Vercel check says the deployment is blocked** (it can happen on the free plan with a private repo when the commit author isn't the Vercel account owner), tell the owner. They can merge it, or redeploy from the Vercel dashboard.
+### Caveat: only the owner merges (free Vercel plan)
+
+We run on Vercel's free plan with a private repo. On that plan Vercel may refuse to deploy commits written by anyone other than the account owner, so a collaborator's change can pass its preview but never go live. To stay on the free plan:
+
+- **Collaborators:** open a pull request as described above, but **do not merge it yourself**. Tell the owner it is ready.
+- **The owner:** merges every pull request with **Create a merge commit**. Don't use "Squash and merge" or "Rebase and merge", which keep the collaborator as the commit's author and are the ones most likely to be blocked. A merge commit is authored by whoever clicks the button, which is the owner.
+- **Owner, one-time setup:** on GitHub go to **Settings → General → Pull Requests** and untick *Allow squash merging* and *Allow rebase merging*, so the wrong option isn't offered. Also make sure your local git email is a GitHub-linked address (`git config user.email`), or your own commits can be blocked too.
+- **Collaborators should not push straight to `main`** for the same reason; use pull requests.
+- A collaborator's preview may show as blocked or awaiting authorisation for the same reason. If so, the owner can still review the change in GitHub's **Files changed** tab, and `npm run validate` locally runs the same data check as the preview.
+- If a merged change still doesn't appear on the site, check **Deployments** in Vercel for a blocked entry and **Redeploy** it, or ask the maintainer.
+
+> This setup hasn't been tested with a collaborator yet. The fixes if it doesn't work are to make the repo public, or upgrade Vercel to Pro and add collaborators to the team.
 
 ### Rules for the CSV files
 
