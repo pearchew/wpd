@@ -13,6 +13,9 @@ import { getFundData } from "@/lib/fund";
 import { money, signedPct, slugify, tone } from "@/lib/format";
 import { computeVerdict, voteHistory } from "@/lib/verdict";
 
+// Pre-built at deploy time, then refreshed hourly so prices and upside stay current.
+export const revalidate = 3600;
+
 export function generateStaticParams() {
   return researchDocs()
     .filter((d) => d.front.status === "published")
