@@ -1,4 +1,4 @@
 date,book,ticker,action,shares,price,fees,currency,notional_slice,note
-2026-10-14,real,CASH,deposit,,759.67,,USD,,Starting capital (placeholder: sized to buy one share of each)
-2026-10-14,real,NVDA,buy,1,222.69,0,USD,,Placeholder: one share at the 2026-10-14 close
-2026-10-14,real,MSFT,buy,1,536.98,0,USD,,Placeholder: one share at the 2026-10-14 close
+2026-10-14,real,CASH,deposit,,100,,USD,,Starting capital
+2026-10-14,real,NVDA,buy,0.2245,222.69,0,USD,,Half the fund at the 2026-10-14 close (placeholder fill)
+2026-10-14,real,MSFT,buy,0.0931,536.98,0,USD,,Half the fund at the 2026-10-14 close (placeholder fill)
