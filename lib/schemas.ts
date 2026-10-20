@@ -67,6 +67,11 @@ export const TeamSchema = z.object({
   name: z.string().min(1),
   bio: z.string().min(1),
   avatar: z.string().min(1),
+  /** Pipe-separated in the CSV, e.g. "Hong Kong|US|Commodities" */
+  focuses: z
+    .string()
+    .default("")
+    .transform((s) => s.split("|").map((f) => f.trim()).filter(Boolean)),
 });
 export type TeamMember = z.infer<typeof TeamSchema>;
 

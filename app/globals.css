@@ -218,44 +218,6 @@ table,
   align-items: center;
   gap: 10px;
 }
-.faces {
-  display: flex;
-  gap: 8px;
-}
-.face-link {
-  position: relative;
-  display: block;
-  line-height: 0;
-  border: 2px solid var(--ink);
-  background: var(--card);
-}
-.face-link:focus-visible,
-.face-link:hover {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.face-tip {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  min-width: 170px;
-  padding: 8px 10px;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 0.78rem;
-  line-height: 1.35;
-  text-align: left;
-  display: none;
-  z-index: 30;
-}
-.face-link:hover .face-tip,
-.face-link:focus-visible .face-tip {
-  display: block;
-}
-.face-tip strong {
-  display: block;
-  font-size: 0.85rem;
-}
 .theme-toggle {
   background: transparent;
   border: 1px solid var(--rule);
@@ -1000,6 +962,52 @@ a.rcard:hover {
 .stack {
   display: grid;
   gap: 16px;
+}
+.analysts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 760px) {
+  .analysts {
+    grid-template-columns: 1fr;
+  }
+}
+.analyst {
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--accent);
+  background: var(--card);
+  padding: 20px 16px;
+  text-align: center;
+}
+.analyst-face {
+  display: inline-block;
+  line-height: 0;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+.analyst h3 {
+  margin: 12px 0 6px;
+}
+.analyst-bio {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.analyst-focuses {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.analyst-focuses li {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  color: var(--ink);
 }
 .rules-grid {
   display: grid;
