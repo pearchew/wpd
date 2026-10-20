@@ -1,4 +1,4 @@
-initials,name,bio,avatar
-A,Person A,"Placeholder bio. Likes cash-flow models and slow, boring compounders.",/avatars/a.svg
-B,Person B,"Placeholder bio. Chases growth, then argues about the discount rate.",/avatars/b.svg
-C,Person C,"Placeholder bio. Energy, staples and anything with a margin call.",/avatars/c.svg
+initials,name,bio,avatar,focuses
+A,Person A,"Placeholder bio. Likes cash-flow models and slow, boring compounders.",/avatars/a.svg,Hong Kong|US|Commodities
+B,Person B,"Placeholder bio. Chases growth, then argues about the discount rate.",/avatars/b.svg,Indonesia|US|Index futures
+C,Person C,"Placeholder bio. Energy, staples and anything with a margin call.",/avatars/c.svg,Energy|Staples|Options

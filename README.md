@@ -19,10 +19,11 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 
 | Route | What |
 | --- | --- |
-| `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, winners/losers, holdings, allocation and risk, research teaser |
+| `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, our analysts |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
-| `/fund` | Inside the Fund: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
+| `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
+| `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -36,7 +37,7 @@ content/research/<ticker>.mdx   one write-up per asset (frontmatter + MDX body)
 data/trades.csv                 every buy, sell, dividend, deposit, paper trade
 data/votes.csv                  every committee vote
 data/instruments.csv            ticker, name, class, currency, feed symbol, contract details
-data/team.csv                   initials, name, bio, avatar
+data/team.csv                   initials, name, bio, avatar, focuses
 data/meta.json                  launch date, reporting currency, last reconciled, risk-free rate
 public/models/                  Excel models for download
 public/avatars/                 8-bit faces
@@ -57,9 +58,9 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | Write or update a research report | `content/research/<ticker>.mdx` | [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
 | Record a committee vote or a change of mind | `data/votes.csv` | [Votes](#record-a-committee-vote) |
-| Change a name, bio or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
+| Change a name, bio, focuses or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
 | Mark the NAV as reconciled with the broker | `data/meta.json` | [Reconcile](#weekly-reconciliation) |
-| Change the house rules or thresholds shown on Inside the Fund | `app/fund/page.tsx` | [Rules](#change-the-house-rules-text) |
+| Change the house rules or thresholds shown on Fund Rules | `app/fund/page.tsx` | [Rules](#change-the-house-rules-text) |
 
 Anything else (layout, colours, new pages) is a code change. Ask the owner.
 
@@ -237,12 +238,13 @@ Once a week, compare the site's NAV with the broker statement.
 
 ### Change the team
 
-- **Name or bio:** edit the row in `data/team.csv` (`initials,name,bio,avatar`). The initials are used by every report and vote, so don't change them.
+- **Name or bio:** edit the row in `data/team.csv` (`initials,name,bio,avatar,focuses`). The initials are used by every report and vote, so don't change them.
+- **Focuses:** the tags on each analyst card on the home page. Separate them with `|`, e.g. `Hong Kong|US|Commodities`.
 - **Pixel face:** upload a square image into `public/avatars/` (a 16×16 pixel drawing saved as SVG or PNG works best, e.g. from Piskel) and set the `avatar` column to `/avatars/<file name>`.
 
 ### Change the house rules text
 
-The rules and thresholds on **Inside the Fund** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce: the 25% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
+The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce: the 25% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
 
 ### Other settings in `data/meta.json`
 

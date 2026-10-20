@@ -5,7 +5,7 @@ import { getFundData } from "@/lib/fund";
 import { displayTicker } from "@/lib/team";
 import { voteHistory } from "@/lib/verdict";
 
-export const metadata: Metadata = { title: "Inside the Fund" };
+export const metadata: Metadata = { title: "Fund Rules" };
 
 const RULES = [
   "No position above 25%.",
@@ -15,7 +15,7 @@ const RULES = [
   "A sell trigger is written at entry.",
 ];
 
-export default async function InsideTheFund({
+export default async function FundRules({
   searchParams,
 }: {
   searchParams: Promise<{ ticker?: string; voter?: string; all?: string }>;
@@ -32,7 +32,7 @@ export default async function InsideTheFund({
   return (
     <main className="page">
       <section className="hero" style={{ paddingBottom: 8 }}>
-        <h1>Inside the Fund</h1>
+        <h1>Fund Rules</h1>
         <p className="tagline" style={{ marginBottom: 0 }}>How the fund decides what to own.</p>
       </section>
 
