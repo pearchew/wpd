@@ -2,3 +2,4 @@ ticker,name,asset_class,currency,feed_symbol,kind,multiplier,underlying,underlyi
 MSFT,Microsoft,Equities,USD,MSFT,stock,1,,,,,,,
 NVDA,NVIDIA,Equities,USD,NVDA,stock,1,,,,,,,
 SPY,SPDR S&P 500 ETF (benchmark),Equities,USD,SPY,etf,1,,,,,,,
+JNJ,Johnson & Johnson,Equities,USD,JNJ,stock,1,,,,,,,
