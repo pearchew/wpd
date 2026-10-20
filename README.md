@@ -24,7 +24,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
-| `/admin` | Team admin (sign-in required): research report form that opens pull requests. See [Team admin](#team-admin) |
+| `/admin` | Team admin (sign-in required): research report and trade forms that open pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -54,7 +54,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 
 | I want to… | Edit | Section |
 | --- | --- | --- |
-| Record a buy, sell, dividend, deposit, withdrawal, fee or split | `data/trades.csv` | [Trades](#record-a-trade) |
+| Record a buy, sell, dividend, deposit, withdrawal, fee or split | `/admin` → Record trades (or `data/trades.csv`) | [Team admin](#team-admin), [Trades](#record-a-trade) |
 | Track a new stock, ETF, future or option | `data/instruments.csv` | [New asset](#add-a-new-asset-to-the-site) |
 | Write or update a research report | `/admin` on the site (or `content/research/<ticker>.mdx`) | [Team admin](#team-admin), [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
@@ -102,7 +102,7 @@ We run on Vercel's free plan with a private repo. On that plan Vercel may refuse
 
 ### Record a trade
 
-Open `data/trades.csv`. Add one row per broker fill at the bottom, using the **shares and price from the broker's confirmation**. The columns are:
+The quickest way is **Record trades** in [Team admin](#team-admin). To edit the file by hand instead, open `data/trades.csv`. Add one row per broker fill at the bottom, using the **shares and price from the broker's confirmation**. The columns are:
 
 ```
 date,book,ticker,action,shares,price,fees,currency,notional_slice,note
@@ -223,6 +223,8 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 - **Save draft** opens a draft pull request that the whole team can read and comment on. **Submit for review** marks it ready for the owner. Saving again updates the same pull request.
 - A ticker the site doesn't know yet (stocks and ETFs) is added to `instruments.csv` in the same pull request.
 - Only one change per report at a time: **Edit** on a report that already has one open takes you to that one.
+
+**Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 25% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
 
 **Owner setup (once):**
 

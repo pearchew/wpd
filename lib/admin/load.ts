@@ -42,6 +42,12 @@ export async function formContext(cfg: RepoConfig | undefined, ref?: string): Pr
   };
 }
 
+/** A file from this deployment's own copy of the repo, by repo-relative path. */
+export function localFile(rel: string): string | undefined {
+  const file = path.join(/*turbopackIgnore: true*/ process.cwd(), rel);
+  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : undefined;
+}
+
 /** A report file from this deployment's own copy of the repo. */
 export function localReport(slug: string): string | undefined {
   const file = path.join(/*turbopackIgnore: true*/ process.cwd(), "content/research", `${slug}.mdx`);

@@ -3,6 +3,7 @@ import { repoConfig } from "@/lib/admin/config";
 import { type PullSummary, listPulls } from "@/lib/admin/github";
 import { BRANCH_PREFIX } from "@/lib/admin/report";
 import { requireSession } from "@/lib/admin/session";
+import { TRADES_PREFIX } from "@/lib/admin/trades";
 import { researchDocs } from "@/lib/data";
 import { fmtDate } from "@/lib/dates";
 import { getMember } from "@/lib/team";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 const TASKS = [
   { title: "Research report", sub: "Write or update a write-up, tables and the Excel model", href: "/admin/research/new" },
-  { title: "Record trade", sub: "Buy, sell, deposit, dividend…" },
+  { title: "Record trades", sub: "Buy, sell, deposit, dividend, split…", href: "/admin/trades" },
   { title: "Add asset", sub: "Stock, ETF, future or option" },
   { title: "Record vote", sub: "Include, Watch or Reject" },
 ];
@@ -23,7 +24,7 @@ export default async function AdminHome() {
   let pullError: string | undefined;
   if (cfg) {
     try {
-      pulls = await listPulls(cfg, BRANCH_PREFIX);
+      pulls = await listPulls(cfg, "admin/");
     } catch (e) {
       pullError = (e as Error).message;
     }
@@ -65,7 +66,7 @@ export default async function AdminHome() {
 
       <section className="section">
         <div className="section-head">
-          <h2>Research waiting to be published</h2>
+          <h2>Changes waiting to be published</h2>
           <p className="sub">Drafts are visible to the whole team, so you can read and comment before the vote.</p>
         </div>
         {pullError ? (
@@ -84,7 +85,13 @@ export default async function AdminHome() {
                     <td><a href={p.url} target="_blank" rel="noreferrer">{p.title}</a></td>
                     <td><span className={`admin-state ${p.draft ? "draft" : "ready"}`}>{p.draft ? "Draft" : "Waiting for owner"}</span></td>
                     <td>{fmtDate(p.updatedAt.slice(0, 10))}</td>
-                    <td><Link href={`/admin/research/edit?pr=${p.number}`}>Edit</Link></td>
+                    <td>
+                      {p.branch.startsWith(BRANCH_PREFIX) ? (
+                        <Link href={`/admin/research/edit?pr=${p.number}`}>Edit</Link>
+                      ) : p.branch.startsWith(TRADES_PREFIX) ? (
+                        <Link href="/admin/trades">Add trades</Link>
+                      ) : null}
+                    </td>
                   </tr>
                 ))}
               </tbody>
