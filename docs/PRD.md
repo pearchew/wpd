@@ -64,10 +64,10 @@ The home page answers two questions in ten seconds: how the fund is doing and wh
 | # | Section | What it shows | Notes |
 | --- | --- | --- | --- |
 | 1 | Top bar | "WDP Fund" wordmark left; Home · Research · Inside the Fund · Fund Rules; theme toggle right | Same on every page. The faces moved from here to Our analysts. |
-| 2 | Title | "Fund performance", with the capital label as its subtitle: "Real capital, $100 invested" | On the Paper view the subtitle reads "Paper trades, no real capital" in amber. The tagline stays in the page description, not on the page. |
+| 2 | Title | "Fund performance vs SPY" ("Paper performance" on the Paper view), with the capital label as its subtitle: "Real capital, $100 invested" | On the Paper view the subtitle reads "Paper trades, no real capital" in amber. The tagline stays in the page description, not on the page. |
 | 3 | View toggle | `[ Combined \| ● Real \| Paper only ]` | Defaults to Real. Hidden until `data/trades.csv` has a `book=paper` row. |
 | 4 | Hero tiles | NAV, return since inception, SPY return, gap vs SPY | Green/red gap. "As of [date], US close" timestamp and a "Reconciled with broker: [date]" note. |
-| 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
+| 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | No heading of its own (the page title names it), just a one-line note. 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
 | 6 | Our analysts | One card per team member: 8-bit face, name, bio, focus tags | Three across on desktop, stacked on a phone. Focuses come from the `focuses` column in `team.csv` (e.g. Hong Kong · US · Commodities). |
 
 **Footer (every page):** "The WDP Fund is a student learning exercise, not investment advice."

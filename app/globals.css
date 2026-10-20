@@ -112,6 +112,12 @@ table,
   text-align: center;
   margin-bottom: 20px;
 }
+.chart-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+}
 .section-head .sub {
   color: var(--muted);
   font-size: 0.9rem;

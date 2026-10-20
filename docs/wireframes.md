@@ -15,7 +15,7 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
  WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
 
-                                Fund performance
+                            Fund performance vs SPY
                           Real capital, $100 invested
 
                        [ Combined | ● Real | Paper only ]
@@ -26,7 +26,7 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
      As of Nov 13, 2026, US close  ·  Reconciled with broker: Nov 10, 2026
 
 
-    PERFORMANCE  Fund vs SPY, indexed to 100 at launch   [ 1W | 1M | ● All ]
+                 Both indexed to 100 at launch   [ 1W | 1M | ● All ]
  ──────────────────────────────────────────────────────────────────────────────
  104 ┤
  103 ┤                                        ╭──╮    ╭───── Fund  103.4
@@ -528,7 +528,7 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
                       │ Home  Research  Inside   Fund   │
                       │                 the Fund Rules  │
                       ├─────────────────────────────────┤
-                      │ Fund performance                │
+                      │ Fund performance vs SPY         │
                       │ Real capital, $100 invested     │
                       │ ─────────────────────────────── │
                       │ NAV $103.42     +3.42%          │
