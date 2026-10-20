@@ -238,6 +238,24 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 
 Without these the form still opens, but saving only shows the file it would commit. Locally, `ADMIN_DEV_USER=A npm run dev` signs you in as A without GitHub.
 
+**Add someone to the team admin (owner):**
+
+Who can sign in is set by one Vercel variable, `ADMIN_USERS`: a comma-separated list of `github-username:initials` pairs, e.g. `pearchew:A,friend1:B,friend2:C`. The initials say who the person is on the site (their byline and their votes), so they must match a row in `data/team.csv`.
+
+1. **Get their GitHub username** (the name in their profile URL, `github.com/<username>`). They don't need to be a collaborator on the repo; the forms write through the owner's token.
+2. **If they're new to the team**, add them to `data/team.csv` first and merge that pull request (see [Change the team](#change-the-team)). Pick initials that aren't taken: 1–3 capital letters, e.g. `D`.
+3. **In Vercel → Settings → Environment Variables**, edit `ADMIN_USERS` and add `,<username>:<initials>` to the end, e.g. `pearchew:A,friend1:B,friend2:C,newperson:D`. No spaces are needed; capitals in the username don't matter.
+4. **Redeploy:** Deployments → the top Production deployment → ⋯ → Redeploy. The change only takes effect after this.
+5. **Send them the admin address** (`https://<your site>/admin`). They click **Sign in with GitHub** and approve; the page then shows "Signed in as <their name> (<initials>)".
+
+**Remove someone:** delete their pair from `ADMIN_USERS` and redeploy. They are signed out the next time they load an admin page. Leave their row in `data/team.csv`: their old reports and votes still point to their initials, and the build check fails if a voter or author is missing from the team list. Pull requests they already opened stay open until you merge or close them.
+
+**If sign-in fails:**
+
+- **"That GitHub account isn't on the team list":** the username in `ADMIN_USERS` doesn't match their GitHub account, or you haven't redeployed since adding it.
+- **A 404 on github.com after clicking Sign in:** `GITHUB_OAUTH_CLIENT_ID` holds the wrong value. It must be the OAuth app's **Client ID** (short, starts with `Ov23`), not the client secret.
+- **"Sign-in isn't set up on this deployment yet":** one of the sign-in variables is missing, or the site hasn't been redeployed since they were added.
+
 ### Record a committee vote
 
 The quickest way is **Record vote** in [Team admin](#team-admin): each person casts their own. To edit the file by hand instead, open `data/votes.csv` and add **one row per voter**:
@@ -264,6 +282,7 @@ Once a week, compare the site's NAV with the broker statement.
 
 ### Change the team
 
+- **New member:** add a row to `data/team.csv` with new initials (1–3 capital letters), their name, a short bio, an avatar path and their focuses, and upload their face to `public/avatars/`. They appear in Our analysts on the home page and as an author option on Research. To let them use the forms, also add them to `ADMIN_USERS` ([Team admin](#team-admin)). The committee rules on Fund Rules are written for three people ("2 of 3 votes"); the verdict itself counts any two Includes, so edit that wording in `app/fund/page.tsx` if the team grows.
 - **Name or bio:** edit the row in `data/team.csv` (`initials,name,bio,avatar,focuses`). The initials are used by every report and vote, so don't change them.
 - **Focuses:** the tags on each analyst card on the home page. Separate them with `|`, e.g. `Hong Kong|US|Commodities`.
 - **Pixel face:** upload a square image into `public/avatars/` (a 16×16 pixel drawing saved as SVG or PNG works best, e.g. from Piskel) and set the `avatar` column to `/avatars/<file name>`.
