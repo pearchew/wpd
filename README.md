@@ -24,6 +24,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
+| `/admin` | Team admin (sign-in required): research report form that opens pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -55,7 +56,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | --- | --- | --- |
 | Record a buy, sell, dividend, deposit, withdrawal, fee or split | `data/trades.csv` | [Trades](#record-a-trade) |
 | Track a new stock, ETF, future or option | `data/instruments.csv` | [New asset](#add-a-new-asset-to-the-site) |
-| Write or update a research report | `content/research/<ticker>.mdx` | [Reports](#write-or-update-a-research-report) |
+| Write or update a research report | `/admin` on the site (or `content/research/<ticker>.mdx`) | [Team admin](#team-admin), [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
 | Record a committee vote or a change of mind | `data/votes.csv` | [Votes](#record-a-committee-vote) |
 | Change a name, bio, focuses or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
@@ -211,6 +212,25 @@ Tips for the report body:
 - It is Markdown with `##` headings and `|` tables. Use `**bold**` and `-` bullet lists.
 - ⚠️ **Do not type `<` or `{` `}` in the text.** The report format reads them as code and the build fails. Write "less than" instead of `<`, and avoid curly brackets.
 - A fair value of any kind is only as good as the model behind it. Don't publish a number you can't defend.
+
+### Team admin
+
+The easiest way to write research is the form at **`/admin`** on the live site. Sign in with GitHub, then **Research report → New report**, or **Edit** next to an existing one.
+
+- Fill in the asset, the call (fair value, thesis, sell trigger), any key outputs, and attach the Excel model.
+- The write-up is a normal word-processor editor: bold, headings, lists and links from the toolbar. **⊞ Table** pastes cells copied from Excel or Google Sheets, inserts a blank table or a starter template, and shows + row / + column buttons while you're in a table. Number columns are right-aligned on the site automatically.
+- The preview on the right (the **Preview** tab on a phone) shows how the page will look.
+- **Save draft** opens a draft pull request that the whole team can read and comment on. **Submit for review** marks it ready for the owner. Saving again updates the same pull request.
+- A ticker the site doesn't know yet (stocks and ETFs) is added to `instruments.csv` in the same pull request.
+- Only one change per report at a time: **Edit** on a report that already has one open takes you to that one.
+
+**Owner setup (once):**
+
+1. Create a GitHub OAuth app (GitHub → Settings → Developer settings → OAuth Apps). Callback URL: `https://<your site>/api/auth/github/callback`.
+2. Create a fine-grained personal access token for this repo only, with **Contents** and **Pull requests** set to read and write.
+3. In Vercel → Settings → Environment Variables, set `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`, `ADMIN_SESSION_SECRET` (any long random string), `ADMIN_USERS` (e.g. `pearchew:A,friend1:B,friend2:C`), `GITHUB_TOKEN` and `GITHUB_REPO` (`owner/repo`). Redeploy.
+
+Without these the form still opens, but saving only shows the file it would commit. Locally, `ADMIN_DEV_USER=A npm run dev` signs you in as A without GitHub.
 
 ### Record a committee vote
 

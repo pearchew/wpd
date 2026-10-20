@@ -1049,3 +1049,532 @@ a.rcard:hover {
   font-style: italic;
   padding: 24px 0;
 }
+
+/* ---- admin ------------------------------------------------------------- */
+.admin-bar {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-bottom: 1px dashed var(--rule);
+}
+.admin-bar-user {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.admin-bar-user form {
+  display: inline;
+}
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.admin .button {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.admin .button:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.admin .button.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.admin .button.secondary:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.admin .button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.admin input,
+.admin select,
+.admin textarea {
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+}
+.admin input:focus-visible,
+.admin select:focus-visible,
+.admin textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.admin input:disabled,
+.admin select:disabled {
+  color: var(--muted);
+}
+.admin input[type="checkbox"],
+.admin input[type="radio"] {
+  width: auto;
+}
+.admin-notice,
+.admin-error,
+.admin-success {
+  max-width: 720px;
+  margin: 16px auto;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border: 1px solid var(--rule);
+  background: var(--card);
+}
+.admin-notice {
+  border-left: 4px solid var(--amber);
+}
+.admin-error {
+  border-left: 4px solid var(--loss);
+}
+.admin-error pre {
+  white-space: pre-wrap;
+  font-size: 0.78rem;
+  max-height: 320px;
+  overflow: auto;
+}
+.admin-success {
+  border-left: 4px solid var(--gain);
+}
+.admin-tasks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 760px) {
+  .admin-tasks {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.admin-task {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--accent);
+  background: var(--card);
+}
+.admin-task span {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+a.admin-task:hover {
+  border-color: var(--ink);
+}
+.admin-task.disabled {
+  opacity: 0.55;
+  border-top-color: var(--rule);
+}
+.admin-table td:first-child {
+  white-space: normal;
+}
+.admin-state {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+}
+.admin-state.draft {
+  color: var(--muted);
+}
+.admin-state.ready {
+  color: var(--gain);
+  border-color: var(--gain);
+}
+
+/* research form */
+.crumbs {
+  padding: 20px 0 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.form-tabs {
+  display: none;
+}
+.report-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 12px;
+}
+.report-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  text-align: left;
+}
+.form-section {
+  border: 1px solid var(--rule);
+  background: var(--card);
+  padding: 0 16px;
+}
+.form-section[open] {
+  padding-bottom: 16px;
+}
+.form-section > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section label {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+.form-section label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 0 12px;
+}
+.field-grid label {
+  margin-top: 10px;
+}
+@media (max-width: 480px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.field-note,
+.field-ok,
+.field-error {
+  font-size: 0.78rem;
+}
+.field-note {
+  color: var(--muted);
+}
+.field-note.gain,
+.field-ok {
+  color: var(--gain);
+}
+.field-note.loss,
+.field-error {
+  color: var(--loss);
+}
+.badge {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+.badge.ok {
+  color: var(--gain);
+}
+.badge.warn {
+  color: var(--amber);
+}
+.radio-row {
+  display: flex;
+  gap: 20px;
+}
+.new-asset {
+  margin: 14px 0 0;
+  border: 1px dashed var(--rule);
+  padding: 4px 12px 12px;
+}
+.new-asset legend {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 4px;
+}
+.output-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.icon-button {
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 10px;
+}
+.dropzone {
+  border: 2px dashed var(--rule);
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--muted);
+}
+.dropzone:hover {
+  border-color: var(--accent);
+}
+.dropzone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.form-section label.dropzone {
+  display: block;
+  position: relative;
+}
+
+/* word-processor editor */
+.rich-editor {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.rich-editor.loading {
+  padding: 24px;
+  color: var(--muted);
+}
+.rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.rich-toolbar button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.rich-toolbar button:hover {
+  border-color: var(--rule);
+}
+.rich-toolbar button.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.rich-menu-wrap {
+  position: relative;
+}
+.rich-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 5;
+  display: grid;
+  min-width: 230px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+}
+.rich-menu button {
+  text-align: left;
+  padding: 8px 12px;
+}
+.rich-table-tools {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 6px;
+  border-left: 1px solid var(--rule);
+}
+.rich-editor > div:last-child {
+  overflow-x: auto;
+}
+.rich-editor-content {
+  min-height: 320px;
+  padding: 4px 16px 24px;
+  outline: none;
+}
+.rich-editor-content > h2:first-child {
+  border-top: 0;
+  margin-top: 16px;
+  padding-top: 0;
+}
+.rich-editor-content table td,
+.rich-editor-content table th {
+  border: 1px solid var(--rule);
+  min-width: 60px;
+  position: relative;
+}
+.rich-editor-content table p {
+  margin: 0;
+}
+.rich-editor-content .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent-soft);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.rich-editor-content p.is-editor-empty:first-child::before,
+.rich-editor-content .is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* preview */
+.report-preview {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 160px);
+  overflow: auto;
+  border: 1px solid var(--rule);
+  padding: 8px 20px 24px;
+  text-align: center;
+  min-width: 0;
+}
+.preview-label {
+  color: var(--muted);
+  text-align: left;
+}
+.preview-head h2 {
+  margin: 8px 0 2px;
+}
+.preview-head h2 span {
+  font-weight: 400;
+}
+.preview-head .sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+.preview-kv {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 14px 0;
+}
+.preview-kv span {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.preview-kv b {
+  font-variant-numeric: tabular-nums;
+}
+.preview-thesis {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+.report-preview .prose {
+  overflow-x: auto;
+}
+.preview-model {
+  color: var(--accent);
+}
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 0;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+.form-actions > span {
+  margin-right: auto;
+}
+.admin-dialog {
+  max-width: min(640px, calc(100vw - 32px));
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 20px;
+}
+.admin-dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+.admin-dialog h3 {
+  margin: 0 0 4px;
+}
+.admin-dialog .sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.admin-dialog label.check {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin: 10px 0 0;
+}
+.admin-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .form-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+    margin-top: 8px;
+  }
+  .form-tabs button {
+    flex: 1;
+    font: inherit;
+    padding: 10px;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .form-tabs button[aria-selected="true"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .report-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .report-form.show-edit .report-preview,
+  .report-form.show-preview .report-fields {
+    display: none;
+  }
+  .report-preview {
+    position: static;
+    max-height: none;
+  }
+}
