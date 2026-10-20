@@ -1,5 +1,8 @@
 /** Admin settings, read from env vars. Server only: none of these reach the browser. */
 
+/** An env var with surrounding spaces and line breaks removed: pasting into Vercel often brings one along. */
+export const env = (name: string): string => (process.env[name] ?? "").trim();
+
 export interface AdminUser {
   login: string;
   initials: string;
@@ -7,7 +10,7 @@ export interface AdminUser {
 
 /** ADMIN_USERS="githublogin:A,otherlogin:B" maps each allowed GitHub account to team initials. */
 export function adminUsers(): AdminUser[] {
-  return (process.env.ADMIN_USERS ?? "")
+  return env("ADMIN_USERS")
     .split(",")
     .map((pair) => pair.trim())
     .filter(Boolean)
@@ -19,11 +22,11 @@ export function adminUsers(): AdminUser[] {
 }
 
 export const oauthConfigured = (): boolean =>
-  Boolean(process.env.GITHUB_OAUTH_CLIENT_ID && process.env.GITHUB_OAUTH_CLIENT_SECRET && process.env.ADMIN_SESSION_SECRET);
+  Boolean(env("GITHUB_OAUTH_CLIENT_ID") && env("GITHUB_OAUTH_CLIENT_SECRET") && env("ADMIN_SESSION_SECRET"));
 
 /** Local-only sign-in for `npm run dev`: ADMIN_DEV_USER=A signs you in as A. Ignored in production. */
 export const devUser = (): string | undefined =>
-  process.env.NODE_ENV !== "production" ? process.env.ADMIN_DEV_USER?.trim().toUpperCase() || undefined : undefined;
+  process.env.NODE_ENV !== "production" ? env("ADMIN_DEV_USER").toUpperCase() || undefined : undefined;
 
 export interface RepoConfig {
   token: string;
@@ -34,8 +37,8 @@ export interface RepoConfig {
 
 /** GITHUB_TOKEN (contents + pull requests: read/write on this repo), GITHUB_REPO="owner/name". */
 export function repoConfig(): RepoConfig | undefined {
-  const token = process.env.GITHUB_TOKEN;
-  const [owner, repo] = (process.env.GITHUB_REPO ?? "").split("/");
+  const token = env("GITHUB_TOKEN");
+  const [owner, repo] = env("GITHUB_REPO").split("/");
   if (!token || !owner || !repo) return undefined;
-  return { token, owner, repo, base: process.env.GITHUB_BASE_BRANCH || "main" };
+  return { token, owner, repo, base: env("GITHUB_BASE_BRANCH") || "main" };
 }

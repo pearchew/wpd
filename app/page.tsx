@@ -13,25 +13,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ v
   const view = hasPaper ? parseView((await searchParams).view) : "real";
   const chart = chartFor(d, view);
 
-  const chartTitle =
-    view === "paper" ? "Paper equity curve" : view === "combined" ? "Real vs combined vs SPY" : "Fund vs SPY";
+  // The page title names the chart, so the chart itself only carries a short note on how it's scaled.
+  const title = view === "paper" ? "Paper performance" : "Fund performance vs SPY";
   const chartSub = view === "paper" ? "Dollar P&L, starting from margin posted" : "Both indexed to 100 at launch";
 
   return (
     <main className="page" data-view={view}>
       <section className="hero">
-        <h1>WDP Fund</h1>
-        <p className="tagline">Conviction backed by fundamentals.</p>
+        <h1>{title}</h1>
+        {/* The capital label is the subtitle; on the paper view it keeps the amber "no real capital" warning. */}
+        <p className={`tagline${view === "paper" ? " paper" : ""}`}>{viewLabel(d, view)}</p>
         {hasPaper && <ViewToggle view={view} />}
-        <p className={`view-label${view === "paper" ? " paper" : ""}`}>{viewLabel(d, view)}</p>
         <HeroTiles d={d} view={view} />
       </section>
 
       <section className="section">
-        <div className="section-head">
-          <h2>{chartTitle}</h2>
-          <p className="sub">{chartSub}</p>
-        </div>
+        <p className="chart-note">{chartSub}</p>
         {chart.data.length < 2 ? (
           <p className="empty">The chart starts once there are two days of history. Check back after tomorrow&apos;s close.</p>
         ) : (

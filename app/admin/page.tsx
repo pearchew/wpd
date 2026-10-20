@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ASSETS_PREFIX } from "@/lib/admin/assets";
 import { repoConfig } from "@/lib/admin/config";
+import { DELETE_PREFIX } from "@/lib/admin/deletions";
 import { type PullSummary, listPulls } from "@/lib/admin/github";
 import { BRANCH_PREFIX } from "@/lib/admin/report";
 import { requireSession } from "@/lib/admin/session";
@@ -17,6 +18,7 @@ const TASKS = [
   { title: "Record trades", sub: "Buy, sell, deposit, dividend, split…", href: "/admin/trades" },
   { title: "Add asset", sub: "Stock, ETF, future or option", href: "/admin/assets" },
   { title: "Record vote", sub: "Include, Watch or Reject", href: "/admin/votes" },
+  { title: "Delete", sub: "Remove an asset, report, trade or vote", href: "/admin/delete" },
 ];
 
 export default async function AdminHome() {
@@ -94,6 +96,8 @@ export default async function AdminHome() {
                         <Link href="/admin/trades">Add trades</Link>
                       ) : p.branch.startsWith(ASSETS_PREFIX) ? (
                         <Link href="/admin/assets">Add an asset</Link>
+                      ) : p.branch.startsWith(DELETE_PREFIX) ? (
+                        <Link href="/admin/delete">Delete more</Link>
                       ) : p.branch.startsWith(VOTES_PREFIX) ? (
                         <Link href="/admin/votes">Add a vote</Link>
                       ) : null}
@@ -126,7 +130,8 @@ export default async function AdminHome() {
                   <td>{fmtDate(front.updated)}</td>
                   <td>
                     <Link href={`/admin/research/edit?slug=${slug}`}>Edit</Link> ·{" "}
-                    <Link href={`/admin/votes?ticker=${front.ticker}`}>Vote</Link>
+                    <Link href={`/admin/votes?ticker=${front.ticker}`}>Vote</Link> ·{" "}
+                    <Link href={`/admin/delete?report=${slug}`}>Delete</Link>
                   </td>
                 </tr>
               ))}

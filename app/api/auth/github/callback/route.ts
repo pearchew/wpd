@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { adminUsers, oauthConfigured } from "@/lib/admin/config";
+import { adminUsers, env, oauthConfigured } from "@/lib/admin/config";
 import { SESSION_COOKIE, encodeSession } from "@/lib/admin/session";
 
 export async function GET(req: NextRequest) {
@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({
-      client_id: process.env.GITHUB_OAUTH_CLIENT_ID,
-      client_secret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
+      client_id: env("GITHUB_OAUTH_CLIENT_ID"),
+      client_secret: env("GITHUB_OAUTH_CLIENT_SECRET"),
       code,
       redirect_uri: new URL("/api/auth/github/callback", req.url).toString(),
     }),

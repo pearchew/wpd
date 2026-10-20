@@ -64,10 +64,10 @@ The home page answers two questions in ten seconds: how the fund is doing and wh
 | # | Section | What it shows | Notes |
 | --- | --- | --- | --- |
 | 1 | Top bar | "WDP Fund" wordmark left; Home · Research · Inside the Fund · Fund Rules; theme toggle right | Same on every page. The faces moved from here to Our analysts. |
-| 2 | Tagline | Conviction backed by fundamentals | Under the wordmark in the hero. |
+| 2 | Title | "Fund performance vs SPY" ("Paper performance" on the Paper view), with the capital label as its subtitle: "Real capital, $100 invested" | On the Paper view the subtitle reads "Paper trades, no real capital" in amber. The tagline stays in the page description, not on the page. |
 | 3 | View toggle | `[ Combined \| ● Real \| Paper only ]` | Defaults to Real. Hidden until `data/trades.csv` has a `book=paper` row. |
 | 4 | Hero tiles | NAV, return since inception, SPY return, gap vs SPY | Green/red gap. "As of [date], US close" timestamp and a "Reconciled with broker: [date]" note. |
-| 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
+| 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | No heading of its own (the page title names it), just a one-line note. 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
 | 6 | Our analysts | One card per team member: 8-bit face, name, bio, focus tags | Three across on desktop, stacked on a phone. Focuses come from the `focuses` column in `team.csv` (e.g. Hong Kong · US · Commodities). |
 
 **Footer (every page):** "The WDP Fund is a student learning exercise, not investment advice."
@@ -193,12 +193,13 @@ The team admin (`/admin`) lets the three of us make every routine change through
 | Research report (new or edit) | `content/research/<ticker>.mdx`, the Excel model, and an `instruments.csv` row for a new stock/ETF | Word-processor editor; tables pasted from Excel or Sheets; live preview of the page; fair-value upside against the 15% Include bar. **Save draft** opens a draft pull request the team can read; **Submit** marks it ready. One open change per report. |
 | Record trades | Rows in `trades.csv` | One row per fill (buy, sell, deposit, withdrawal, fee, dividend, split), sized by shares or dollars. Before/after holdings, cash and weights; the same ledger checks as the build. No buys in an asset without price history. Real book only. |
 | Record vote | A row in `votes.csv` | You vote as yourself; voter and date come from sign-in. Shows each member's latest vote and the verdict now and with your vote. |
+| Delete | Removes rows from the CSVs and report/model files | Assets cascade: derivatives on them, their trades, votes, report and model go in the same change, listed before you confirm. Trades and votes are removed as picked; the ledger and instrument checks then run on what's left and block a deletion that would break them. The benchmark can't be deleted. |
 | Add asset | A row in `instruments.csv` | Stock, ETF, future or option, with each type's fields. Option tickers and feed symbols are generated (`SPY261218P640`, `SPY261218P00640000`). Shows the next steps: merge, load prices, then trade. |
 
 **Rules the admin keeps**
 
 - The forms run the same checks as `npm run validate` (they share the code), so a change that would fail the build is stopped in the form.
-- Trades, votes and assets join that form's open pull request if there is one, so two changes never clash over the same CSV.
+- Trades, votes, assets and deletions join that form's open pull request if there is one, so two changes never clash over the same CSV.
 - The admin page lists every change waiting to be published, with links back into the forms.
 
 ## Visual design

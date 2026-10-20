@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { adminUsers, devUser } from "./config";
+import { adminUsers, devUser, env } from "./config";
 
 export const SESSION_COOKIE = "wdp_admin";
 const MAX_AGE = 60 * 60 * 24 * 14; // two weeks
@@ -15,7 +15,7 @@ export interface Session {
   exp: number;
 }
 
-const secret = () => process.env.ADMIN_SESSION_SECRET ?? "";
+const secret = () => env("ADMIN_SESSION_SECRET");
 const sign = (payload: string) => createHmac("sha256", secret()).update(payload).digest("base64url");
 
 export function encodeSession(s: Omit<Session, "exp">): { value: string; maxAge: number } {
