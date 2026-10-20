@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ASSETS_PREFIX } from "@/lib/admin/assets";
 import { repoConfig } from "@/lib/admin/config";
 import { type PullSummary, listPulls } from "@/lib/admin/github";
 import { BRANCH_PREFIX } from "@/lib/admin/report";
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
 const TASKS = [
   { title: "Research report", sub: "Write or update a write-up, tables and the Excel model", href: "/admin/research/new" },
   { title: "Record trades", sub: "Buy, sell, deposit, dividend, split…", href: "/admin/trades" },
-  { title: "Add asset", sub: "Stock, ETF, future or option" },
+  { title: "Add asset", sub: "Stock, ETF, future or option", href: "/admin/assets" },
   { title: "Record vote", sub: "Include, Watch or Reject", href: "/admin/votes" },
 ];
 
@@ -91,6 +92,8 @@ export default async function AdminHome() {
                         <Link href={`/admin/research/edit?pr=${p.number}`}>Edit</Link>
                       ) : p.branch.startsWith(TRADES_PREFIX) ? (
                         <Link href="/admin/trades">Add trades</Link>
+                      ) : p.branch.startsWith(ASSETS_PREFIX) ? (
+                        <Link href="/admin/assets">Add an asset</Link>
                       ) : p.branch.startsWith(VOTES_PREFIX) ? (
                         <Link href="/admin/votes">Add a vote</Link>
                       ) : null}

@@ -99,7 +99,8 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
   // Rows already in trades.csv can't be fixed here; only flag what the new rows cause.
   const newErrors = after.errors.filter((e) => !before.errors.includes(e));
 
-  const problems = tradeProblems(t, today, known);
+  const priced = useMemo(() => new Set(Object.keys(prices)), [prices]);
+  const problems = tradeProblems(t, today, known, priced);
   const isCash = CASH_ACTIONS.includes(t.action);
   const ticker = t.ticker.trim().toUpperCase();
   const inst = tradeable.find((i) => i.ticker === ticker);
@@ -199,7 +200,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
                 ))}
               {t.action === "buy" && (
                 <span className="field-note">
-                  Not listed? Add it with a <Link href="/admin/research/new">research report</Link> first.
+                  Not listed? <Link href="/admin/assets">Add the asset</Link> first.
                 </span>
               )}
             </label>

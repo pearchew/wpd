@@ -80,7 +80,13 @@ export function cashEffect(t: TradeInput): number {
 }
 
 /** Problems a person can fix in the row, keyed by field. */
-export function tradeProblems(t: TradeInput, today: string, known: Set<string>): Partial<Record<keyof TradeInput, string>> {
+export function tradeProblems(
+  t: TradeInput,
+  today: string,
+  known: Set<string>,
+  /** Tickers with price history; a buy in anything else would break the pages, which value holdings daily */
+  priced?: Set<string>,
+): Partial<Record<keyof TradeInput, string>> {
   const out: Partial<Record<keyof TradeInput, string>> = {};
   if (!/^\d{4}-\d{2}-\d{2}$/.test(t.date) || Number.isNaN(Date.parse(t.date))) out.date = "YYYY-MM-DD";
   else if (t.date > today) out.date = "Can't be in the future";
@@ -88,6 +94,9 @@ export function tradeProblems(t: TradeInput, today: string, known: Set<string>):
   if (!cash) {
     if (!t.ticker.trim()) out.ticker = "Required";
     else if (!known.has(t.ticker.trim().toUpperCase())) out.ticker = "Not in the asset list yet";
+    else if (t.action === "buy" && priced && !priced.has(t.ticker.trim().toUpperCase())) {
+      out.ticker = "No price history yet: the owner needs to load its prices first";
+    }
   }
   if (t.action === "buy" || t.action === "sell") {
     if (!(num(t.price) > 0)) out.price = "A positive price";

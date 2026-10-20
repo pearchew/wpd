@@ -24,7 +24,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
-| `/admin` | Team admin (sign-in required): research, trade and vote forms that open pull requests. See [Team admin](#team-admin) |
+| `/admin` | Team admin (sign-in required): research, trade, vote and asset forms that open pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -55,7 +55,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | I want to… | Edit | Section |
 | --- | --- | --- |
 | Record a buy, sell, dividend, deposit, withdrawal, fee or split | `/admin` → Record trades (or `data/trades.csv`) | [Team admin](#team-admin), [Trades](#record-a-trade) |
-| Track a new stock, ETF, future or option | `data/instruments.csv` | [New asset](#add-a-new-asset-to-the-site) |
+| Track a new stock, ETF, future or option | `/admin` → Add asset (or `data/instruments.csv`) | [Team admin](#team-admin), [New asset](#add-a-new-asset-to-the-site) |
 | Write or update a research report | `/admin` on the site (or `content/research/<ticker>.mdx`) | [Team admin](#team-admin), [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
 | Record a committee vote or a change of mind | `/admin` → Record vote (or `data/votes.csv`) | [Team admin](#team-admin), [Votes](#record-a-committee-vote) |
@@ -130,7 +130,7 @@ Things to know:
 
 ### Add a new asset to the site
 
-The site needs a price history for every asset before you record a trade in it, otherwise the page will fail to load. Do it in this order:
+The quickest way is **Add asset** in [Team admin](#team-admin). By hand: the site needs a price history for every asset before you record a trade in it, otherwise the page will fail to load. Do it in this order:
 
 1. **Add the instrument.** Open `data/instruments.csv` and add a row. For a normal stock or ETF, copy an existing row and change the first five columns:
    ```
@@ -227,6 +227,8 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 **Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 25% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
 
 **Record vote** (`/admin/votes`, or **Vote** next to a report on `/admin`): pick the asset, then Include, Watch or Reject and your conviction. You always vote as yourself: the voter and date come from your sign-in. The form shows each member's latest vote and the verdict now and with your vote, using the same rules as the site. Like trades, votes cast while a vote change is waiting are added to that same pull request.
+
+**Add asset** (`/admin/assets`): choose Stock, ETF, Future or Option and fill in the fields for that type. Options get their ticker (`SPY261218P640`) and price-feed symbol (`SPY261218P00640000`) worked out from the underlying, expiry, call/put and strike. The form runs the same checks as the build and shows the exact row it will add. After the owner merges it, they load the price history (`npm run db:backfill`); until then the trade form won't offer a buy in it.
 
 **Owner setup (once):**
 

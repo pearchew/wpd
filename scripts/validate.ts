@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { instruments, meta, researchDocs, team, trades, votes } from "../lib/data";
+import { checkInstruments } from "../lib/instrumentChecks";
 import { checkLedger } from "../lib/tradeChecks";
 
 const errors: string[] = [];
@@ -26,23 +27,7 @@ const voteRows = guarded("data/votes.csv", votes);
 const people = guarded("data/team.csv", team);
 const docs = guarded("content/research", researchDocs);
 
-if (inst) {
-  const seen = new Set<string>();
-  for (const i of inst) {
-    if (seen.has(i.ticker)) fail(`instruments.csv: duplicate ticker ${i.ticker}`);
-    seen.add(i.ticker);
-    if (i.kind === "future" && !(i.underlying && i.expiry && i.margin)) {
-      fail(`instruments.csv: future ${i.ticker} needs underlying, expiry and margin`);
-    }
-    if (i.kind === "option" && !(i.underlying && i.expiry && i.strike && i.option_type)) {
-      fail(`instruments.csv: option ${i.ticker} needs underlying, expiry, strike and option_type`);
-    }
-    if (i.underlying && !inst.some((x) => x.ticker === i.underlying)) {
-      fail(`instruments.csv: ${i.ticker} underlying ${i.underlying} is not an instrument`);
-    }
-  }
-  if (m && !seen.has(m.benchmark)) fail(`meta.json: benchmark ${m.benchmark} is not in instruments.csv`);
-}
+if (inst) checkInstruments(inst, m?.benchmark).forEach(fail);
 
 const known = new Set(inst?.map((i) => i.ticker));
 const voters = new Set(people?.map((p) => p.initials));

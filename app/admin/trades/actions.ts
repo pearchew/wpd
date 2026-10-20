@@ -15,6 +15,7 @@ import {
   tradeProblems,
 } from "@/lib/admin/trades";
 import { meta } from "@/lib/data";
+import { getFundData } from "@/lib/fund";
 import { toISO } from "@/lib/dates";
 import type { Trade } from "@/lib/schemas";
 import { checkLedger } from "@/lib/tradeChecks";
@@ -54,8 +55,10 @@ export async function saveTrades(inputs: TradeInput[], pr?: number): Promise<Tra
     return { ok: false, error: `The current trades.csv or instruments.csv doesn't parse: ${(e as Error).message}` };
   }
   const known = new Set(inst.map((i) => i.ticker));
+  const closes = (await getFundData()).closes;
+  const priced = new Set(Object.keys(closes).filter((k) => closes[k]?.some((v) => v > 0)));
   const rowProblems = inputs.flatMap((t, i) =>
-    Object.entries(tradeProblems(t, today, known)).map(([k, v]) => `Trade ${i + 1}, ${k}: ${v}`),
+    Object.entries(tradeProblems(t, today, known, priced)).map(([k, v]) => `Trade ${i + 1}, ${k}: ${v}`),
   );
   if (rowProblems.length) return { ok: false, error: "Some trades need fixing.", problems: rowProblems };
 

@@ -1,6 +1,7 @@
 import Papa from "papaparse";
 import { stringify } from "yaml";
 import { splitFrontmatter } from "../frontmatter";
+import { appendInstrumentRow, emptyAsset, instrumentRow } from "./assets";
 import { ASSET_CLASSES, type AssetClass, ResearchFrontmatterSchema } from "../schemas";
 
 /** What the research form edits. Numbers stay strings until they are checked, so half-typed input survives. */
@@ -138,18 +139,10 @@ export function withInstrument(csv: string, d: ReportDraft, a: NewAsset): string
   const parsed = Papa.parse<Record<string, string>>(csv.trim(), { header: true, skipEmptyLines: true });
   const ticker = d.ticker.trim().toUpperCase();
   if (parsed.data.some((r) => r.ticker?.trim() === ticker)) return csv;
-  const fields = parsed.meta.fields ?? [];
-  const row: Record<string, string> = {
-    ticker,
-    name: d.name.trim(),
-    asset_class: d.assetClass,
-    currency: a.currency.trim().toUpperCase() || "USD",
-    feed_symbol: a.feedSymbol.trim() || ticker,
-    kind: a.kind,
-    multiplier: "1",
-  };
-  const line = Papa.unparse([fields.map((f) => row[f] ?? "")], { header: false });
-  return `${csv.replace(/\s*$/, "")}\n${line}\n`;
+  return appendInstrumentRow(
+    csv,
+    instrumentRow({ ...emptyAsset(a.kind), ticker, name: d.name, assetClass: d.assetClass, currency: a.currency || "USD", feedSymbol: a.feedSymbol }),
+  );
 }
 
 /** A safe file name under public/models/ for an uploaded spreadsheet. */
