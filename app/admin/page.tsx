@@ -4,6 +4,7 @@ import { type PullSummary, listPulls } from "@/lib/admin/github";
 import { BRANCH_PREFIX } from "@/lib/admin/report";
 import { requireSession } from "@/lib/admin/session";
 import { TRADES_PREFIX } from "@/lib/admin/trades";
+import { VOTES_PREFIX } from "@/lib/admin/votes";
 import { researchDocs } from "@/lib/data";
 import { fmtDate } from "@/lib/dates";
 import { getMember } from "@/lib/team";
@@ -14,7 +15,7 @@ const TASKS = [
   { title: "Research report", sub: "Write or update a write-up, tables and the Excel model", href: "/admin/research/new" },
   { title: "Record trades", sub: "Buy, sell, deposit, dividend, split…", href: "/admin/trades" },
   { title: "Add asset", sub: "Stock, ETF, future or option" },
-  { title: "Record vote", sub: "Include, Watch or Reject" },
+  { title: "Record vote", sub: "Include, Watch or Reject", href: "/admin/votes" },
 ];
 
 export default async function AdminHome() {
@@ -90,6 +91,8 @@ export default async function AdminHome() {
                         <Link href={`/admin/research/edit?pr=${p.number}`}>Edit</Link>
                       ) : p.branch.startsWith(TRADES_PREFIX) ? (
                         <Link href="/admin/trades">Add trades</Link>
+                      ) : p.branch.startsWith(VOTES_PREFIX) ? (
+                        <Link href="/admin/votes">Add a vote</Link>
                       ) : null}
                     </td>
                   </tr>
@@ -118,7 +121,10 @@ export default async function AdminHome() {
                   <td>{front.status === "published" ? "Published" : "In progress"}</td>
                   <td>{getMember(front.author)?.name ?? front.author}</td>
                   <td>{fmtDate(front.updated)}</td>
-                  <td><Link href={`/admin/research/edit?slug=${slug}`}>Edit</Link></td>
+                  <td>
+                    <Link href={`/admin/research/edit?slug=${slug}`}>Edit</Link> ·{" "}
+                    <Link href={`/admin/votes?ticker=${front.ticker}`}>Vote</Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

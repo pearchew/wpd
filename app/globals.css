@@ -1580,7 +1580,8 @@ a.admin-task:hover {
 }
 
 /* trade form */
-.trade-layout {
+.trade-layout,
+.vote-layout {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
   gap: 24px;
@@ -1589,7 +1590,8 @@ a.admin-task:hover {
   text-align: left;
 }
 @media (max-width: 900px) {
-  .trade-layout {
+  .trade-layout,
+  .vote-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -1644,5 +1646,109 @@ a.admin-task:hover {
   padding: 8px 6px;
 }
 .trade-review .admin-table td:first-child {
+  white-space: nowrap;
+}
+
+/* vote form */
+.vote-editor {
+  padding: 4px 16px 16px;
+}
+.vote-asset {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--accent);
+  background: var(--paper);
+  font-size: 0.9rem;
+}
+.vote-asset p {
+  margin: 0 0 6px;
+}
+.segmented {
+  display: flex;
+  border: 0;
+  padding: 0;
+  margin: 16px 0 0;
+}
+.segmented legend {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  padding: 0;
+}
+.form-section .segmented label.seg,
+.segmented label.seg {
+  flex: 1;
+  display: block;
+  margin: 0;
+  text-align: center;
+  padding: 9px 6px;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.segmented label.seg + label.seg {
+  border-left: 0;
+}
+.segmented label.seg input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.segmented label.seg:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.segmented label.seg.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.segmented label.seg.Include.on {
+  background: var(--gain);
+  border-color: var(--gain);
+}
+.segmented label.seg.Reject.on {
+  background: var(--loss);
+  border-color: var(--loss);
+}
+.segmented label.seg.Watch.on {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.vote-review {
+  min-width: 0;
+}
+.vote-review h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+}
+.member {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.vote-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0 8px;
+  padding: 12px;
+  border: 1px solid var(--rule);
+  background: var(--card);
+}
+.vote-verdict div {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.vote-verdict div > span:first-child {
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.member {
   white-space: nowrap;
 }

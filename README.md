@@ -24,7 +24,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
-| `/admin` | Team admin (sign-in required): research report and trade forms that open pull requests. See [Team admin](#team-admin) |
+| `/admin` | Team admin (sign-in required): research, trade and vote forms that open pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -58,7 +58,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | Track a new stock, ETF, future or option | `data/instruments.csv` | [New asset](#add-a-new-asset-to-the-site) |
 | Write or update a research report | `/admin` on the site (or `content/research/<ticker>.mdx`) | [Team admin](#team-admin), [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
-| Record a committee vote or a change of mind | `data/votes.csv` | [Votes](#record-a-committee-vote) |
+| Record a committee vote or a change of mind | `/admin` → Record vote (or `data/votes.csv`) | [Team admin](#team-admin), [Votes](#record-a-committee-vote) |
 | Change a name, bio, focuses or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
 | Mark the NAV as reconciled with the broker | `data/meta.json` | [Reconcile](#weekly-reconciliation) |
 | Change the house rules or thresholds shown on Fund Rules | `app/fund/page.tsx` | [Rules](#change-the-house-rules-text) |
@@ -226,6 +226,8 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 
 **Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 25% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
 
+**Record vote** (`/admin/votes`, or **Vote** next to a report on `/admin`): pick the asset, then Include, Watch or Reject and your conviction. You always vote as yourself: the voter and date come from your sign-in. The form shows each member's latest vote and the verdict now and with your vote, using the same rules as the site. Like trades, votes cast while a vote change is waiting are added to that same pull request.
+
 **Owner setup (once):**
 
 1. Create a GitHub OAuth app (GitHub → Settings → Developer settings → OAuth Apps). Callback URL: `https://<your site>/api/auth/github/callback`.
@@ -236,7 +238,7 @@ Without these the form still opens, but saving only shows the file it would comm
 
 ### Record a committee vote
 
-Open `data/votes.csv` and add **one row per voter**:
+The quickest way is **Record vote** in [Team admin](#team-admin): each person casts their own. To edit the file by hand instead, open `data/votes.csv` and add **one row per voter**:
 
 ```
 date,ticker,voter,vote,conviction,note

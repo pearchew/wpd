@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { repoConfig } from "@/lib/admin/config";
-import { commitFiles, getPull, openPull, readFile } from "@/lib/admin/github";
+import { changeBranch, commitToChange, readFiles } from "@/lib/admin/change";
 import { requireSession } from "@/lib/admin/session";
 import {
   ACTION_LABEL,
@@ -39,20 +39,11 @@ export async function saveTrades(inputs: TradeInput[], pr?: number): Promise<Tra
   const cfg = repoConfig();
   const today = toISO(new Date());
 
-  let branch: string | undefined;
-  if (cfg && pr) {
-    const pull = await getPull(cfg, pr).catch(() => undefined);
-    if (!pull || pull.state !== "open" || !pull.branch.startsWith(TRADES_PREFIX)) {
-      return { ok: false, error: `Pull request #${pr} is closed or wasn't opened from this form. Reload the page.` };
-    }
-    branch = pull.branch;
-  }
+  const branch = cfg && pr ? await changeBranch(cfg, TRADES_PREFIX, pr) : undefined;
+  if (cfg && pr && !branch) return { ok: false, error: `Pull request #${pr} is closed or wasn't opened from this form. Reload the page.` };
 
   // Check against the copy the rows will land on: the open change's branch, or main.
-  const ref = branch ?? cfg?.base;
-  const [tradesCsv, instCsv] = cfg
-    ? await Promise.all([readFile(cfg, "data/trades.csv", ref!), readFile(cfg, "data/instruments.csv", ref!)])
-    : await import("@/lib/admin/load").then((l) => [l.localFile("data/trades.csv"), l.localFile("data/instruments.csv")]);
+  const [tradesCsv, instCsv] = await readFiles(cfg, branch, ["data/trades.csv", "data/instruments.csv"]);
   if (!tradesCsv || !instCsv) return { ok: false, error: "Couldn't read trades.csv or instruments.csv." };
 
   let inst, existing;
@@ -81,29 +72,18 @@ export async function saveTrades(inputs: TradeInput[], pr?: number): Promise<Tra
 
   try {
     const summary = rows.map(describe).join(", ");
-    const newBranch = branch ?? `${TRADES_PREFIX}${session.initials.toLowerCase()}-${new Date().toISOString().replace(/\D/g, "").slice(0, 12)}`;
-    const email = session.id ? `${session.id}+${session.login}@users.noreply.github.com` : `${session.login}@users.noreply.github.com`;
-    await commitFiles(cfg, {
-      branch: newBranch,
-      message: `Record trades: ${summary}`.slice(0, 200),
-      files: [{ path: "data/trades.csv", text: next }],
-      author: { name: session.name, email },
-    });
-
-    if (pr) {
-      revalidatePath("/admin");
-      const pull = await getPull(cfg, pr);
-      return { ok: true, pr: { number: pull.number, url: pull.url } };
-    }
     const table = [
       "| Date | Action | Ticker | Shares | Price | Fees | Note |",
       "| --- | --- | --- | ---: | ---: | ---: | --- |",
       ...rows.map((t) => `| ${t.date} | ${t.action} | ${t.ticker} | ${t.shares ?? ""} | ${t.price ?? ""} | ${t.fees || ""} | ${t.note} |`),
     ].join("\n");
-    const opened = await openPull(cfg, {
-      branch: newBranch,
-      draft: false,
-      title: `Trades: ${summary}`.slice(0, 120),
+    const opened = await commitToChange(cfg, session, {
+      prefix: TRADES_PREFIX,
+      branch,
+      pr,
+      files: [{ path: "data/trades.csv", text: next }],
+      message: `Record trades: ${summary}`,
+      title: `Trades: ${summary}`,
       body: [
         `New rows for \`data/trades.csv\`, checked against the ledger rules before committing (cash after: $${check.cash.toFixed(2)}).`,
         "",
