@@ -47,8 +47,8 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
  │ Likes cash-flow models │ │ Chases growth, then    │ │ Energy, staples and    │
  │ and slow, boring       │ │ argues about the       │ │ anything with a        │
  │ compounders.           │ │ discount rate.         │ │ margin call.           │
- │ [Hong Kong] [US]       │ │ [Indonesia] [US]       │ │ [Energy] [Staples]     │
- │ [Commodities]          │ │ [Index futures]        │ │ [Options]              │
+ │ [Hong Kong] [US]       │ │ [Indonesia] [US]       │ │ [Middle East] [US]     │
+ │ [Commodities]          │ │ [Index futures]        │ │ [Futures]              │
  └────────────────────────┘ └────────────────────────┘ └────────────────────────┘
         Focus tags come from the `focuses` column in data/team.csv.
 
