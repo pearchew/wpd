@@ -291,7 +291,8 @@ table,
   font-size: 0.85rem;
   color: var(--muted);
 }
-.view-label.paper {
+.view-label.paper,
+.tagline.paper {
   color: var(--amber);
   font-weight: 600;
 }
@@ -1156,7 +1157,7 @@ a.rcard:hover {
 }
 .admin-tasks {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
 }
 @media (max-width: 760px) {
@@ -1788,4 +1789,74 @@ a.admin-task:hover {
 }
 .next-steps li {
   margin-bottom: 6px;
+}
+
+/* delete page */
+.admin .button.danger {
+  background: var(--loss);
+  border-color: var(--loss);
+  color: #fff;
+}
+.admin .button.danger:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.delete-pick {
+  min-width: 0;
+}
+.form-tabs.delete-tabs {
+  display: flex;
+  margin: 0 0 8px;
+  border-bottom: 1px solid var(--rule);
+}
+.delete-tabs button {
+  flex: 1;
+  font: inherit;
+  padding: 10px 6px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.delete-tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--loss);
+}
+.delete-table td,
+.delete-table th {
+  padding: 8px 6px;
+}
+.admin-table tr.going td {
+  background: color-mix(in srgb, var(--loss) 10%, transparent);
+  text-decoration: line-through;
+  text-decoration-color: var(--loss);
+}
+.admin-table tr.going td:first-child {
+  text-decoration: none;
+}
+.delete-plan {
+  padding-left: 18px;
+  font-size: 0.85rem;
+}
+.delete-plan li {
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+.delete-plan code {
+  font-size: 0.75rem;
+}
+.delete-reason {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+  margin-top: 16px;
+}
+.delete-sure {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 12px;
+  font-size: 0.85rem;
 }

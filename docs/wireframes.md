@@ -15,10 +15,10 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
  WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
 
-                                    WDP Fund
-                       Conviction backed by fundamentals.
+                                Fund performance
+                          Real capital, $100 invested
 
-        [ Combined | ● Real | Paper only ]   Real capital, $100 invested
+                       [ Combined | ● Real | Paper only ]
  ──────────────────────────────────────────────────────────────────────────────
          NAV          SINCE INCEPTION          SPY             GAP VS SPY
        $103.42             +3.42%             +2.10%          ▲ +1.32 pts
@@ -498,6 +498,26 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
 - Future: ticker, name, underlying, underlying scale (MES on SPY = 10), $ per point, expiry, initial and maintenance margin, feed symbol (e.g. `MES=F`).
 - A ticker already on the list is flagged as soon as it's typed.
 
+### 5f. Delete `/admin/delete`
+
+```
+ Admin › Delete
+ [ Assets 1 | Reports | Trades | Votes ]        Will be deleted
+ ─────────────────────────────────────────      · Asset MSFT
+  ☑ MSFT · Microsoft   stock  1 trade ·         · The MSFT report (with MSFT)
+                              3 votes · report  · Trade 2026-10-14,real,MSFT,buy,… (with MSFT)
+  ☐ NVDA · NVIDIA      stock  1 trade · …       · Vote 2026-10-12,MSFT,A,Include,… (with MSFT)
+  ☐ SPY (benchmark, can't be deleted)           · File content/research/msft.mdx
+                                                ✓ What's left still passes the site's checks
+  On the Trades and Votes tabs, rows taken by   Why (optional) [ Entered on the wrong date ]
+  a deleted asset show struck through,          ☐ I understand these come off the site once
+  "with MSFT", and can't be unticked alone.        the pull request is merged
+ ──────────────────────────────────────────────────────────────────────────────
+  Deleting 1 asset(s), 1 report(s), 1 trade(s), 3 vote(s)   [ Open delete pull request → ]
+```
+
+- Removing a row the ledger depends on (e.g. the starting deposit) shows "cash goes negative" in red and disables the button.
+
 ---
 
 ## Phone width (375 px), Home top
@@ -508,9 +528,7 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
                       │ Home  Research  Inside   Fund   │
                       │                 the Fund Rules  │
                       ├─────────────────────────────────┤
-                      │ Conviction backed by            │
-                      │ fundamentals.                   │
-                      │                                 │
+                      │ Fund performance                │
                       │ Real capital, $100 invested     │
                       │ ─────────────────────────────── │
                       │ NAV $103.42     +3.42%          │

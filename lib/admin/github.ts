@@ -45,6 +45,17 @@ export async function readFile(cfg: RepoConfig, path: string, ref: string): Prom
   }
 }
 
+/** File names directly inside a folder at a branch (empty when the folder doesn't exist). */
+export async function listDir(cfg: RepoConfig, path: string, ref: string): Promise<string[]> {
+  try {
+    const items = await gh<{ name: string; type: string }[]>(cfg, `/{repo}/contents/${enc(path)}?ref=${encodeURIComponent(ref)}`);
+    return items.filter((i) => i.type === "file").map((i) => i.name);
+  } catch (e) {
+    if (e instanceof GitHubError && e.status === 404) return [];
+    throw e;
+  }
+}
+
 export interface PullSummary {
   number: number;
   title: string;
@@ -94,8 +105,8 @@ export async function pullFiles(cfg: RepoConfig, n: number): Promise<string[]> {
   return files.filter((f) => f.status !== "removed").map((f) => f.filename);
 }
 
-/** One file in a commit: text is stored as-is, bytes are uploaded as a base64 blob. */
-export type CommitFile = { path: string; text: string } | { path: string; bytes: Buffer };
+/** One file in a commit: text is stored as-is, bytes are uploaded as a base64 blob, `remove` deletes the file. */
+export type CommitFile = { path: string; text: string } | { path: string; bytes: Buffer } | { path: string; remove: true };
 
 /**
  * Commit `files` as one commit on `branch`. A new branch starts from `base`; an existing one gets
@@ -116,6 +127,7 @@ export async function commitFiles(
   const tree = await Promise.all(
     opts.files.map(async (f) => {
       if ("text" in f) return { path: f.path, mode: "100644", type: "blob", content: f.text };
+      if ("remove" in f) return { path: f.path, mode: "100644", type: "blob", sha: null };
       const blob = await gh<{ sha: string }>(cfg, `/{repo}/git/blobs`, {
         method: "POST",
         body: JSON.stringify({ content: f.bytes.toString("base64"), encoding: "base64" }),

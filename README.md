@@ -1,6 +1,6 @@
 # WDP Fund
 
-**Conviction backed by fundamentals.** A three-page site that tracks our $100 practice portfolio against SPY and publishes the analysis behind every position. Full spec: [docs/PRD.md](docs/PRD.md). Page sketches: [docs/wireframes.md](docs/wireframes.md).
+**Conviction backed by fundamentals.** A four-page site (plus a private team admin) that tracks our $100 practice portfolio against SPY and publishes the analysis behind every position. Full spec: [docs/PRD.md](docs/PRD.md). Page sketches: [docs/wireframes.md](docs/wireframes.md).
 
 Next.js (App Router, TypeScript) · MDX · Recharts · Zod · Supabase · Vercel.
 
@@ -24,7 +24,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
-| `/admin` | Team admin (sign-in required): research, trade, vote and asset forms that open pull requests. See [Team admin](#team-admin) |
+| `/admin` | Team admin (sign-in required): research, trade, vote, asset and delete forms that open pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
 ## Where things live
@@ -229,6 +229,8 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 **Record vote** (`/admin/votes`, or **Vote** next to a report on `/admin`): pick the asset, then Include, Watch or Reject and your conviction. You always vote as yourself: the voter and date come from your sign-in. The form shows each member's latest vote and the verdict now and with your vote, using the same rules as the site. Like trades, votes cast while a vote change is waiting are added to that same pull request.
 
 **Add asset** (`/admin/assets`): choose Stock, ETF, Future or Option and fill in the fields for that type. Options get their ticker (`SPY261218P640`) and price-feed symbol (`SPY261218P00640000`) worked out from the underlying, expiry, call/put and strike. The form runs the same checks as the build and shows the exact row it will add. After the owner merges it, they load the price history (`npm run db:backfill`); until then the trade form won't offer a buy in it.
+
+**Delete** (`/admin/delete`, or **Delete** next to a report on `/admin`): tick assets, reports, trades or votes and open one pull request that removes them. Deleting an asset takes everything that depends on it with it: options and futures built on it, its trades, its votes, its report and its Excel model (unless another report uses the same file). The page lists all of it before you confirm. What's left must still pass the build checks, so a deletion that would leave the ledger broken (say, removing the deposit that paid for a buy) is blocked with the reason. The benchmark (SPY) can't be deleted. Close the pull request without merging to cancel.
 
 **Owner setup (once):**
 

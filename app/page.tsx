@@ -20,10 +20,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ v
   return (
     <main className="page" data-view={view}>
       <section className="hero">
-        <h1>WDP Fund</h1>
-        <p className="tagline">Conviction backed by fundamentals.</p>
+        <h1>Fund performance</h1>
+        {/* The capital label is the subtitle; on the paper view it keeps the amber "no real capital" warning. */}
+        <p className={`tagline${view === "paper" ? " paper" : ""}`}>{viewLabel(d, view)}</p>
         {hasPaper && <ViewToggle view={view} />}
-        <p className={`view-label${view === "paper" ? " paper" : ""}`}>{viewLabel(d, view)}</p>
         <HeroTiles d={d} view={view} />
       </section>
 
