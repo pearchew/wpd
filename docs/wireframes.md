@@ -1,8 +1,10 @@
 # WDP Fund: ASCII wireframes
 
-Low-fidelity layouts for the three pages in the PRD: Home, Research (with the asset page) and Inside the Fund. The numbers are sample data built from the playbook split (Option 1). The team uses the placeholder faces `[A] [B] [C]`.
+Low-fidelity layouts for the pages in the PRD: Home, Inside the Fund, Research (with the asset page), Fund Rules and the team admin. The numbers are sample data built from the playbook split (Option 1). The team uses the placeholder faces `[A] [B] [C]`.
 
-Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed line · `◆` trade marker · `┆┄┆` greyed "in progress" card · `▒` amber paper accent
+Updated Oct 20, 2026: Home is trimmed to the hero, the chart and Our analysts; positions moved to Inside the Fund (`/inside`); the old Inside the Fund is now Fund Rules (`/fund`); the faces left the top bar; the team admin (`/admin`) is new.
+
+Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed line · `◆` trade marker · `┆┄┆` greyed "in progress" card · `▒` amber paper accent · `[☾]` theme toggle · `(•)` selected option
 
 ---
 
@@ -10,14 +12,8 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
 
 ```
 ================================================================================
- WDP FUND              Home · Research · Inside the Fund            [A] [B] [C]
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
-                                                       hover [B] ┌────────────┐
-                                                                 │ Person B   │
-                                                                 │ NVDA · JNJ │
-                                                                 │ CAT · GLD  │
-                                                                 │ MES (paper)│
-                                                                 └────────────┘
 
                                     WDP Fund
                        Conviction backed by fundamentals.
@@ -42,6 +38,65 @@ Legend: `[A]` = 8-bit face · `♛` crown · `☠` skull · `┄` SPY / dashed l
      Oct 19              Oct 27                    Nov 6              Nov 13
                          ◆ rebalance               ◆ buy GLD
 
+
+                                 OUR ANALYSTS
+ ──────────────────────────────────────────────────────────────────────────────
+ ┌────────────────────────┐ ┌────────────────────────┐ ┌────────────────────────┐
+ │          [A]           │ │          [B]           │ │          [C]           │
+ │        Person A        │ │        Person B        │ │        Person C        │
+ │ Likes cash-flow models │ │ Chases growth, then    │ │ Energy, staples and    │
+ │ and slow, boring       │ │ argues about the       │ │ anything with a        │
+ │ compounders.           │ │ discount rate.         │ │ margin call.           │
+ │ [Hong Kong] [US]       │ │ [Indonesia] [US]       │ │ [Energy] [Staples]     │
+ │ [Commodities]          │ │ [Index futures]        │ │ [Options]              │
+ └────────────────────────┘ └────────────────────────┘ └────────────────────────┘
+        Focus tags come from the `focuses` column in data/team.csv.
+
+================================================================================
+ The WDP Fund is a student learning exercise, not investment advice.
+================================================================================
+```
+
+### Home and Inside the Fund: the other two toggle states
+
+The toggle only appears once `data/trades.csv` has a `book=paper` row. It sits above the hero tiles on Home and under the title on Inside the Fund; the grid and table lines below apply to Inside the Fund.
+
+```
+    [ Combined | Real | ● Paper only ]   ▒▒ Paper trades, no real capital ▒▒
+ ──────────────────────────────────────────────────────────── (amber accent) ──
+      PAPER P&L       RETURN ON MARGIN    PEAK LEVERAGE     MARGIN-CALL DAYS
+         −$35              −0.8%              13.8×                1
+ ──────────────────────────────────────────────────────────────────────────────
+     Chart: paper equity curve + one line per contract (MES, MCL, SPY put)
+       Grid:  only 3 positions, so a single ranked row instead of 3 × 2:
+  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+  │ ♛ #1 MES    [B] │ │ #2 MCL      [C] │ │ ☠ #3 SPY P  [A] │
+  │ +$425  +17% RoM │ │ −$230 −21% RoM  │ │ −$230 −27% prem │
+  └─────────────────┘ └─────────────────┘ └─────────────────┘
+      Table: notional, margin and Greeks instead of weight and fair value
+
+
+   [ ● Combined | Real | Paper only ]   Includes paper derivatives, scaled to
+ ──────────────────────────────────── position size ──────── (muted accent) ──
+  NAV REAL + OVERLAY  SINCE INCEPTION          SPY             GAP VS SPY
+       $103.97             +3.97%             +2.10%          ▲ +1.87 pts
+ ──────────────────────────────────────────────────────────────────────────────
+           Chart: ─── real (solid)   ╌╌╌ combined (dashed)   ┄┄┄ SPY
+     "Futures scaled to a $10 slice each; options × shares actually held."
+```
+
+---
+
+## 2. Inside the Fund `/inside`
+
+```
+================================================================================
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
+================================================================================
+
+                               Inside the Fund
+                What the fund owns and how each position is doing.
+                       Real capital, $100 invested
 
                         WINNERS & LOSERS  since purchase
 ──────────────────────────────────────────────────────────────────────────────
@@ -133,39 +188,13 @@ TOTAL                100.0%  $103.42 +3.42%
 ================================================================================
 ```
 
-### Home: how the other two toggle states change the top of the page
-
-```
-    [ Combined | Real | ● Paper only ]   ▒▒ Paper trades, no real capital ▒▒
- ──────────────────────────────────────────────────────────── (amber accent) ──
-      PAPER P&L       RETURN ON MARGIN    PEAK LEVERAGE     MARGIN-CALL DAYS
-         −$35              −0.8%              13.8×                1
- ──────────────────────────────────────────────────────────────────────────────
-     Chart: paper equity curve + one line per contract (MES, MCL, SPY put)
-       Grid:  only 3 positions, so a single ranked row instead of 3 × 2:
-  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-  │ ♛ #1 MES    [B] │ │ #2 MCL      [C] │ │ ☠ #3 SPY P  [A] │
-  │ +$425  +17% RoM │ │ −$230 −21% RoM  │ │ −$230 −27% prem │
-  └─────────────────┘ └─────────────────┘ └─────────────────┘
-      Table: notional, margin and Greeks instead of weight and fair value
-
-
-   [ ● Combined | Real | Paper only ]   Includes paper derivatives, scaled to
- ──────────────────────────────────── position size ──────── (muted accent) ──
-  NAV REAL + OVERLAY  SINCE INCEPTION          SPY             GAP VS SPY
-       $103.97             +3.97%             +2.10%          ▲ +1.87 pts
- ──────────────────────────────────────────────────────────────────────────────
-           Chart: ─── real (solid)   ╌╌╌ combined (dashed)   ┄┄┄ SPY
-     "Futures scaled to a $10 slice each; options × shares actually held."
-```
-
 ---
 
-## 2. Research index `/research`
+## 3. Research index `/research`
 
 ```
 ================================================================================
- WDP FUND              Home · Research · Inside the Fund            [A] [B] [C]
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
                                     Research
            Every position, the analysis behind it, and who wrote it.
@@ -204,7 +233,7 @@ TOTAL                100.0%  $103.42 +3.42%
  │ [C] Person C · updated Oct 12      │  ┆ [C] Person C · started Nov 2       ┆
  └────────────────────────────────────┘  └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘
 
-     Clicking [B] in the top bar lands here with Author = [B] preselected.
+     /research?author=B lands here with Author = [B] preselected.
                 At 375 px the cards stack into a single column.
 
 ================================================================================
@@ -212,11 +241,11 @@ TOTAL                100.0%  $103.42 +3.42%
 ================================================================================
 ```
 
-## 2b. Asset page `/research/msft`
+## 3b. Asset page `/research/msft`
 
 ```
 ================================================================================
- WDP FUND              Home · Research · Inside the Fund            [A] [B] [C]
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
                              ← Research / Equities
 
@@ -279,14 +308,14 @@ TOTAL                100.0%  $103.42 +3.42%
 
 ---
 
-## 3. Inside the Fund `/fund`
+## 4. Fund Rules `/fund`
 
 ```
 ================================================================================
- WDP FUND              Home · Research · Inside the Fund            [A] [B] [C]
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
 
-                               Inside the Fund
+                                 Fund Rules
                       How the fund decides what to own.
 
           HOUSE RULES                           DECISION THRESHOLDS
@@ -316,16 +345,172 @@ TOTAL                100.0%  $103.42 +3.42%
 
 ---
 
+## 5. Team admin `/admin` (sign-in required)
+
+Not linked from the public pages. Every save opens or updates a pull request; nothing goes live until the owner merges it.
+
+### 5a. Admin home `/admin`
+
+```
+================================================================================
+ WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
+================================================================================
+ Admin                                           Signed in as Person A (A)  Sign out
+ ──────────────────────────────────────────────────────────────────────────────
+                                    Admin
+     Every change here becomes a pull request. The owner publishes it once the
+                                checks pass.
+
+ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+ │ Research report │ │ Record trades   │ │ Add asset       │ │ Record vote     │
+ │ Write or update │ │ Buy, sell,      │ │ Stock, ETF,     │ │ Include, Watch  │
+ │ a write-up      │ │ deposit, split… │ │ future, option  │ │ or Reject       │
+ └─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
+
+                       Changes waiting to be published
+      Drafts are visible to the whole team, so you can read and comment first.
+ ──────────────────────────────────────────────────────────────────────────────
+  CHANGE                                       STATE              UPDATED
+  Research: JNJ, Johnson & Johnson (Person B)  Draft              Oct 20   Edit
+  Trades: buy 0.1248 JNJ, deposit $50          Waiting for owner  Oct 20   Add trades
+  Votes: C Reject on MSFT (High)               Waiting for owner  Oct 20   Add a vote
+
+                    Published and in-progress reports  [ New report ]
+ ──────────────────────────────────────────────────────────────────────────────
+  TICKER  NAME       STATUS     AUTHOR    UPDATED
+  MSFT    Microsoft  Published  Person A  Oct 14   Edit · Vote
+  NVDA    NVIDIA     Published  Person B  Oct 14   Edit · Vote
+```
+
+Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]**. Accounts outside `ADMIN_USERS` get "That GitHub account isn't on the team list."
+
+### 5b. Research report `/admin/research/new` and `/admin/research/edit`
+
+```
+ Admin › Research › New report
+ ┌─ 1. The asset ───────────────────────── ✓ ┐ ┌─ Preview ───────────────────────┐
+ │ Ticker [ JNJ    ] ✓ known asset           │ │   JNJ · Johnson & Johnson       │
+ │ Name   [ Johnson & Johnson ]  (autofill)  │ │   Equities · Two-stage DDM      │
+ │ Class  [ Equities ▾ ]  Method [ DDM ▾ ]   │ │   [B] by Person B               │
+ │ (unknown ticker → "Add JNJ to the asset   │ │   Fair value $182 · price $158  │
+ │  list": type, currency, feed symbol)      │ │   Upside +15.2%                 │
+ ├─ 2. The call ─────────────────────── ⚠ 1 ┤ │   "Steady dividends, a cheap…"  │
+ │ (•) In progress   ( ) Published           │ │                                 │
+ │ Fair value [ 182 ]                        │ │   ## Valuation                  │
+ │   Latest close $158 → +15.2% · Clears the │ │   ┌──────────┬────────┐         │
+ │   15% Include bar                         │ │   │ Scenario │ Growth │         │
+ │ Thesis       [ One sentence…   ] 57 / 160 │ │   │ Bear     │   6.0% │         │
+ │ Sell trigger [                 ]          │ │   └──────────┴────────┘         │
+ ├─ 3. Key outputs (optional) ───────────────┤ │   ## What the price implies     │
+ │ [ Sustainable growth ] [ 9.9% ]  ✕        │ │   ## Biggest risk               │
+ │ + add output                              │ │   ┌ SELL TRIGGER ─────────────┐ │
+ ├─ 4. Excel model (optional) ───────────────┤ │   │ Fair value reached, or …  │ │
+ │ ┌ ─ Drop an .xlsx here or choose ─ ┐      │ │   └───────────────────────────┘ │
+ ├─ 5. The write-up ─────────────────────────┤ │   📊 Download the model         │
+ │ [B][I][H2][H3][• List][1. List][Link]     │ └─────────────────────────────────┘
+ │ [⊞ Table ▾]  in a table: [+ row][+ column]│
+ │                [− row][− column][Delete]  │   ⊞ Table ▾
+ │  ## Valuation                             │   ┌──────────────────────────────┐
+ │  The DDM uses a five-year high-growth…    │   │ Paste from Excel / Sheets    │
+ │  ┌──────────┬────────┬────────────┐       │   │ Blank table (3 × 2)          │
+ │  │ Scenario │ Growth │ Fair value │       │   │ Valuation assumptions        │
+ │  │ Bear     │   6.0% │       $141 │       │   │ Scenario table (bear/base/   │
+ │  └──────────┴────────┴────────────┘       │   │   bull)                      │
+ └───────────────────────────────────────────┘   └──────────────────────────────┘
+ ──────────────────────────────────────────────────────────────────────────────
+  ✓ All required fields done                [ Save draft ] [ Submit for review → ]
+```
+
+- Paste dialog: a box to paste copied cells into, "First row is the header", a preview table, and [ Insert table ]. Number columns are right-aligned on the site automatically.
+- Phone: an [ Edit | Preview ] tab bar replaces the side-by-side preview; the action bar stays pinned at the bottom.
+
+### 5c. Record trades `/admin/trades`
+
+```
+ Admin › Record trades
+                                Record trades
+     One row per broker fill. A rebalance is sells plus buys: add them all,
+                              then submit once.
+ ┌─ New trade ─────────────────────────────┐  Trades to submit
+ │ Date [ 2026-10-20 ]  Action [ Buy ▾ ]   │  DATE    ACTION   ASSET SHARES PRICE  CASH
+ │ Use the shares and price from the       │  Oct 20  Deposit  CASH         $50.00 +$50.00 Edit ✕
+ │ broker's confirmation.                  │  Oct 20  Buy      MSFT  0.048 $520.41 −$24.98 Edit ✕
+ │ Asset [ MSFT · Microsoft ▾ ]            │  Oct 20  Sell     NVDA 0.2245 $190.00 +$42.66 Edit ✕
+ │   Holding 0.0931 · latest close $520.41 │
+ │ (•) Shares  ( ) Dollar amount           │  After these trades
+ │ Shares [0.1234] Price [520.41] Fees [0] │  HOLDING  SHARES NOW  AFTER   WEIGHT AT COST
+ │   Prefilled from the latest close: use  │  MSFT     0.0931      0.1411  52.6%
+ │   the fill price                        │  NVDA     0.2245      sold    ·
+ │ Note [ New position          ]          │  Cash     $0.01       $67.69  47.4%
+ │ −$24.98 cash          [ + Add to list ] │  ✓ Passes the ledger checks: cash stays
+ └─────────────────────────────────────────┘    positive, no oversells, 25% cap
+ ──────────────────────────────────────────────────────────────────────────────
+  3 trades · cash $0.01 → $67.69                          [ Submit for review → ]
+```
+
+- A failing check lists the reason in red (e.g. "cash goes negative (−2534.36)") and disables Submit.
+- With a trade change already open, a note names it and the button reads [ Add to #N → ].
+
+### 5d. Record vote `/admin/votes?ticker=MSFT`
+
+```
+ Admin › Record vote
+                                 Record vote
+   Your own vote only. A change of mind is a new vote; the old one stays.
+ ┌─ Your vote ─────────────────────────────┐  The committee on MSFT
+ │ Asset [ MSFT · Microsoft ▾ ]            │  MEMBER           LATEST VOTE         CONV.  DATE
+ │ ┃ Microsoft · Equities · held           │  [A] Person A (author)  Include       High   Oct 12
+ │ ┃ "Cloud and AI monetisation…"          │  [B] Person B           Watch         Medium Oct 12
+ │ ┃ Published · by Person A · fair value  │  [C] Person C (you)     Include → Reject  High  today
+ │ ┃ $615 · price $520.41 · +18.2% upside  │  ┌──────────────────────────────────────┐
+ │ ┃ Read the write-up ↗                   │  │ VERDICT NOW  →  WITH YOUR VOTE       │
+ │ Vote       [ Include | Watch |█Reject█] │  │   Include          Watch             │
+ │ Conviction [█High█ | Medium | Low ]     │  └──────────────────────────────────────┘
+ │ Note [ Capex is running ahead…  ]       │  Include needs 2 of the 3 latest votes, and
+ └─────────────────────────────────────────┘  the author's Include alone never carries it.
+ ──────────────────────────────────────────────────────────────────────────────
+  C · Reject · High on MSFT                                       [ Cast vote → ]
+```
+
+- Hints under the vote: the author's own Include can't carry it alone; a vote identical to your last one is recorded again with today's date.
+
+### 5e. Add asset `/admin/assets`
+
+```
+ Admin › Add asset
+ ┌─ New asset ─────────────────────────────┐  Row to be added
+ │ Type [ Stock | ETF | Future |█Option█ ] │  ┌──────────────────────────────────┐
+ │ Futures and options are paper trades    │  │ ticker,name,asset_class,…        │
+ │ only.                                   │  │ NVDA261120C200,NVDA Nov 20 2026  │
+ │ Underlying [ NVDA ▾ ]  Expiry [11/20/26]│  │ 200 call,Derivatives,USD,…  ⇆    │
+ │ Call or put [█Call█ | Put ]             │  └──────────────────────────────────┘
+ │ Strike [ 200 ]  Shares/contract [ 100 ] │  What happens next
+ │ ┌ TICKER ──────────── FEED SYMBOL (OCC) │  1. The owner merges the pull request.
+ │ │ NVDA261120C200      NVDA261120C0020…  │  2. The owner loads its price history
+ │ Name [ NVDA Nov 20 2026 200 call ]      │     (npm run db:backfill).
+ │ Currency [ USD ]                        │  3. Then it can be traded.
+ └─────────────────────────────────────────┘  ▸ Assets already listed (3)
+ ──────────────────────────────────────────────────────────────────────────────
+  Option · NVDA261120C200                                        [ Add asset → ]
+```
+
+- Stock / ETF: ticker, name, asset class (not Derivatives), feed symbol.
+- Future: ticker, name, underlying, underlying scale (MES on SPY = 10), $ per point, expiry, initial and maintenance margin, feed symbol (e.g. `MES=F`).
+- A ticker already on the list is flagged as soon as it's typed.
+
+---
+
 ## Phone width (375 px), Home top
 
 ```
                       ┌─────────────────────────────────┐
-                      │ WDP FUND            [A][B][C] ≡ │
+                      │ WDP FUND                    [☾] │
+                      │ Home  Research  Inside   Fund   │
+                      │                 the Fund Rules  │
                       ├─────────────────────────────────┤
                       │ Conviction backed by            │
                       │ fundamentals.                   │
                       │                                 │
-                      │ [Combined|● Real|Paper]         │
                       │ Real capital, $100 invested     │
                       │ ─────────────────────────────── │
                       │ NAV $103.42     +3.42%          │
@@ -334,7 +519,9 @@ TOTAL                100.0%  $103.42 +3.42%
                       │ ─────────────────────────────── │
                       │ [chart, full width]             │
                       │ ─────────────────────────────── │
-                      │ Winners/losers: 2 cols × 3 rows │
-                      │ Holdings: table scrolls ⇆       │
+                      │ Our analysts: one card per row  │
                       └─────────────────────────────────┘
+      On Inside the Fund: winners/losers 2 cols × 3 rows; holdings table
+      scrolls ⇆ inside its own box. On admin forms the preview and the
+      review panel stack under the form.
 ```

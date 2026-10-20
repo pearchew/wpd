@@ -1,12 +1,12 @@
 # WDP Fund Website — PRD
 
-Oct 13, 2026 · Pierson Chu
+Oct 13, 2026 · Pierson Chu · Updated Oct 20, 2026 (home page split, Fund Rules, team admin)
 
 > **For Claude Code:** this file is the spec for the WDP Fund website. Build it phase by phase (see "Milestones"), starting with Phase 1. Items under "Open questions" are not decided yet: use the placeholder or default noted, keep it configurable, and don't block on them. Runs entirely on free tiers (Vercel Hobby, Supabase free, a free price API).
 
 ## Overview
 
-The WDP Fund website is a three-page public site that shows how our $100 practice portfolio is performing against SPY and publishes the analysis behind every position. Tagline: **Conviction backed by fundamentals.**
+The WDP Fund website is a four-page public site, plus a private team admin, that shows how our $100 practice portfolio is performing against SPY and publishes the analysis behind every position. Tagline: **Conviction backed by fundamentals.**
 
 **Who it is for**
 
@@ -18,7 +18,7 @@ The WDP Fund website is a three-page public site that shows how our $100 practic
 1. Show real-capital performance vs SPY on the home page, updated daily after the US close.
 2. Keep paper-traded derivatives visible but clearly separated, with an optional scaled combined view.
 3. Publish one write-up per asset, credited to its author, released whenever it is ready.
-4. Let any of us update analysis, positions and votes by editing files in GitHub, with no code changes.
+4. Let any of us update analysis, positions, votes and assets through forms in a private team admin (or by editing files in GitHub), with no code changes.
 5. Run entirely on free tiers (Vercel, Supabase, a free price API).
 
 **Non-goals**
@@ -26,53 +26,68 @@ The WDP Fund website is a three-page public site that shows how our $100 practic
 - Tick-by-tick live prices. Daily closes are honest and enough for a weekly-reviewed fund.
 - Investment advice, sign-ups or any way for visitors to invest.
 - An analyst leaderboard. We publish at different times, so comparing people would be unfair.
-- An admin dashboard or CMS. GitHub is the editing interface.
+- A database-backed CMS. The team admin writes the same files as pull requests, so GitHub stays the record and the review step.
 
 ## Sitemap and navigation
 
-The site has three pages — Home, Research and Inside the Fund — plus one page per asset under Research.
+The public site has four pages (Home, Research, Inside the Fund and Fund Rules) plus one page per asset under Research. The team admin sits at `/admin`, behind GitHub sign-in, and is not in the navigation.
 
 ```
-                 Top bar on every page
-   WDP Fund · Home · Research · Inside the Fund · team faces
-          │                  │                    │
-          ▼                  ▼                    ▼
-   Home  /             Research  /research   Inside the Fund  /fund
-   - Hero + toggle     - 4 asset-class tabs  - Paper book
-   - Fund vs SPY       - Card per asset      - Committee log + votes
-   - Winners/losers    - Filter by author    - House rules
-   - Holdings table    - In-progress cards   - Team bios
-   - Allocation/risk         │
-   - Research teaser         ▼
-          │            Asset page  /research/[ticker]
-          └──links────▶ Full write-up, model, votes
+                       Top bar on every page
+   WDP Fund · Home · Research · Inside the Fund · Fund Rules · ☾ theme
+        │            │                │                   │
+        ▼            ▼                ▼                   ▼
+   Home  /      Research        Inside the Fund       Fund Rules  /fund
+   - Hero +     /research       /inside               - House rules
+     toggle     - 4 asset-class - Winners/losers      - Decision thresholds
+   - Fund vs      tabs          - Holdings table      - Vote history,
+     SPY        - Card per      - Allocation/risk       filter by asset/voter
+   - Our          asset         - Research teaser
+     analysts   - Filter by           │
+                  author              │
+                     │                │
+                     ▼                │
+              Asset page  /research/[ticker]  ◀──links──┘
+              Full write-up, model, votes, paper position card
+
+   Team admin  /admin  (sign-in required, not linked from the public pages)
+   - Research report form   - Record trades   - Record vote   - Add asset
+   - Changes waiting to be published (open pull requests)
 ```
 
-Holdings rows and teaser lines on Home link straight to the asset page; clicking a face in the top bar opens Research filtered to that person's work.
+Holdings rows and teaser lines on Inside the Fund link straight to the asset page. The Research author filter lives in the URL (`/research?author=B`).
 
 ## Home page
 
-The home page answers three questions in ten seconds: how the fund is doing, what it holds, and whether it beats SPY. Sections run top to bottom in this order.
+The home page answers two questions in ten seconds: how the fund is doing and whether it beats SPY. It then introduces the team. The detail (positions, risk, research) moves to Inside the Fund. Sections run top to bottom in this order.
 
 | # | Section | What it shows | Notes |
 | --- | --- | --- | --- |
-| 1 | Top bar | "WDP Fund" wordmark left; three 8-bit faces right | Hover a face: name and assets covered. Click: Research filtered to that author. Doubles as the team intro. |
+| 1 | Top bar | "WDP Fund" wordmark left; Home · Research · Inside the Fund · Fund Rules; theme toggle right | Same on every page. The faces moved from here to Our analysts. |
 | 2 | Tagline | Conviction backed by fundamentals | Under the wordmark in the hero. |
-| 3 | View toggle | `[ Combined \| ● Real \| Paper only ]` | Defaults to Real. Sits above the hero tiles and switches every section below it. |
+| 3 | View toggle | `[ Combined \| ● Real \| Paper only ]` | Defaults to Real. Hidden until `data/trades.csv` has a `book=paper` row. |
 | 4 | Hero tiles | NAV, return since inception, SPY return, gap vs SPY | Green/red gap. "As of [date], US close" timestamp and a "Reconciled with broker: [date]" note. |
 | 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
-| 6 | Winners and losers | 3×2 grid: top row best 3, bottom row worst 3, since purchase | Each tile: ticker, asset class, % return, $ contribution, sparkline, author's pixel face, one-line note from the research. Pixel crown on #1, skull on the worst. |
-| 7 | Holdings table | Ticker, asset class, weight, value, return since buy, author, verdict, fair value vs price | Rows link to the asset's research page. Assets without research show price and return only. |
-| 8 | Allocation and risk | Donut by asset class; weight vs risk-contribution bars; correlation heatmap; Sharpe; diversification benefit | Computed from stored daily returns. |
-| 9 | Research teaser | Equities / Fixed Income / Commodities / Derivatives dropdowns | One line per asset: thesis, fair value vs price, verdict, "by ____". Unpublished assets show an "Analysis in progress" card. Links to full write-ups. |
+| 6 | Our analysts | One card per team member: 8-bit face, name, bio, focus tags | Three across on desktop, stacked on a phone. Focuses come from the `focuses` column in `team.csv` (e.g. Hong Kong · US · Commodities). |
+
+**Footer (every page):** "The WDP Fund is a student learning exercise, not investment advice."
+
+## Inside the Fund page
+
+Inside the Fund (`/inside`) shows what the fund owns and how each position is doing. It follows the same view toggle as Home, with Real as the default.
+
+| # | Section | What it shows | Notes |
+| --- | --- | --- | --- |
+| 1 | Winners and losers | 3×2 grid: top row best 3, bottom row worst 3, since purchase | Each tile: ticker, asset class, % return, $ contribution, sparkline, author's pixel face, one-line note from the research. Pixel crown on #1, skull on the worst. |
+| 2 | Holdings table | Ticker, asset class, weight, value, return since buy, author, verdict, fair value vs price | Rows link to the asset's research page. Assets without research show price and return only. |
+| 3 | Allocation and risk | Donut by asset class; weight vs risk-contribution bars; correlation heatmap; Sharpe; diversification benefit | Computed from stored daily returns. |
+| 4 | Research teaser | Equities / Fixed Income / Commodities / Derivatives dropdowns | One line per asset: thesis, fair value vs price, verdict, "by ____". Unpublished assets show an "Analysis in progress" card. Links to full write-ups. |
 
 **Grid edge cases**
 
 - Rank by % return since first purchase; show $ contribution alongside so weight is visible.
 - An asset without research shows its return and skips the one-line note.
 - Fewer than 6 positions in the current view (likely in Paper only): show a single ranked row instead of top 3 and bottom 3.
-
-**Footer (every page):** "The WDP Fund is a student learning exercise, not investment advice."
 
 ## Real, Paper and Combined views
 
@@ -102,7 +117,8 @@ Real capital is the headline; paper derivatives are shown separately or scaled t
 
 **Behaviour**
 
-- The view lives in the URL (`?view=real|paper|combined`) so it can be linked.
+- The toggle appears on Home and Inside the Fund. Each page reads the view from its own URL (`/?view=paper`, `/inside?view=paper`), so it can be linked.
+- With no paper trades in the ledger, the toggle and the other two views are hidden and every page shows Real.
 - No `?view=` → Real. A refresh or new visit never lands on paper numbers by accident.
 - All positions, real and paper, are valued from daily closes so the timelines line up.
 
@@ -114,7 +130,7 @@ The Research page holds the full write-up for every asset, grouped by asset clas
 
 - Four tabs: Equities, Fixed Income, Commodities, Derivatives (Paper).
 - One card per asset: name, ticker, method, fair value vs price, verdict, byline, last updated.
-- Filter by author (also reached by clicking a face in the top bar).
+- Filter by author (kept in the URL, e.g. `/research?author=B`).
 - Unpublished assets show a greyed "Analysis in progress" card.
 
 **Asset page (`/research/[ticker]`)**
@@ -142,29 +158,48 @@ The Research page holds the full write-up for every asset, grouped by asset clas
 
 A byline is per piece, not per asset owner, so if the split between us changes each write-up still credits whoever wrote it.
 
-## Inside the Fund page
+## Fund Rules page
 
-Inside the Fund (`/fund`) shows how the fund is run: the paper book, the committee's decisions and the team.
+Fund Rules (`/fund`) shows how the fund decides what to own. It was called "Inside the Fund" until that name moved to the positions page.
+
+**House rules and thresholds**
+
+- House rules: no position above 25%, at least three asset classes, Include needs 2 of 3 votes and the owner's vote alone never carries it, no trade under about $5, sell trigger written at entry.
+- Decision thresholds: Include if fair value ≥ 15% above price (stocks) or it lowers volatility / raises Sharpe at a 10% weight (bonds, gold); Watch at 0–15% upside; Reject if fair value is below price or the risk case fails.
+
+**Vote history**
+
+- Every vote, newest first, so changes of mind stay visible. Filter by asset and by voter; the first 12 show, with "Show all" for the rest.
 
 **Paper book**
 
-- Labelled "Paper — not real capital" with the amber accent.
-- Paper equity curve, starting from the agreed paper account size (initial margin per contract).
-- One card per position, each with a byline: entry, current mark, $ P&L, return on margin, notional, leverage.
-- Futures: roll yield (contango/backwardation) and a list of margin-call days.
-- Options: model vs market price, implied vol, delta/theta/vega attribution of the daily move.
+- Each paper position's card (entry, mark, $ P&L, return on margin, notional, leverage, margin-call days, Greeks for options) sits on its research page, labelled "Paper — not real capital" with the amber accent. The Paper view on Home and Inside the Fund carries the equity curve.
 
-**Investment committee log**
+**Not built yet:** weekly check-in notes and, after month one, the post-mortem.
 
-- House rules shown at the top: no position above 25%, at least three asset classes, Include needs 2 of 3 votes and the owner's vote alone never carries it, no trade under about $5, sell trigger written at entry.
-- Decision thresholds: Include if fair value ≥ 15% above price (stocks) or it lowers volatility / raises Sharpe at a 10% weight (bonds, gold); Watch at 0–15% upside; Reject if fair value is below price or the risk case fails.
-- Vote history per asset, newest first, so changes of mind stay visible.
-- Weekly check-in notes and, after month one, the post-mortem.
+## Team admin
 
-**Team**
+The team admin (`/admin`) lets the three of us make every routine change through forms instead of editing CSV and MDX files. A save never edits the site directly: it commits to a branch and opens a pull request, so the Vercel checks, the preview link and the owner's merge all still apply.
 
-- The three 8-bit faces large, each with a name, a short bio, and links to their published research.
-- No explanation of the fund name.
+**Sign-in**
+
+- "Sign in with GitHub", limited to the accounts in `ADMIN_USERS` (GitHub username → team initials). Members don't need access to the repo.
+- The site keeps only who you are, in a signed cookie. Writes use one fine-grained token belonging to the owner (Contents and Pull requests on this repo only).
+
+**Forms**
+
+| Form | Writes | Highlights |
+| --- | --- | --- |
+| Research report (new or edit) | `content/research/<ticker>.mdx`, the Excel model, and an `instruments.csv` row for a new stock/ETF | Word-processor editor; tables pasted from Excel or Sheets; live preview of the page; fair-value upside against the 15% Include bar. **Save draft** opens a draft pull request the team can read; **Submit** marks it ready. One open change per report. |
+| Record trades | Rows in `trades.csv` | One row per fill (buy, sell, deposit, withdrawal, fee, dividend, split), sized by shares or dollars. Before/after holdings, cash and weights; the same ledger checks as the build. No buys in an asset without price history. Real book only. |
+| Record vote | A row in `votes.csv` | You vote as yourself; voter and date come from sign-in. Shows each member's latest vote and the verdict now and with your vote. |
+| Add asset | A row in `instruments.csv` | Stock, ETF, future or option, with each type's fields. Option tickers and feed symbols are generated (`SPY261218P640`, `SPY261218P00640000`). Shows the next steps: merge, load prices, then trade. |
+
+**Rules the admin keeps**
+
+- The forms run the same checks as `npm run validate` (they share the code), so a change that would fail the build is stopped in the form.
+- Trades, votes and assets join that form's open pull request if there is one, so two changes never clash over the same CSV.
+- The admin page lists every change waiting to be published, with links back into the forms.
 
 ## Visual design
 
@@ -174,11 +209,11 @@ The look is an annual-report base with an 8-bit accent layer: the editorial styl
 
 - Cream page, serif headings, a clean sans for body text, tabular figures for every number.
 - Thin rules instead of heavy cards; one deep accent colour for the Real view.
-- Light and dark mode.
+- Light by default; dark mode is opt-in through the toggle in the top bar (remembered per browser), not the OS setting.
 
 **8-bit layer (accents only)**
 
-- Three 16×16 pixel faces in the top bar, team section and next to each byline and grid tile.
+- Three 16×16 pixel faces on the Our analysts cards on Home and next to each byline and grid tile.
 - A pixel font only for small labels (grid tiles, badges), never for numbers or body text.
 - Pixel crown on the best performer, skull on the worst.
 - Pixel favicon: "WDP" in a small accent-coloured square.
@@ -205,7 +240,7 @@ wdp-fund/
 │   ├── trades.csv      every buy, sell, dividend, deposit, paper trade
 │   ├── votes.csv       every committee vote
 │   ├── instruments.csv ticker, name, asset class, currency, price-feed symbol
-│   ├── team.csv        initials, name, bio, avatar file
+│   ├── team.csv        initials, name, bio, avatar file, focuses (pipe-separated)
 │   └── meta.json       launch date, reporting currency, last reconciled date
 ├── public/models/      Excel models for download
 └── public/avatars/     8-bit faces
@@ -226,6 +261,9 @@ fairValue: 128
 thesis: One-sentence thesis used in the teaser and grid
 sellTrigger: Fair value reached, or oil below $60 for a quarter
 model: /models/xom-dcf.xlsx
+keyOutputs:                 # optional, method-specific headline numbers
+  - label: Terminal value share of EV
+    value: 68%
 ---
 ```
 
@@ -272,27 +310,30 @@ Current verdict = each voter's latest vote per ticker, with the 2-of-3 rule appl
 
 ## Update workflows
 
-Every change is a file edit in GitHub's web editor; Vercel rebuilds the site automatically, and a failed check keeps the previous version live.
+The usual way to make a change is the team admin (see "Team admin"): each form opens a pull request, and the owner merges it once the checks pass. Editing the files in GitHub's web editor still works for anything the forms don't cover. Either way Vercel rebuilds the site on merge, and a failed check keeps the previous version live.
 
 **Add a piece of analysis**
 
-1. Create `content/research/<ticker>.mdx` on a new branch with the frontmatter and write-up. Set `status: in-progress` to show the placeholder card early.
-2. Upload the Excel model to `public/models/`.
-3. Open a pull request. Vercel posts a preview link.
-4. The other two review the preview and comment as sceptics.
-5. Set `status: published` and merge. The teaser, holdings table, grid and Research page all update.
+1. Admin → Research report → New report. Fill in the asset, the call and the write-up, and attach the Excel model.
+2. **Save draft** while it's in progress: the team reads the draft pull request and comments as sceptics.
+3. Set the status to Published and **Submit for review**. Once merged, the teaser, holdings table, grid and Research page all update.
 
 **Change positions**
 
 1. Place the trade at the broker as a dollar amount, limit order, during US hours.
-2. Add one row per fill to `trades.csv` (shares and price from the confirmation; fees included).
-3. A rebalance = sell rows + buy rows. Never edit or delete old rows.
+2. Admin → Record trades: one row per fill, with the shares and price from the confirmation and fees included.
+3. A rebalance = sell rows + buy rows, submitted together. Old rows are never edited or deleted.
 4. Record dividends as they land.
-5. Paper trades: same file, `book=paper`, with `notional_slice` set.
+5. Paper trades (`book=paper`, with `notional_slice`) are still added to `trades.csv` by hand.
+
+**Add an asset**
+
+1. Admin → Add asset (or the research form, for a new stock or ETF).
+2. After the merge, the owner loads its price history (`npm run db:backfill`, or Run on the Vercel cron job). Only then can it be bought.
 
 **Record a vote**
 
-1. Add one row per voter to `votes.csv` after the committee meets.
+1. Admin → Record vote, after the committee meets. Each person casts their own.
 2. A change of mind is a new row; old rows stay as history.
 3. Assets can be voted on without being held; they appear in Research with their verdict.
 
@@ -300,7 +341,7 @@ Every change is a file edit in GitHub's web editor; Vercel rebuilds the site aut
 
 1. Compare the site NAV with the broker statement.
 2. If they differ, find the missing row (usually a dividend, fee or FX charge) and add it.
-3. Update the "Reconciled with broker" date in `data/meta.json`.
+3. Update the "Reconciled with broker" date in `data/meta.json` (by hand; there is no form for it).
 
 ## Tech stack and architecture
 
@@ -316,6 +357,11 @@ The site is a Next.js app on Vercel's free plan: content builds from the GitHub 
  Price API (free) ──fetch──▶ Vercel daily job ──write──▶ Supabase (free)
  closes + FX                 computes NAV snapshot       prices, fx,
  key in env vars             emails owner on failure     nav_snapshots, job_runs
+
+ ADMIN PATH (whenever one of us saves a form)
+ Team member ──GitHub sign-in──▶ /admin form ──same checks as the build──▶
+ GitHub API (owner's token): commit to an admin/* branch + pull request
+   ──owner merges──▶ CONTENT PATH above
 ```
 
 | Component | Choice | Why |
@@ -329,6 +375,9 @@ The site is a Next.js app on Vercel's free plan: content builds from the GitHub 
 | Content | MDX with frontmatter | Each of us writes in Markdown |
 | Validation | Schema check (e.g. Zod) run before build | Bad data blocks the deploy |
 | Alerts | Email from the daily job on failure | Catches silent price-feed or Supabase problems |
+| Admin sign-in | GitHub OAuth app, allowlist in `ADMIN_USERS` | No passwords to manage; members need only a GitHub account |
+| Admin writes | GitHub REST/GraphQL with a fine-grained token | Every change is a reviewable pull request; no database for content |
+| Rich text | TipTap, serialised to escaped markdown | A word-processor feel that still produces plain MDX files |
 
 ## Risks and mitigations
 
@@ -339,7 +388,11 @@ The biggest risks are wrong numbers on the page, not downtime; most mitigations 
 | Missing dividends or fees in the ledger | NAV drifts from the broker; dividend payers look worse | Record every cash event; weekly reconciliation |
 | UK-listed UCITS funds and GBP prices | Wrong NAV from currency mix | Reporting currency decided before launch; FX stored daily; feed symbol per ticker in `instruments.csv` |
 | Typo in a CSV or frontmatter | Broken or misleading page | Pre-deploy validation: known tickers, valid dates, known voters, 25% cap, required fields; failed check = no deploy |
-| Vercel free plan blocks deploys from collaborators' commits to a private repo | Only one person can publish | Public repo (no secrets in it), or one person merges; confirm current Vercel terms at setup |
+| Vercel free plan blocks deploys from collaborators' commits to a private repo | Only one person can publish | The owner merges every pull request (admin ones included) with a merge commit; or a public repo / Vercel Pro |
+| Admin token leaked | Someone could open or change pull requests | Token limited to this repo, Contents + Pull requests only, kept in Vercel env vars; nothing reaches `main` without the owner's merge; rotate it yearly |
+| Wrong person signs in to the admin | Unwanted pull requests | GitHub sign-in limited to `ADMIN_USERS`; every change still waits for the owner |
+| Two admin changes edit the same CSV | Merge conflicts | Trades, votes and assets each join their form's open pull request |
+| Asset added without price history | Pages fail to value it | Trade form blocks buys until prices exist; asset pull request says to backfill after merging |
 | Supabase free project pauses after inactivity | Chart stops updating | Daily job keeps it active; job failures logged and emailed to the owner |
 | Free price API rate limits or symbol gaps | Missing closes | Batch one request per day; fall back to previous close and flag it |
 | Stock splits | Share counts wrong | Use broker share counts; split recorded as a ledger row |
@@ -357,6 +410,7 @@ Ship in four phases so a working tracker is live before any research is written.
 2. **Home page (Real view):** top bar, hero tiles, performance chart, holdings table, winners/losers grid.
 3. **Research and committee:** Research index and asset pages, teaser dropdowns, in-progress cards, bylines, votes and verdicts, Inside the Fund page.
 4. **Paper and risk:** Paper and Combined views, paper book, allocation and risk section, 8-bit avatars and badges.
+5. **Team admin and layout split (done Oct 20):** Home trimmed to hero, chart and Our analysts; Inside the Fund (`/inside`) for positions; Fund Rules (`/fund`); `/admin` with research, trade, vote and asset forms.
 
 **Acceptance criteria**
 
@@ -368,6 +422,8 @@ Ship in four phases so a working tracker is live before any research is written.
 - [ ] Winners/losers grid falls back to one row with fewer than 6 positions.
 - [ ] Daily job failure triggers an email within 24 hours.
 - [ ] Every page is usable at 375 px wide.
+- [ ] A change saved in each admin form arrives as a pull request that passes the Vercel checks.
+- [ ] A GitHub account not in `ADMIN_USERS` can't sign in to the admin.
 
 **Open questions** (default to use until decided in brackets)
 
