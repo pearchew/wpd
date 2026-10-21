@@ -198,7 +198,10 @@ export function firstTradeDate(trades: Trade[]): string {
 
 export function buildTimeline(trades: Trade[], ctx: Ctx, launch: string): Timeline {
   const all = sortTrades(trades);
-  const dates = ctx.prices.dates.filter((d) => d >= launch);
+  let dates = ctx.prices.dates.filter((d) => d >= launch);
+  // No close on or after launch yet (e.g. the first deposit, before the daily price job):
+  // start from the latest close so the fund still shows, as cash.
+  if (dates.length === 0 && ctx.prices.dates.length > 0) dates = ctx.prices.dates.slice(-1);
   const offset = ctx.prices.dates.length - dates.length;
   const state: LedgerResult = { positions: new Map(), cash: 0 };
 
@@ -217,7 +220,9 @@ export function buildTimeline(trades: Trade[], ctx: Ctx, launch: string): Timeli
   dates.forEach((date, k) => {
     const gi = k + offset; // index into the global price book
     let flow = 0;
-    while (next < all.length && all[next].date <= date) {
+    // Rows dated after the latest close fold into the last day, valued at that close.
+    const through = k === dates.length - 1 ? "9999-12-31" : date;
+    while (next < all.length && all[next].date <= through) {
       const t = all[next++];
       // Rows dated before the launch (if any) fold into the first day.
       applyTrade(state, t, ctx, gi);

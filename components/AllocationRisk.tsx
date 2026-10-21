@@ -15,6 +15,17 @@ export function AllocationRisk({ d, a, view }: { d: FundData; a: Allocation; vie
   const sub = view === "paper" ? "exposure by contract" : view === "combined" ? "real + overlay" : "NAV";
   const maxBar = Math.max(0.01, ...a.assets.flatMap((x) => [Math.abs(x.weight), Math.abs(x.riskShare)]));
 
+  if (a.assets.length === 0 && view !== "paper") {
+    return (
+      <div className="split">
+        <Donut slices={a.slices.length ? a.slices : [{ label: "Cash", value: 1 }]} centre={centre} sub={sub} />
+        <p className="empty">
+          The fund is 100% cash. Weights, risk contribution, correlation and volatility appear once it owns something.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="split">

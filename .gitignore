@@ -8,3 +8,6 @@ next-env.d.ts
 .env*.local
 .vercel
 coverage
+
+# written by next dev
+AGENTS.md
