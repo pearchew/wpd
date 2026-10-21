@@ -16,8 +16,8 @@ export function Donut({ slices, centre, sub }: { slices: { label: string; value:
               nameKey="label"
               innerRadius="62%"
               outerRadius="92%"
-              paddingAngle={1}
-              stroke="var(--paper)"
+              paddingAngle={slices.length > 1 ? 1 : 0}
+              stroke={slices.length > 1 ? "var(--paper)" : "none"}
               isAnimationActive={false}
             >
               {slices.map((s, i) => (

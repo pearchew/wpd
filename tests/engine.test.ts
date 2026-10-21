@@ -50,6 +50,23 @@ describe("ledger", () => {
     expect(idx[3]).toBeCloseTo(110, 5);
   });
 
+  it("shows a deposit made after the latest close as 100% cash", () => {
+    const deposit = [trade({ date: "2026-01-09", book: "real", ticker: "CASH", action: "deposit", price: "100" })];
+    const tl = buildTimeline(deposit, c, "2026-01-09");
+    expect(tl.dates).toEqual(["2026-01-08"]);
+    expect(tl.cash).toEqual([100]);
+    expect(tl.realNav).toEqual([100]);
+    expect(tl.flows).toEqual([100]);
+  });
+
+  it("folds trades dated after the latest close into the last day", () => {
+    const late = [...trades.slice(0, 2), trade({ date: "2026-01-09", book: "real", ticker: "AAA", action: "buy", shares: "1", price: "12" })];
+    const tl = buildTimeline(late, c, "2026-01-05");
+    expect(tl.final.positions.get("real:AAA")!.qty).toBe(6);
+    expect(tl.cash[3]).toBeCloseTo(38);
+    expect(tl.realNav[3]).toBeCloseTo(38 + 6 * 12);
+  });
+
   it("scales paper futures into a notional slice for the Combined view", () => {
     const f = inst("MES", { kind: "future", multiplier: 5, asset_class: "Derivatives", margin: 100, maint_margin: 80 });
     const cc = ctx({ AAA: [10, 10, 10, 10], MES: [100, 102, 104, 110], SPY: [1, 1, 1, 1] }, [inst("AAA"), f, inst("SPY")]);
