@@ -332,7 +332,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
               {newErrors.map((e) => <li key={e}>{e}</li>)}
             </ul>
           ) : (
-            list.length > 0 && <p className="field-ok">✓ Passes the ledger checks: cash stays positive, no oversells, 25% cap</p>
+            list.length > 0 && <p className="field-ok">✓ Passes the ledger checks: cash stays positive, no oversells, {Math.round(maxWeight * 100)}% cap</p>
           )}
 
           {pending.length > 0 && (

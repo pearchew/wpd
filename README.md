@@ -21,7 +21,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | --- | --- |
 | `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, our analysts |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
-| `/research/[ticker]` | One write-up: thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
+| `/research/[ticker]` | One write-up: author's conclusion (Buy / Watch / Avoid), thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
 | `/admin` | Team admin (sign-in required): research, trade, vote, asset and delete forms that open pull requests. See [Team admin](#team-admin) |
@@ -125,7 +125,7 @@ Things to know:
 - **You can't sell more than you hold.**
 - **Record every cash event.** Missing dividends and fees are the usual reason the site's NAV drifts away from the broker's.
 - **The ticker must already be in `data/instruments.csv`** and must have prices in the database. See the next section for a new asset.
-- **No position above 25%** once the fund holds four or more positions. The check fails if one is over.
+- **No position above 20%** once the fund holds four or more positions. The check fails if one is over.
 - **Paper trades** (futures and options, no real money) use `book` = `paper` and fill in `notional_slice`, the dollars of the fund the position stands in for in the Combined view. They need `kind`, `underlying`, `expiry` and margin details in `instruments.csv`. The Paper and Combined views appear automatically as soon as there is a paper row.
 
 ### Add a new asset to the site
@@ -159,7 +159,8 @@ status: in-progress
 author: B
 updated: 2026-10-20
 fairValue: 182
-thesis: One sentence on why we own it, shown on the site.
+conclusion: Buy
+thesis: One sentence on what the research concluded and why, shown on the site.
 sellTrigger: Fair value reached, or a talc settlement above $15bn.
 model: /models/jnj-ddm.xlsx
 keyOutputs:
@@ -176,13 +177,21 @@ Write the analysis here in plain text. Use a table for the assumptions:
 | Cost of equity | 7.0% |
 | Terminal growth | 3.0% |
 
+## Bear, base and bull
+
+A fair value for each case and how likely you think it is. The probability-weighted value is the `fairValue` above.
+
 ## What the price implies
 
 Reverse DCF or implied growth.
 
-## Biggest risk
+## The bear case (written by a teammate)
 
-What would make us wrong.
+A teammate argues against the conclusion before it is published.
+
+## Conclusion
+
+Buy, Watch or Avoid, and why.
 ```
 
 What each field means:
@@ -195,9 +204,10 @@ What each field means:
 | `status` | `in-progress` shows a greyed "Analysis in progress" card on the Research page only. `published` shows it everywhere (Home, holdings table, Research). |
 | `author` | The writer's initials, as in `data/team.csv` (`A`, `B` or `C`). A byline is per report. |
 | `updated` | Change it to today's date whenever you edit the report. |
-| `fairValue` | Your model's fair value per share. **Required to publish.** |
-| `thesis` | One sentence, shown on cards and the asset page. |
-| `sellTrigger` | **Required to publish.** Written when we buy, not after. |
+| `fairValue` | Your model's fair value per share (probability-weighted across bear, base and bull). **Required to publish.** |
+| `conclusion` | `Buy`, `Watch` or `Avoid`: your own call from the research. **Required to publish.** Avoid reports are published too, so the site shows what we looked at and passed on. |
+| `thesis` | One sentence on what you concluded and why, shown on cards and the asset page. |
+| `sellTrigger` | **Required to publish a Buy.** Measurable (a price, a thesis metric or a date) and written when we buy, not after. |
 | `model` | Optional link to the Excel file in `public/models/`. If set, the file must exist. |
 | `keyOutputs` | Optional headline numbers for the method (up to four look best). |
 
@@ -205,7 +215,7 @@ What each field means:
 
 **To upload the Excel model:** use **Add file → Upload files**, upload into `public/models/`, and set `model: /models/<file name>.xlsx` in the report.
 
-**To publish:** change `status: in-progress` to `status: published` (with `fairValue` and `sellTrigger` filled in) and merge.
+**To publish:** change `status: in-progress` to `status: published` (with `fairValue` and `conclusion` filled in, plus `sellTrigger` for a Buy) and merge.
 
 Tips for the report body:
 
@@ -217,14 +227,14 @@ Tips for the report body:
 
 The easiest way to write research is the form at **`/admin`** on the live site. Sign in with GitHub, then **Research report → New report**, or **Edit** next to an existing one.
 
-- Fill in the asset, the call (fair value, thesis, sell trigger), any key outputs, and attach the Excel model.
+- Fill in the asset, the call (fair value, conclusion, thesis, sell trigger), any key outputs, and attach the Excel model.
 - The write-up is a normal word-processor editor: bold, headings, lists and links from the toolbar. **⊞ Table** pastes cells copied from Excel or Google Sheets, inserts a blank table or a starter template, and shows + row / + column buttons while you're in a table. Number columns are right-aligned on the site automatically.
 - The preview on the right (the **Preview** tab on a phone) shows how the page will look.
 - **Save draft** opens a draft pull request that the whole team can read and comment on. **Submit for review** marks it ready for the owner. Saving again updates the same pull request.
 - A ticker the site doesn't know yet (stocks and ETFs) is added to `instruments.csv` in the same pull request.
 - Only one change per report at a time: **Edit** on a report that already has one open takes you to that one.
 
-**Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 25% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
+**Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 20% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
 
 **Record vote** (`/admin/votes`, or **Vote** next to a report on `/admin`): pick the asset, then Include, Watch or Reject and your conviction. You always vote as yourself: the voter and date come from your sign-in. The form shows each member's latest vote and the verdict now and with your vote, using the same rules as the site. Like trades, votes cast while a vote change is waiting are added to that same pull request.
 
@@ -291,7 +301,7 @@ Once a week, compare the site's NAV with the broker statement.
 
 ### Change the house rules text
 
-The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce: the 25% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
+The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce. The asset class bands, the 40% theme cap, the drawdown re-vote and post-mortems are written rules only, kept by the team, not by the build: the 20% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
 
 ### Other settings in `data/meta.json`
 
@@ -301,7 +311,7 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | `reportingCurrency` | The currency NAV is shown in (`USD`). |
 | `riskFreeRate` | Used for the Sharpe ratio (`0.04` is 4%). |
 | `benchmark` | The comparison ticker (`SPY`); it must be in `instruments.csv`. |
-| `maxPositionWeight` | The position cap used by the checks (`0.25`). |
+| `maxPositionWeight` | The position cap used by the checks (`0.2`). |
 
 ### What the site does by itself
 
@@ -316,8 +326,9 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | The Vercel check fails with `unknown ticker` | The ticker isn't in `data/instruments.csv` | Add it first (see "Add a new asset") |
 | `cash goes negative` | A buy is larger than the cash on hand | Add a deposit row, or reduce the buy |
 | `sells more X than is held` | A sell exceeds the holding | Check the share count |
-| `… over the 25% cap` | One position is too big | Reduce it, or check the numbers |
-| `published research needs fairValue and sellTrigger` | Missing field | Fill both in, or set `status: in-progress` |
+| `… over the 20% cap` | One position is too big | Reduce it, or check the numbers |
+| `published research needs fairValue and conclusion` | Missing field | Fill both in, or set `status: in-progress` |
+| `a Buy conclusion needs a sellTrigger` | Missing field | Write the sell trigger, or change the conclusion |
 | `model file … does not exist` | The `model:` path doesn't match an uploaded file | Upload the file or fix the name |
 | A report page errors or the build fails with no validation message | A `<` or `{` in the report text | Remove or reword it |
 | The site shows an error for one ticker | No prices stored for it yet | Ask the owner to run the price backfill |

@@ -4,5 +4,5 @@
   "lastReconciled": null,
   "riskFreeRate": 0.04,
   "benchmark": "SPY",
-  "maxPositionWeight": 0.25
+  "maxPositionWeight": 0.2
 }

@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { stringify } from "yaml";
 import { splitFrontmatter } from "../frontmatter";
 import { appendInstrumentRow, emptyAsset, instrumentRow } from "./assets";
-import { ASSET_CLASSES, type AssetClass, ResearchFrontmatterSchema } from "../schemas";
+import { ASSET_CLASSES, type AssetClass, CONCLUSIONS, type Conclusion, ResearchFrontmatterSchema } from "../schemas";
 
 /** What the research form edits. Numbers stay strings until they are checked, so half-typed input survives. */
 export interface ReportDraft {
@@ -14,6 +14,8 @@ export interface ReportDraft {
   author: string;
   updated: string;
   fairValue: string;
+  /** Empty until the author has reached a call. */
+  conclusion: Conclusion | "";
   thesis: string;
   sellTrigger: string;
   /** Path under public/, e.g. /models/jnj-ddm.xlsx. Kept when no new file is uploaded. */
@@ -44,13 +46,15 @@ export const emptyDraft = (author: string, today: string): ReportDraft => ({
   author,
   updated: today,
   fairValue: "",
+  conclusion: "",
   thesis: "",
   sellTrigger: "",
   model: "",
   keyOutputs: [],
 });
 
-export const STARTER_BODY = "## Valuation\n\n## What the price implies\n\n## Biggest risk\n";
+export const STARTER_BODY =
+  "## Valuation\n\n## Bear, base and bull\n\n## What the price implies\n\n## The bear case (written by a teammate)\n\n## Conclusion\n";
 
 export const slugFor = (ticker: string) => ticker.trim().toLowerCase();
 export const reportPath = (ticker: string) => `content/research/${slugFor(ticker)}.mdx`;
@@ -70,6 +74,7 @@ export function frontmatter(d: ReportDraft): Record<string, unknown> {
     author: d.author,
     updated: d.updated,
     fairValue: fv,
+    conclusion: d.conclusion || undefined,
     thesis: d.thesis.trim(),
     sellTrigger: d.sellTrigger.trim() || undefined,
     model: d.model.trim() || undefined,
@@ -90,7 +95,8 @@ export function problems(d: ReportDraft): Partial<Record<keyof ReportDraft | "fo
   if (fv && !(Number(fv.replace(/[$,\s]/g, "")) > 0)) out.fairValue = "A positive number";
   if (d.status === "published") {
     if (!fv) out.fairValue ??= "Required to publish";
-    if (!d.sellTrigger.trim()) out.sellTrigger = "Required to publish";
+    if (!d.conclusion) out.conclusion = "Required to publish";
+    if (d.conclusion === "Buy" && !d.sellTrigger.trim()) out.sellTrigger = "Required to publish a Buy";
   }
   if (d.keyOutputs.some((o) => !o.label.trim() !== !o.value.trim())) out.keyOutputs = "Each output needs a label and a value";
   if (Object.keys(out).length === 0) {
@@ -120,6 +126,7 @@ export function fromMdx(raw: string): { draft: ReportDraft; body: string } {
       author: str(f.author),
       updated: str(f.updated),
       fairValue: str(f.fairValue),
+      conclusion: (CONCLUSIONS as readonly string[]).includes(str(f.conclusion)) ? (f.conclusion as Conclusion) : "",
       thesis: str(f.thesis),
       sellTrigger: str(f.sellTrigger),
       model: str(f.model),

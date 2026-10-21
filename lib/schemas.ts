@@ -86,6 +86,10 @@ export const MetaSchema = z.object({
 });
 export type Meta = z.infer<typeof MetaSchema>;
 
+/** The author's own call at the end of the research. Avoid reports are published too. */
+export const CONCLUSIONS = ["Buy", "Watch", "Avoid"] as const;
+export type Conclusion = (typeof CONCLUSIONS)[number];
+
 export const ResearchFrontmatterSchema = z
   .object({
     ticker: z.string().min(1),
@@ -96,6 +100,7 @@ export const ResearchFrontmatterSchema = z
     author: z.string().min(1),
     updated: isoDate,
     fairValue: z.number().positive().optional(),
+    conclusion: z.enum(CONCLUSIONS).optional(),
     thesis: z.string().min(1),
     sellTrigger: z.string().optional(),
     model: z.string().optional(),
@@ -104,7 +109,10 @@ export const ResearchFrontmatterSchema = z
       .array(z.object({ label: z.string(), value: z.string() }))
       .optional(),
   })
-  .refine((f) => f.status === "in-progress" || (f.fairValue !== undefined && f.sellTrigger), {
-    message: "published research needs fairValue and sellTrigger",
+  .refine((f) => f.status === "in-progress" || (f.fairValue !== undefined && f.conclusion !== undefined), {
+    message: "published research needs fairValue and conclusion",
+  })
+  .refine((f) => f.status === "in-progress" || f.conclusion !== "Buy" || f.sellTrigger, {
+    message: "a Buy conclusion needs a sellTrigger",
   });
 export type ResearchFrontmatter = z.infer<typeof ResearchFrontmatterSchema>;

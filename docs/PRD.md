@@ -135,11 +135,11 @@ The Research page holds the full write-up for every asset, grouped by asset clas
 
 **Asset page (`/research/[ticker]`)**
 
-- Header: **Microsoft (MSFT)** · Equities · DCF, then "Research by ____ · Updated [date]".
+- Header: **Microsoft (MSFT)** · Equities · DCF, then "Research by ____ · Updated [date]", then the author's conclusion (Buy / Watch / Avoid).
 - Thesis in one sentence.
-- Valuation method and fair value, with key assumptions.
+- Valuation method and fair value, with key assumptions and bear / base / bull cases.
 - What the market price implies (reverse DCF / implied growth or ROTE).
-- Biggest risk and sell trigger.
+- The bear case, written by a teammate, and the sell trigger (Buy only).
 - Committee verdict and vote history for that asset.
 - Download link to the Excel model.
 - Price chart since purchase with the fair value drawn as a line.
@@ -164,8 +164,8 @@ Fund Rules (`/fund`) shows how the fund decides what to own. It was called "Insi
 
 **House rules and thresholds**
 
-- House rules: no position above 25%, at least three asset classes, Include needs 2 of 3 votes and the owner's vote alone never carries it, no trade under about $5, sell trigger written at entry.
-- Decision thresholds: Include if fair value ≥ 15% above price (stocks) or it lowers volatility / raises Sharpe at a 10% weight (bonds, gold); Watch at 0–15% upside; Reject if fair value is below price or the risk case fails.
+- House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's conclusion (Buy, Watch or Avoid) and Avoid reports are published too; every report has bear / base / bull values, a reverse DCF for stocks and a teammate's bear case; Include needs 2 of 3 votes and the author's vote alone never carries it; a measurable sell trigger is written at entry and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
+- Decision thresholds: Include if probability-weighted fair value ≥ 15% above price and the bear case loses no more than 30% (stocks) or it lowers volatility / raises Sharpe at a 10% weight (bonds, gold); Watch at 0–15% upside; Reject if fair value is below price or the risk case fails.
 
 **Vote history**
 
@@ -259,8 +259,9 @@ status: published           # or in-progress → "Analysis in progress" card
 author: ____
 updated: 2026-10-12
 fairValue: 128
+conclusion: Buy               # Buy | Watch | Avoid; required to publish
 thesis: One-sentence thesis used in the teaser and grid
-sellTrigger: Fair value reached, or oil below $60 for a quarter
+sellTrigger: Fair value reached, or oil below $60 for a quarter   # required for a published Buy
 model: /models/xom-dcf.xlsx
 keyOutputs:                 # optional, method-specific headline numbers
   - label: Terminal value share of EV
@@ -388,7 +389,7 @@ The biggest risks are wrong numbers on the page, not downtime; most mitigations 
 | --- | --- | --- |
 | Missing dividends or fees in the ledger | NAV drifts from the broker; dividend payers look worse | Record every cash event; weekly reconciliation |
 | UK-listed UCITS funds and GBP prices | Wrong NAV from currency mix | Reporting currency decided before launch; FX stored daily; feed symbol per ticker in `instruments.csv` |
-| Typo in a CSV or frontmatter | Broken or misleading page | Pre-deploy validation: known tickers, valid dates, known voters, 25% cap, required fields; failed check = no deploy |
+| Typo in a CSV or frontmatter | Broken or misleading page | Pre-deploy validation: known tickers, valid dates, known voters, 20% cap, required fields; failed check = no deploy |
 | Vercel free plan blocks deploys from collaborators' commits to a private repo | Only one person can publish | The owner merges every pull request (admin ones included) with a merge commit; or a public repo / Vercel Pro |
 | Admin token leaked | Someone could open or change pull requests | Token limited to this repo, Contents + Pull requests only, kept in Vercel env vars; nothing reaches `main` without the owner's merge; rotate it yearly |
 | Wrong person signs in to the admin | Unwanted pull requests | GitHub sign-in limited to `ADMIN_USERS`; every change still waits for the owner |

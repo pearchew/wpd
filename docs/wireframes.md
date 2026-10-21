@@ -319,12 +319,24 @@ TOTAL                100.0%  $103.42 +3.42%
                       How the fund decides what to own.
 
           HOUSE RULES                           DECISION THRESHOLDS
-   · No position above 25%               Include  fair value ≥ 15% above price
-   · At least three asset classes                 (stocks), or lowers vol / raises
-   · Include needs 2 of 3 votes; the              Sharpe at a 10% weight
-     owner's vote alone never carries     Watch    0–15% upside
-   · No trade under about $5              Reject   fair value below price, or the
-   · Sell trigger written at entry                 risk case fails
+   · Asset class targets: equities       Include  weighted fair value ≥ 15%
+     35–65%, bonds 15–35%, commodities            above price and bear case
+     and gold 5–25%, cash 0–15%                   loses ≤ 30% (stocks), or
+   · No position above 20%, no theme              lowers vol / raises Sharpe
+     above 40%                                    at a 10% weight
+   · Every report ends Buy / Watch /      Watch    0–15% upside
+     Avoid; Avoid is published too        Reject   fair value below price, or the
+   · Bear / base / bull, reverse DCF,              risk case fails
+     teammate's bear case
+   · Include needs 2 of 3 votes; the
+     author's vote alone never carries
+   · Measurable sell trigger at entry;
+     when it fires, sell unless 2 of 3
+     vote to keep
+   · Down 20% → re-vote; every exit
+     gets a post-mortem
+   · No trade under about $5;
+     derivatives stay on paper
 
                                 Vote history
               Newest first. A change of mind is a new vote.
@@ -399,6 +411,7 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │ Fair value [ 182 ]                        │ │   ## Valuation                  │
  │   Latest close $158 → +15.2% · Clears the │ │   ┌──────────┬────────┐         │
  │   15% Include bar                         │ │   │ Scenario │ Growth │         │
+ │ Conclusion (•) Buy ( ) Watch ( ) Avoid    │
  │ Thesis       [ One sentence…   ] 57 / 160 │ │   │ Bear     │   6.0% │         │
  │ Sell trigger [                 ]          │ │   └──────────┴────────┘         │
  ├─ 3. Key outputs (optional) ───────────────┤ │   ## What the price implies     │
@@ -443,7 +456,7 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │   the fill price                        │  NVDA     0.2245      sold    ·
  │ Note [ New position          ]          │  Cash     $0.01       $67.69  47.4%
  │ −$24.98 cash          [ + Add to list ] │  ✓ Passes the ledger checks: cash stays
- └─────────────────────────────────────────┘    positive, no oversells, 25% cap
+ └─────────────────────────────────────────┘    positive, no oversells, 20% cap
  ──────────────────────────────────────────────────────────────────────────────
   3 trades · cash $0.01 → $67.69                          [ Submit for review → ]
 ```

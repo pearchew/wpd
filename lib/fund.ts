@@ -17,7 +17,7 @@ import { bsGreeks, bsPrice, impliedVol } from "./calc/options";
 import { annualVol, riskBreakdown, sharpe } from "./calc/risk";
 import { daysBetween } from "./dates";
 import { getPriceBook, usingDummyPrices } from "./prices";
-import type { AssetClass, Instrument, Meta, TeamMember, Vote } from "./schemas";
+import type { AssetClass, Conclusion, Instrument, Meta, TeamMember, Vote } from "./schemas";
 import { computeVerdict, type Verdict } from "./verdict";
 import type { ResearchDoc } from "./data";
 
@@ -417,6 +417,7 @@ export interface ResearchCard {
   updated: string;
   thesis: string;
   fairValue?: number;
+  conclusion?: Conclusion;
   price?: number;
   upside?: number;
   verdict: Verdict;
@@ -439,6 +440,7 @@ export function researchCards(d: FundData): ResearchCard[] {
       updated: front.updated,
       thesis: front.thesis,
       fairValue: pub ? front.fairValue : undefined,
+      conclusion: pub ? front.conclusion : undefined,
       price,
       upside: pub && front.fairValue && price ? front.fairValue / price - 1 : undefined,
       verdict,

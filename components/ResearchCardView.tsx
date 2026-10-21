@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Byline } from "./Face";
-import { VerdictPill } from "./Verdict";
+import { ConclusionPill, VerdictPill } from "./Verdict";
 import { fmtDate } from "@/lib/dates";
 import type { ResearchCard } from "@/lib/fund";
 import { signedPct, tone } from "@/lib/format";
@@ -29,7 +29,9 @@ export function ResearchCardView({ c }: { c: ResearchCard }) {
         <h3>{c.name}</h3>
         <span className="ticker">{displayTicker(c.ticker)}</span>
       </div>
-      <div className="meta">{c.method}</div>
+      <div className="meta">
+        {c.method} · Conclusion <ConclusionPill conclusion={c.conclusion} />
+      </div>
       <div className="fv">
         <span>
           Fair value <b>{c.fairValue !== undefined ? fmt(c.fairValue) : "—"}</b> · price <b>{c.price !== undefined ? fmt(c.price) : "—"}</b>

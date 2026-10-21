@@ -5,7 +5,7 @@ import { Byline } from "@/components/Face";
 import { PaperCard } from "@/components/PaperCard";
 import { PriceChart } from "@/components/PriceChart";
 import { Prose } from "@/components/Prose";
-import { VerdictPill } from "@/components/Verdict";
+import { ConclusionPill, VerdictPill } from "@/components/Verdict";
 import { VoteTable } from "@/components/VoteTable";
 import { researchDocs } from "@/lib/data";
 import { fmtDate } from "@/lib/dates";
@@ -65,6 +65,7 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
         <p className="muted" style={{ margin: "8px 0 14px" }}>{f.assetClass}{paper ? " (paper)" : ""} · {f.method}</p>
         <Byline initials={f.author} prefix="Research by" center />
         <p className="muted" style={{ fontSize: "0.85rem", margin: "4px 0 0" }}>Updated {fmtDate(f.updated, true)}</p>
+        <p style={{ margin: "10px 0 0" }}>Author&rsquo;s conclusion <ConclusionPill conclusion={f.conclusion} /></p>
       </div>
 
       <p className="thesis">{f.thesis}</p>

@@ -14,7 +14,8 @@ import {
   problems,
   usesMdxComponents,
 } from "@/lib/admin/report";
-import { ASSET_CLASSES, type AssetClass } from "@/lib/schemas";
+import { ASSET_CLASSES, type AssetClass, CONCLUSIONS } from "@/lib/schemas";
+import { ConclusionPill } from "../Verdict";
 import { RichEditor } from "./RichEditor";
 
 interface Props {
@@ -222,7 +223,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
 
           <details open className="form-section">
             <summary>
-              2. The call {sectionBadge(["status", "fairValue", "thesis", "sellTrigger"])}
+              2. The call {sectionBadge(["status", "fairValue", "conclusion", "thesis", "sellTrigger"])}
             </summary>
             <div className="radio-row" role="radiogroup" aria-label="Status">
               <label className="check">
@@ -248,9 +249,20 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                   ticker && <span className="field-note">No price yet for {ticker}</span>
                 ))}
             </label>
+            <fieldset className="conclusion-field">
+              <legend>Conclusion</legend>
+              <div className="radio-row" role="radiogroup" aria-label="Conclusion">
+                {CONCLUSIONS.map((c) => (
+                  <label className="check" key={c}>
+                    <input type="radio" checked={d.conclusion === c} onChange={() => set("conclusion", c)} /> {c}
+                  </label>
+                ))}
+              </div>
+              {err("conclusion") || <span className="field-note">Your own call from the research. Avoid reports are published too.</span>}
+            </fieldset>
             <label>
               Thesis
-              <textarea rows={2} value={d.thesis} onChange={(e) => set("thesis", e.target.value)} placeholder="One sentence on why we own it" />
+              <textarea rows={2} value={d.thesis} onChange={(e) => set("thesis", e.target.value)} placeholder="One sentence on what the research concluded and why" />
               {err("thesis") || (
                 <span className={`field-note${d.thesis.length > THESIS_HINT ? " loss" : ""}`}>
                   Shown on the site · {d.thesis.length} / {THESIS_HINT}
@@ -260,7 +272,9 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
             <label>
               Sell trigger
               <textarea rows={2} value={d.sellTrigger} onChange={(e) => set("sellTrigger", e.target.value)} placeholder="What would make us sell" />
-              {err("sellTrigger") || (d.status === "in-progress" && <span className="field-note">Required before you can publish</span>)}
+              {err("sellTrigger") || (
+                <span className="field-note">Price, thesis metric or date. Required to publish a Buy, so it is written at entry.</span>
+              )}
             </label>
           </details>
 
@@ -374,6 +388,11 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                   <div><span>Upside</span><b className={upside >= 0 ? "gain" : "loss"}>{pct(upside)}</b></div>
                 )}
               </div>
+            )}
+            {d.conclusion && (
+              <p className="byline center">
+                Conclusion <ConclusionPill conclusion={d.conclusion} />
+              </p>
             )}
             {d.thesis && <p className="preview-thesis">&ldquo;{d.thesis}&rdquo;</p>}
             {d.keyOutputs.some((o) => o.label) && (

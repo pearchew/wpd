@@ -1309,6 +1309,18 @@ a.admin-task:hover {
   display: flex;
   gap: 20px;
 }
+.conclusion-field {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.85rem;
+}
+.conclusion-field legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
 .new-asset {
   margin: 14px 0 0;
   border: 1px dashed var(--rule);

@@ -111,11 +111,21 @@ describe("report files", () => {
     expect(back.keyOutputs).toEqual(draft.keyOutputs);
   });
 
-  it("asks for a fair value and sell trigger before publishing", () => {
+  it("asks for a fair value and conclusion before publishing, and a sell trigger only for a Buy", () => {
     expect(problems(draft)).toEqual({});
     const pub = problems({ ...draft, status: "published", fairValue: "" });
     expect(pub.fairValue).toBeDefined();
-    expect(pub.sellTrigger).toBeDefined();
+    expect(pub.conclusion).toBeDefined();
+    expect(pub.sellTrigger).toBeUndefined();
+    expect(problems({ ...draft, status: "published", conclusion: "Buy" }).sellTrigger).toBeDefined();
+    expect(problems({ ...draft, status: "published", conclusion: "Avoid" })).toEqual({});
+  });
+
+  it("round-trips the conclusion and publishes an Avoid without a sell trigger", () => {
+    const avoid = { ...draft, status: "published" as const, conclusion: "Avoid" as const };
+    const mdx = toMdx(avoid, "Text.");
+    expect(ResearchFrontmatterSchema.safeParse(splitFrontmatter(mdx).data).success).toBe(true);
+    expect(fromMdx(mdx).draft.conclusion).toBe("Avoid");
   });
 
   it("adds a new asset to instruments.csv once", () => {

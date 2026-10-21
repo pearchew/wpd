@@ -8,11 +8,14 @@ import { voteHistory } from "@/lib/verdict";
 export const metadata: Metadata = { title: "Fund Rules" };
 
 const RULES = [
-  "No position above 25%.",
-  "At least three asset classes.",
-  "Include needs 2 of 3 votes, and the owner's vote alone never carries it.",
-  "No trade under about $5.",
-  "A sell trigger is written at entry.",
+  "Asset class targets once invested: equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%. Rebalance quarterly, or sooner if a class leaves its band.",
+  "No position above 20%, and no theme above 40%: positions that move together count together.",
+  "Every report ends in the author's own conclusion: Buy, Watch or Avoid. Avoid reports are published too.",
+  "Every report has bear, base and bull values with probabilities, a reverse DCF for stocks, and a bear case written by a teammate.",
+  "Include needs 2 of 3 votes, and the author's vote alone never carries it.",
+  "A measurable sell trigger (a price, a thesis metric or a date) is written at entry. When it fires, the position is sold unless 2 of 3 vote to keep it.",
+  "Any position down 20% from entry gets a re-vote, and every exit gets a short post-mortem.",
+  "No trade under about $5. Derivatives stay on the paper book.",
 ];
 
 export default async function FundRules({
@@ -45,7 +48,7 @@ export default async function FundRules({
           <div>
             <h3>Decision thresholds</h3>
             <ul>
-              <li><b>Include</b> if fair value is at least 15% above price (stocks), or it lowers volatility or raises Sharpe at a 10% weight (bonds, gold).</li>
+              <li><b>Include</b> if the probability-weighted fair value is at least 15% above price and the bear case loses no more than 30% (stocks), or it lowers volatility or raises Sharpe at a 10% weight (bonds, gold).</li>
               <li><b>Watch</b> at 0–15% upside.</li>
               <li><b>Reject</b> if fair value is below price, or the risk case fails.</li>
             </ul>
