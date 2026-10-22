@@ -1,2 +1,3 @@
 ticker,name,asset_class,currency,feed_symbol,kind,multiplier,underlying,underlying_scale,expiry,strike,option_type,margin,maint_margin
 SPY,SPDR S&P 500 ETF (benchmark),Equities,USD,SPY,etf,1,,,,,,,
+8750.T,"Daiichi Life Group, Inc.",Equities,JPY,8750.T,stock,1,,,,,,,
