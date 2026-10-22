@@ -18,7 +18,7 @@ import { bsGreeks, bsPrice, impliedVol } from "./calc/options";
 import { annualVol, riskBreakdown, sharpe } from "./calc/risk";
 import { daysBetween } from "./dates";
 import { getPriceBook, usingDummyPrices } from "./prices";
-import type { AssetClass, Conclusion, Instrument, Meta, TeamMember, Vote } from "./schemas";
+import type { AssetClass, Conviction, Instrument, Meta, StrategyFamily, TeamMember, View as ReportView, Vote } from "./schemas";
 import { computeVerdict, type Verdict } from "./verdict";
 import type { ResearchDoc } from "./data";
 
@@ -32,8 +32,9 @@ export interface ResearchInfo {
   status: "published" | "in-progress";
   author: string;
   thesis: string;
-  method: string;
-  fairValue?: number;
+  view?: ReportView;
+  conviction?: Conviction;
+  strategy?: StrategyFamily;
 }
 
 /** One line in the winners/losers grid and the holdings table. */
@@ -56,7 +57,10 @@ export interface HoldingRow {
   spark: number[];
   research?: ResearchInfo;
   verdict: Verdict;
-  upside?: number;
+  /** first purchase date */
+  entryDate: string;
+  /** average cost per share (or contract unit), in the reporting currency */
+  avgCost: number;
 }
 
 export interface PaperRow extends HoldingRow {
@@ -155,14 +159,13 @@ export const getFundData = cache(async (): Promise<FundData> => {
     const d = docs.get(ticker);
     return d && {
       status: d.front.status, author: d.front.author, thesis: d.front.thesis,
-      method: d.front.method, fairValue: d.front.fairValue,
+      view: d.front.view, conviction: d.front.conviction, strategy: d.front.strategy?.family,
     };
   };
 
   const base = (pos: Position, inst: Instrument, price: number) => {
     const doc = docs.get(pos.ticker);
     const verdict = computeVerdict(voteRows, pos.ticker, doc?.front.author).verdict;
-    const fv = doc?.front.status === "published" ? doc.front.fairValue : undefined;
     const startIdx = dateIndexOnOrBefore(prices.dates, pos.firstDate);
     return {
       ticker: pos.ticker,
@@ -175,7 +178,8 @@ export const getFundData = cache(async (): Promise<FundData> => {
       currency: inst.currency,
       research: researchInfo(pos.ticker),
       verdict,
-      upside: fv ? fv / price - 1 : undefined,
+      entryDate: pos.firstDate,
+      avgCost: pos.avg,
       // Right after a purchase there is nothing to draw yet, so show the lead-up instead.
       spark: downsample(prices.closes[pos.ticker].slice(prices.dates.length - startIdx < 5 ? -30 : startIdx)),
     };
@@ -418,17 +422,16 @@ export interface ResearchCard {
   ticker: string;
   name: string;
   assetClass: AssetClass;
-  method: string;
   status: "published" | "in-progress";
   author: string;
   updated: string;
   thesis: string;
-  fairValue?: number;
-  conclusion?: Conclusion;
-  /** fair value and price are in this currency */
+  view?: ReportView;
+  conviction?: Conviction;
+  strategy?: StrategyFamily;
+  /** price is in this currency */
   currency: string;
   price?: number;
-  upside?: number;
   verdict: Verdict;
   held: boolean;
 }
@@ -443,16 +446,15 @@ export function researchCards(d: FundData): ResearchCard[] {
       ticker: front.ticker,
       name: front.name,
       assetClass: front.assetClass,
-      method: front.method,
       status: front.status,
       author: front.author,
       updated: front.updated,
       thesis: front.thesis,
-      fairValue: pub ? front.fairValue : undefined,
-      conclusion: pub ? front.conclusion : undefined,
+      view: pub ? front.view : undefined,
+      conviction: pub ? front.conviction : undefined,
+      strategy: front.strategy?.family,
       currency: d.instruments.get(front.ticker)?.currency ?? d.meta.reportingCurrency,
       price,
-      upside: pub && front.fairValue && price ? front.fairValue / price - 1 : undefined,
       verdict,
       held: [...d.real, ...d.paper].some((h) => h.ticker === front.ticker),
     };

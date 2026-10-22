@@ -79,9 +79,9 @@ Inside the Fund (`/inside`) shows what the fund owns and how each position is do
 | # | Section | What it shows | Notes |
 | --- | --- | --- | --- |
 | 1 | Winners and losers | 3×2 grid: top row best 3, bottom row worst 3, since purchase | Each tile: ticker, asset class, % return, $ contribution, sparkline, author's pixel face, one-line note from the research. Pixel crown on #1, skull on the worst. |
-| 2 | Holdings table | Ticker, asset class, weight, value, return since buy, author, verdict, fair value vs price | Rows link to the asset's research page. Assets without research show price and return only. |
+| 2 | Holdings table | Ticker, asset class, weight, value, return since buy, author, verdict, view and strategy | Rows link to the asset's research page. Assets without research show price and return only. |
 | 3 | Allocation and risk | Donut by asset class; weight vs risk-contribution bars; correlation heatmap; Sharpe; diversification benefit | Computed from stored daily returns. |
-| 4 | Research teaser | Equities / Fixed Income / Commodities / Derivatives dropdowns | One line per asset: thesis, fair value vs price, verdict, "by ____". Unpublished assets show an "Analysis in progress" card. Links to full write-ups. |
+| 4 | Research teaser | Equities / Fixed Income / Commodities / Derivatives dropdowns | One line per asset: view, thesis, strategy family, verdict, "by ____". Unpublished assets show an "Analysis in progress" card. Links to full write-ups. |
 
 **Grid edge cases**
 
@@ -124,37 +124,37 @@ Real capital is the headline; paper derivatives are shown separately or scaled t
 
 ## Research page
 
-The Research page holds the full write-up for every asset, grouped by asset class, each credited to its author and published when ready.
+The Research page holds a report for every asset we look at, grouped by asset class, each credited to its author and published when ready. Reports are built around a trading strategy and the news that moves the asset, not around a price target.
 
 **Index (`/research`)**
 
 - Four tabs: Equities, Fixed Income, Commodities, Derivatives (Paper).
-- One card per asset: name, ticker, method, fair value vs price, verdict, byline, last updated.
+- One card per asset: name, ticker, view and conviction, strategy family, thesis, price, verdict, byline, last updated.
 - Filter by author (kept in the URL, e.g. `/research?author=B`).
 - Unpublished assets show a greyed "Analysis in progress" card.
 
+**Report layout**
+
+A report has four parts, in this order on the research form:
+
+| Part | Sections |
+| --- | --- |
+| The asset | Header: asset name, ticker, exchange, asset type (from `instruments.csv`), author, first published, last updated |
+| The call | View (long / short / neutral / watch), one-line thesis, conviction (low / medium / high); key numbers (label, value, unit, as-of date, source); strategy (family, rule, entry trigger, exit rule, holding period, source papers) |
+| Excel model | Optional download |
+| Write-up | Every asset: What it is · Revenue or demand breakdown · Price drivers · Catalyst calendar · Evidence · Valuation check (is the news priced in, no target) · Risks · What would change our mind · Event log (headline, tone, news or no-news, 1/5/20-day returns) · Review notes · Sources. Futures: Contract specs. Futures and commodities: Curve and inventories · Supply-demand balance. Stocks and ETFs: Peer / pair · Currency exposure |
+
+Strategy families: momentum, mean reversion, event-driven, carry, value and quality, pairs, sentiment and news.
+
 **Asset page (`/research/[ticker]`)**
 
-- Header: **Microsoft (MSFT)** · Equities · DCF, then "Research by ____ · Updated [date]", then the author's conclusion (Buy / Watch / Avoid).
-- Thesis in one sentence.
-- Valuation method and fair value, with key assumptions and bear / base / bull cases.
-- What the market price implies (reverse DCF / implied growth or ROTE).
-- The bear case, written by a teammate, and the sell trigger (Buy only).
-- Committee verdict and vote history for that asset.
-- Download link to the Excel model.
-- Price chart since purchase with the fair value drawn as a line.
-
-**Method by asset type**
-
-| Asset type | Method shown | Key output |
-| --- | --- | --- |
-| Stocks (most) | DCF | Fair value, terminal-value share of EV, sensitivity grid |
-| Banks | Residual income / P/B | Implied ROTE vs 5-year average |
-| Dividend payers | Two-stage DDM | Fair value, sustainable growth check |
-| Bond ETFs | Representative bond | Yield, duration, loss on +1pt rates, credit spread |
-| Gold | Scorecard | Real rates, USD, correlation with the portfolio |
-| Futures (paper) | Cost of carry | Notional, leverage, roll yield, basis |
-| Options (paper) | Black-Scholes | Model vs market price, implied vol, Greeks |
+- Header: **Microsoft (MSFT)** · exchange · asset type · asset class, then "Research by ____", published and updated dates.
+- Thesis, then tiles: view and conviction, price, strategy family and holding period, committee verdict.
+- Key numbers, each with its as-of date and source.
+- Strategy: rule, entry trigger, exit rule, holding period, source papers.
+- Price chart since purchase (or recent history for assets we only research).
+- Position and P&L, built from the ledger: entry date, average cost, size, price, value, return; the paper card for paper positions.
+- The write-up, then the committee verdict and vote history, then the Excel model download.
 
 A byline is per piece, not per asset owner, so if the split between us changes each write-up still credits whoever wrote it.
 
@@ -164,8 +164,8 @@ Fund Rules (`/fund`) shows how the fund decides what to own. It was called "Insi
 
 **House rules and thresholds**
 
-- House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's conclusion (Buy, Watch or Avoid) and Avoid reports are published too; every report has bear / base / bull values, a reverse DCF for stocks and a teammate's bear case; Include needs 2 of 3 votes and the author's vote alone never carries it; a measurable sell trigger is written at entry and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
-- Decision thresholds: Include if probability-weighted fair value ≥ 15% above price and the bear case loses no more than 30% (stocks) or it lowers volatility / raises Sharpe at a 10% weight (bonds, gold); Watch at 0–15% upside; Reject if fair value is below price or the risk case fails.
+- House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's view (long, short, neutral or watch) with a conviction, and every view is published; every report names the trading strategy it tests, shows the evidence so far and has at least one risk written by a teammate; Include needs 2 of 3 votes and the author's vote alone never carries it; a measurable exit rule is written at entry and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
+- Decision thresholds: Include when the strategy's entry trigger has fired and its evidence on this asset holds up, or (bonds, gold) it lowers volatility / raises Sharpe at a 10% weight; Watch while the trigger hasn't fired or the evidence is thin; Reject if the evidence says the rule doesn't work on this asset or the risk case fails.
 
 **Vote history**
 
@@ -251,21 +251,34 @@ wdp-fund/
 
 ```yaml
 ---
+# The asset
 ticker: XOM
 name: Exxon Mobil
 assetClass: Equities        # Equities | Fixed Income | Commodities | Derivatives
-method: DCF
-status: published           # or in-progress → "Analysis in progress" card
+exchange: NYSE              # optional
 author: ____
-updated: 2026-10-12
-fairValue: 128
-conclusion: Buy               # Buy | Watch | Avoid; required to publish
-thesis: One-sentence thesis used in the teaser and grid
-sellTrigger: Fair value reached, or oil below $60 for a quarter   # required for a published Buy
-model: /models/xom-dcf.xlsx
-keyOutputs:                 # optional, method-specific headline numbers
-  - label: Terminal value share of EV
-    value: 68%
+published: 2026-10-12       # set the first time it is published
+updated: 2026-10-14
+status: published           # or in-progress → "Analysis in progress" card
+# The call
+view: Long                  # Long | Short | Neutral | Watch; required to publish
+thesis: One-line thesis used in the teaser and cards
+conviction: Medium          # Low | Medium | High; required to publish
+keyNumbers:                 # optional
+  - label: Brent
+    value: "78.40"
+    unit: $/bbl
+    asOf: 2026-10-14
+    source: ICE
+strategy:                   # required to publish
+  family: Event-driven      # Momentum | Mean reversion | Event-driven | Carry | Value and quality | Pairs | Sentiment and news
+  rule: Buy after OPEC+ cuts and hold while the curve stays in backwardation
+  entry: An announced cut of 500k bbl/day or more   # entry and exit required for Long or Short
+  exit: Curve flips to contango, or 40 trading days
+  holding: 40 trading days
+  papers: Kilian (2009)
+# Optional Excel model
+model: /models/xom-model.xlsx
 ---
 ```
 

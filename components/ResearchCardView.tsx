@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { Byline } from "./Face";
-import { ConclusionPill, VerdictPill } from "./Verdict";
+import { VerdictPill, ViewPill } from "./Verdict";
 import { fmtDate } from "@/lib/dates";
 import type { ResearchCard } from "@/lib/fund";
-import { price, signedPct, tone } from "@/lib/format";
+import { price } from "@/lib/format";
 import { displayTicker } from "@/lib/team";
-
 
 export function ResearchCardView({ c }: { c: ResearchCard }) {
   if (c.status === "in-progress") {
@@ -15,7 +14,7 @@ export function ResearchCardView({ c }: { c: ResearchCard }) {
           <h3>{c.name}</h3>
           <span className="ticker">{displayTicker(c.ticker)}</span>
         </div>
-        <div className="meta">{c.method}</div>
+        {c.strategy && <div className="meta">{c.strategy}</div>}
         <p style={{ margin: "8px 0" }}><em>Analysis in progress</em></p>
         {c.price !== undefined && <div className="meta">Last close {price(c.price, c.currency)}</div>}
         <Byline initials={c.author} prefix="started by" />
@@ -29,13 +28,14 @@ export function ResearchCardView({ c }: { c: ResearchCard }) {
         <span className="ticker">{displayTicker(c.ticker)}</span>
       </div>
       <div className="meta">
-        {c.method} · Conclusion <ConclusionPill conclusion={c.conclusion} />
+        <ViewPill view={c.view} /> {c.conviction && `${c.conviction} conviction`}
+        {c.strategy && ` · ${c.strategy}`}
       </div>
+      <p className="rcard-thesis">{c.thesis}</p>
       <div className="fv">
         <span>
-          Fair value <b>{c.fairValue !== undefined ? price(c.fairValue, c.currency) : "—"}</b> · price <b>{c.price !== undefined ? price(c.price, c.currency) : "—"}</b>
+          Price <b>{c.price !== undefined ? price(c.price, c.currency) : "—"}</b>
         </span>
-        {c.upside !== undefined && <span className={tone(c.upside)}>{signedPct(c.upside, 0)}</span>}
         <VerdictPill verdict={c.verdict} />
       </div>
       <Byline initials={c.author} prefix="by" />

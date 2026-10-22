@@ -10,25 +10,10 @@ import { type Node, tableFromRows, toMarkdown } from "@/lib/admin/markdown";
 import { PasteTableDialog } from "./PasteTableDialog";
 
 const TEMPLATES: { label: string; rows: string[][] }[] = [
-  {
-    label: "Valuation assumptions",
-    rows: [
-      ["Assumption", "Base case"],
-      ["Revenue growth (5y)", ""],
-      ["Operating margin (year 5)", ""],
-      ["Discount rate", ""],
-      ["Terminal growth", ""],
-    ],
-  },
-  {
-    label: "Scenario table (bear / base / bull)",
-    rows: [
-      ["Scenario", "Growth", "Fair value", "Upside"],
-      ["Bear", "", "", ""],
-      ["Base", "", "", ""],
-      ["Bull", "", "", ""],
-    ],
-  },
+  { label: "Event log row", rows: [["Date", "Headline", "Link", "Tone (+/0/−)", "News or no-news", "1-day", "5-day", "20-day"], ["", "", "", "", "", "", "", ""]] },
+  { label: "Catalyst calendar", rows: [["Date", "Event", "Type", "Expected impact"], ["", "", "", ""]] },
+  { label: "Risks", rows: [["Risk", "Likelihood", "Impact", "What would signal it"], ["", "", "", ""]] },
+  { label: "Valuation check", rows: [["Metric", "Current", "Own history", "Peers", "Comment"], ["", "", "", "", ""]] },
 ];
 
 export function RichEditor({

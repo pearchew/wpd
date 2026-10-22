@@ -38,8 +38,11 @@ export default async function RecordVote({ searchParams }: { searchParams: Promi
           author: front.author,
           status: front.status,
           thesis: front.thesis,
-          fairValue: front.status === "published" ? front.fairValue : undefined,
+          view: front.status === "published" ? front.view : undefined,
+          conviction: front.status === "published" ? front.conviction : undefined,
+          strategy: front.strategy?.family,
           price: series?.[series.length - 1],
+          currency: d.instruments.get(front.ticker)?.currency ?? d.meta.reportingCurrency,
         },
       ];
     }),
