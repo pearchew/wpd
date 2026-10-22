@@ -7,7 +7,7 @@ import { type VoteSaveResult, saveVote } from "@/app/admin/votes/actions";
 import { VerdictPill } from "@/components/Verdict";
 import { CONVICTIONS, VOTES, type VoteInput, toVote } from "@/lib/admin/votes";
 import { fmtDate } from "@/lib/dates";
-import { money, signedPct } from "@/lib/format";
+import { price as fmtPrice } from "@/lib/format";
 import type { Vote } from "@/lib/schemas";
 import { computeVerdict } from "@/lib/verdict";
 
@@ -15,8 +15,11 @@ interface Research {
   author: string;
   status: "published" | "in-progress";
   thesis: string;
-  fairValue?: number;
+  view?: string;
+  conviction?: string;
+  strategy?: string;
   price?: number;
+  currency: string;
 }
 
 interface Props {
@@ -64,7 +67,6 @@ export function VoteForm({ me, votes, assets, research, held, team, initialTicke
   const after = computeVerdict(mine ? [...votes, mine] : votes, v.ticker, author);
   const myLast = now.latest.find((x) => x.voter === me);
   const same = myLast && myLast.vote === v.vote && myLast.conviction === v.conviction;
-  const upside = r?.fairValue && r.price ? r.fairValue / r.price - 1 : undefined;
 
   const submit = () =>
     start(async () => {
@@ -123,9 +125,9 @@ export function VoteForm({ me, votes, assets, research, held, team, initialTicke
                   <p className="field-note">
                     {r.status === "published" ? "Published" : "Analysis in progress"} · by{" "}
                     {team.find((t) => t.initials === r.author)?.name ?? r.author}
-                    {r.fairValue && <> · fair value {money(r.fairValue)}</>}
-                    {r.price && <> · price {money(r.price)}</>}
-                    {upside !== undefined && <span className={upside >= 0 ? "gain" : "loss"}> · {signedPct(upside)} upside</span>}
+                    {r.view && <> · {r.view}{r.conviction && ` (${r.conviction} conviction)`}</>}
+                    {r.strategy && <> · {r.strategy}</>}
+                    {r.price && <> · price {fmtPrice(r.price, r.currency)}</>}
                   </p>
                   <Link href={`/research/${asset.ticker.toLowerCase()}`} target="_blank">Read the write-up ↗</Link>
                 </>

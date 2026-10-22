@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Face } from "./Face";
-import { ConclusionPill, VerdictPill } from "./Verdict";
+import { VerdictPill, ViewPill } from "./Verdict";
 import type { ResearchCard } from "@/lib/fund";
-import { price, signedPct, tone } from "@/lib/format";
 import { ASSET_CLASSES } from "@/lib/schemas";
 import { displayTicker, getMember } from "@/lib/team";
 
@@ -23,11 +22,8 @@ export function ResearchTeaser({ cards }: { cards: ResearchCard[] }) {
               c.status === "published" ? (
                 <Link key={c.ticker} href={`/research/${c.ticker.toLowerCase()}`} className="teaser-line">
                   <b>{displayTicker(c.ticker)}</b>
-                  <span>{c.conclusion && <><ConclusionPill conclusion={c.conclusion} />{" "}</>}{c.thesis}</span>
-                  <span>
-                    {c.fairValue && c.price ? `${price(c.fairValue, c.currency)} / ${price(c.price, c.currency)} ` : ""}
-                    {c.upside !== undefined && <span className={tone(c.upside)}>{signedPct(c.upside, 0)}</span>}
-                  </span>
+                  <span>{c.view && <><ViewPill view={c.view} />{" "}</>}{c.thesis}</span>
+                  <span className="muted">{c.strategy}</span>
                   <VerdictPill verdict={c.verdict} />
                   <span className="by"><Face initials={c.author} size={20} /> by {getMember(c.author)?.name ?? c.author}</span>
                 </Link>

@@ -21,7 +21,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | --- | --- |
 | `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, our analysts |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
-| `/research/[ticker]` | One write-up: author's conclusion (Buy / Watch / Avoid), thesis, fair value, key outputs, price chart with fair-value line, MDX body, sell trigger, committee votes, Excel model |
+| `/research/[ticker]` | One report: view and conviction, thesis, key numbers, strategy, price chart, position and P&L from the ledger, the write-up, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
 | `/admin` | Team admin (sign-in required): research, trade, vote, asset and delete forms that open pull requests. See [Team admin](#team-admin) |
@@ -143,7 +143,7 @@ The quickest way is **Add asset** in [Team admin](#team-admin). By hand: the sit
 2. **Merge that pull request first**, then ask the **owner** to load the prices: they run `npm run db:backfill` on their machine, or click **Run** on the cron job in Vercel (Settings → Cron Jobs). The daily job picks up the new ticker automatically from then on.
 3. **Then** open a second pull request with the trade (and the report).
 
-**Assets in other currencies.** Set `currency` to the currency the stock trades in (`JPY`, `KRW`, `AUD`, …). Everything about the asset itself stays in that currency: its prices, the price and fees on its trade rows, and the fair value in its report. The price job also fetches that currency's daily rate against USD (`JPY/USD`), and the site converts at each day's rate. Cash, NAV, weights, returns and the 20% cap are all in USD. So a holding's return includes the currency move: if the yen falls 5%, a flat Tokyo stock shows −5%. Recording a trade in a currency needs at least one stored rate for it, so load prices (step 2) first.
+**Assets in other currencies.** Set `currency` to the currency the stock trades in (`JPY`, `KRW`, `AUD`, …). Everything about the asset itself stays in that currency: its prices, the price and fees on its trade rows, and prices quoted in its report. The price job also fetches that currency's daily rate against USD (`JPYUSD=X`), and the site converts at each day's rate. Cash, NAV, weights, returns and the 20% cap are all in USD. So a holding's return includes the currency move: if the yen falls 5%, a flat Tokyo stock shows −5%. Recording a trade in a currency needs at least one stored rate for it, so load prices (step 2) first.
 
 **Futures** need the contract details as well. The COMEX copper row is a worked example: one contract is 25,000 lb priced in dollars per lb, so `multiplier` is `25000`. The `underlying` is the front-month contract (`HG1`, Yahoo's `HG=F`) used for the basis and roll yield; Yahoo has no true copper spot price. `expiry` is the last trading day, and `margin` / `maint_margin` are the broker's dollars per contract:
    ```
@@ -156,52 +156,62 @@ The quickest way is **Add asset** in [Team admin](#team-admin). By hand: the sit
 
 Each asset has one file: `content/research/<ticker>.mdx`, with the ticker in **lower case** (`msft.mdx`, `nvda.mdx`).
 
-**To add a new report:** use **Add file → Create new file**, type the path `content/research/jnj.mdx` (typing the slashes creates the folders), and paste this template:
+A report has four parts, in this order on the research form:
+
+1. **The asset**: name, ticker, exchange, asset class and author. The asset type (stock, ETF, future) comes from `instruments.csv`, and the first-published and last-updated dates are kept for you.
+2. **The call**: your view (long, short, neutral or watch), a one-line thesis, your conviction (low, medium or high), the key numbers that matter right now, and the **strategy** you're testing (family, rule, entry trigger, exit rule, holding period, source papers).
+3. **Excel model** (optional): a spreadsheet readers can download.
+4. **The write-up**: everything else, written in the editor. A new report starts from a template for its asset type:
+   - **Every asset**: What it is · Revenue (or Demand) breakdown · Price drivers · Catalyst calendar · Evidence · Valuation check · Risks · What would change our mind · Event log · Review notes · Sources
+   - **Futures**: Contract specs. **Futures and commodities**: Curve and inventories · Supply-demand balance
+   - **Stocks and ETFs**: Peer / pair · Currency exposure
+
+   Fill in what you have and delete what doesn't apply.
+
+**Position and P&L** isn't written by anyone: the asset page builds it from `data/trades.csv` (entry date, average cost, size, price, return, or the paper card for a paper position).
+
+The easiest way is the form (see [Team admin](#team-admin)). **To add a report by hand:** use **Add file → Create new file**, type the path `content/research/jnj.mdx` (typing the slashes creates the folders), and start from this:
 
 ```
 ---
 ticker: JNJ
 name: Johnson & Johnson
 assetClass: Equities
-method: Two-stage DDM
-status: in-progress
+exchange: NYSE
 author: B
 updated: 2026-10-20
-fairValue: 182
-conclusion: Buy
-thesis: One sentence on what the research concluded and why, shown on the site.
-sellTrigger: Fair value reached, or a talc settlement above $15bn.
-model: /models/jnj-ddm.xlsx
-keyOutputs:
-  - label: Sustainable growth
-    value: 9.9%
+status: in-progress
+view: Long
+thesis: One line on what you think will happen and why, shown on the site.
+conviction: Medium
+keyNumbers:
+  - label: Dividend yield
+    value: "3.1"
+    unit: "%"
+    asOf: 2026-10-20
+    source: Company filings
+strategy:
+  family: Event-driven
+  rule: Buy after a positive earnings surprise and hold while the drift lasts.
+  entry: Quarterly earnings beat consensus by 5% or more.
+  exit: 20 trading days after entry, or a close below the pre-earnings price.
+  holding: 20 trading days
+  papers: Bernard & Thomas (1989), post-earnings announcement drift
+model: /models/jnj-model.xlsx
 ---
 
-## Valuation
+## What it is
 
-Write the analysis here in plain text. Use a table for the assumptions:
+What the asset is and how it makes money.
 
-| Assumption | Base case |
-| --- | ---: |
-| Cost of equity | 7.0% |
-| Terminal growth | 3.0% |
+## Price drivers
 
-## Bear, base and bull
-
-A fair value for each case and how likely you think it is. The probability-weighted value is the `fairValue` above.
-
-## What the price implies
-
-Reverse DCF or implied growth.
-
-## The bear case (written by a teammate)
-
-A teammate argues against the conclusion before it is published.
-
-## Conclusion
-
-Buy, Watch or Avoid, and why.
+| Rank | Driver | Direction (+/−) | Where to track it |
+| ---: | --- | --- | --- |
+| 1 | Pharma pipeline readouts | + | Company press releases |
 ```
+
+Copy the rest of the section headings from the list above.
 
 What each field means:
 
@@ -209,34 +219,36 @@ What each field means:
 | --- | --- |
 | `ticker` | Must be in `instruments.csv`, same letters as the file name. |
 | `assetClass` | Must match the one in `instruments.csv`. |
-| `method` | Free text, e.g. `DCF`, `Residual income / P/B`, `Two-stage DDM`, `Scorecard`. |
-| `status` | `in-progress` shows a greyed "Analysis in progress" card on the Research page only. `published` shows it everywhere (Home, holdings table, Research). |
+| `exchange` | Optional: where it trades (`NASDAQ`, `TSE`, `KRX`, `ASX`, `COMEX`). |
 | `author` | The writer's initials, as in `data/team.csv` (`A`, `B` or `C`). A byline is per report. |
+| `published` | Set by the form the first time the report is published. By hand, add the date when you first publish. |
 | `updated` | Change it to today's date whenever you edit the report. |
-| `fairValue` | Your model's fair value per share (probability-weighted across bear, base and bull). **Required to publish.** |
-| `conclusion` | `Buy`, `Watch` or `Avoid`: your own call from the research. **Required to publish.** Avoid reports are published too, so the site shows what we looked at and passed on. |
-| `thesis` | One sentence on what you concluded and why, shown on cards and the asset page. |
-| `sellTrigger` | **Required to publish a Buy.** Measurable (a price, a thesis metric or a date) and written when we buy, not after. |
+| `status` | `in-progress` shows a greyed "Analysis in progress" card on the Research page only. `published` shows it everywhere (Home, holdings table, Research). |
+| `view` | `Long`, `Short`, `Neutral` or `Watch`. **Required to publish.** Every view is published, so the site shows what we passed on as well. |
+| `thesis` | One line, shown on cards and the asset page. |
+| `conviction` | `Low`, `Medium` or `High`. **Required to publish.** |
+| `keyNumbers` | Optional: the three or four figures that matter most right now. Each has a `label` and `value`, plus optional `unit`, `asOf` (YYYY-MM-DD) and `source`. Quote numbers that start with a symbol or look like a percentage. |
+| `strategy` | **Required to publish**: `family` (`Momentum`, `Mean reversion`, `Event-driven`, `Carry`, `Value and quality`, `Pairs` or `Sentiment and news`) and `rule`. A `Long` or `Short` view also needs `entry` and `exit`: the exit is written at entry, not after. `holding` and `papers` are optional. |
 | `model` | Optional link to the Excel file in `public/models/`. If set, the file must exist. |
-| `keyOutputs` | Optional headline numbers for the method (up to four look best). |
 
 **To update an existing report:** open the file, edit the text or numbers, bump `updated`, and follow the normal pull request flow.
 
 **To upload the Excel model:** use **Add file → Upload files**, upload into `public/models/`, and set `model: /models/<file name>.xlsx` in the report.
 
-**To publish:** change `status: in-progress` to `status: published` (with `fairValue` and `conclusion` filled in, plus `sellTrigger` for a Buy) and merge.
+**To publish:** change `status: in-progress` to `status: published` (with `view`, `conviction` and `strategy` filled in) and merge.
 
 Tips for the report body:
 
 - It is Markdown with `##` headings and `|` tables. Use `**bold**` and `-` bullet lists.
 - ⚠️ **Do not type `<` or `{` `}` in the text.** The report format reads them as code and the build fails. Write "less than" instead of `<`, and avoid curly brackets.
-- A fair value of any kind is only as good as the model behind it. Don't publish a number you can't defend.
+- The editor has no image upload yet. For the evidence chart or a "how the money flows" diagram, link to an image or put it in the Excel model.
+- Keep the event log going: every news event, its tone, and the 1-, 5- and 20-day returns. Over time it becomes your own evidence for the strategy.
 
 ### Team admin
 
 The easiest way to write research is the form at **`/admin`** on the live site. Sign in with GitHub, then **Research report → New report**, or **Edit** next to an existing one.
 
-- Fill in the asset, the call (fair value, conclusion, thesis, sell trigger), any key outputs, and attach the Excel model.
+- Fill in the asset and the call (view, thesis, conviction, key numbers and strategy), attach the Excel model if you have one, then write it up. The write-up starts from the template for the asset's type and switches template if you change the asset before typing in it.
 - The write-up is a normal word-processor editor: bold, headings, lists and links from the toolbar. **⊞ Table** pastes cells copied from Excel or Google Sheets, inserts a blank table or a starter template, and shows + row / + column buttons while you're in a table. Number columns are right-aligned on the site automatically.
 - The preview on the right (the **Preview** tab on a phone) shows how the page will look.
 - **Save draft** opens a draft pull request that the whole team can read and comment on. **Submit for review** marks it ready for the owner. Saving again updates the same pull request.
@@ -337,8 +349,8 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | `cash goes negative` | A buy is larger than the cash on hand | Add a deposit row, or reduce the buy |
 | `sells more X than is held` | A sell exceeds the holding | Check the share count |
 | `… over the 20% cap` | One position is too big | Reduce it, or check the numbers |
-| `published research needs fairValue and conclusion` | Missing field | Fill both in, or set `status: in-progress` |
-| `a Buy conclusion needs a sellTrigger` | Missing field | Write the sell trigger, or change the conclusion |
+| `published research needs a view, a conviction and a strategy` | Missing field | Fill them in, or set `status: in-progress` |
+| `a Long or Short view needs the strategy's entry trigger and exit rule` | Missing field | Write the entry and exit, or change the view |
 | `model file … does not exist` | The `model:` path doesn't match an uploaded file | Upload the file or fix the name |
 | A report page errors or the build fails with no validation message | A `<` or `{` in the report text | Remove or reword it |
 | The site shows an error for one ticker | No prices stored for it yet | Ask the owner to run the price backfill |

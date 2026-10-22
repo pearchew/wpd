@@ -5,7 +5,6 @@ import {
   Line,
   LineChart,
   ReferenceDot,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,7 +14,6 @@ import { price } from "@/lib/format";
 
 interface Props {
   data: { date: string; price: number }[];
-  fairValue?: number;
   buy?: { date: string; price: number };
   /** the asset's own currency */
   currency?: string;
@@ -24,11 +22,11 @@ interface Props {
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const short = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}`;
 
-export function PriceChart({ data, fairValue, buy, currency = "USD" }: Props) {
+export function PriceChart({ data, buy, currency = "USD" }: Props) {
   const fmt = (v: number) => price(v, currency);
   const prices = data.map((d) => d.price);
-  const lo = Math.min(...prices, fairValue ?? Infinity);
-  const hi = Math.max(...prices, fairValue ?? -Infinity);
+  const lo = Math.min(...prices);
+  const hi = Math.max(...prices);
   const pad = (hi - lo) * 0.08 || 1;
   return (
     <div className="chart-box">
@@ -58,14 +56,6 @@ export function PriceChart({ data, fairValue, buy, currency = "USD" }: Props) {
                 ) : null
               }
             />
-            {fairValue !== undefined && (
-              <ReferenceLine
-                y={fairValue}
-                stroke="var(--gain)"
-                strokeDasharray="6 4"
-                label={{ value: `Fair value ${fmt(fairValue)}`, position: "insideTopRight", fill: "var(--gain)", fontSize: 12 }}
-              />
-            )}
             <Line type="monotone" dataKey="price" name="Close" stroke="var(--accent)" strokeWidth={2} dot={false} isAnimationActive={false} />
             {buy && data.some((d) => d.date === buy.date) && (
               <ReferenceDot x={buy.date} y={buy.price} r={5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={2} />
@@ -78,12 +68,6 @@ export function PriceChart({ data, fairValue, buy, currency = "USD" }: Props) {
           <i className="legend-swatch" style={{ borderTopColor: "var(--accent)" }} />
           Close
         </span>
-        {fairValue !== undefined && (
-          <span>
-            <i className="legend-swatch" style={{ borderTopColor: "var(--gain)", borderTopStyle: "dashed" }} />
-            Fair value
-          </span>
-        )}
         {buy && <span>○ Our purchase</span>}
       </div>
     </div>

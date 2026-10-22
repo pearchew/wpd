@@ -1,13 +1,13 @@
-import type { Conclusion } from "@/lib/schemas";
+import type { View } from "@/lib/schemas";
 import type { Verdict } from "@/lib/verdict";
 
 export function VerdictPill({ verdict }: { verdict: Verdict }) {
   return verdict === "Unvoted" ? <span className="muted">·</span> : <span className={`verdict ${verdict}`}>{verdict}</span>;
 }
 
-/** The author's own call, coloured like the committee verdict it would feed (Buy ~ Include, Avoid ~ Reject). */
-const TONE: Record<Conclusion, string> = { Buy: "Include", Watch: "Watch", Avoid: "Reject" };
+/** The author's view, coloured like the vote it leans towards (Long ~ Include, Short ~ Reject). */
+const TONE: Record<View, string> = { Long: "Include", Short: "Reject", Neutral: "Unvoted", Watch: "Watch" };
 
-export function ConclusionPill({ conclusion }: { conclusion?: Conclusion }) {
-  return conclusion ? <span className={`verdict ${TONE[conclusion]}`}>{conclusion}</span> : <span className="muted">·</span>;
+export function ViewPill({ view }: { view?: View }) {
+  return view ? <span className={`verdict ${TONE[view]}`}>{view}</span> : <span className="muted">·</span>;
 }

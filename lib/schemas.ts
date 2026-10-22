@@ -86,33 +86,75 @@ export const MetaSchema = z.object({
 });
 export type Meta = z.infer<typeof MetaSchema>;
 
-/** The author's own call at the end of the research. Avoid reports are published too. */
-export const CONCLUSIONS = ["Buy", "Watch", "Avoid"] as const;
-export type Conclusion = (typeof CONCLUSIONS)[number];
+/** The author's position at the end of the research. Every view is published, neutral and watch included. */
+export const VIEWS = ["Long", "Short", "Neutral", "Watch"] as const;
+export type View = (typeof VIEWS)[number];
+
+export const CONVICTIONS = ["Low", "Medium", "High"] as const;
+export type Conviction = (typeof CONVICTIONS)[number];
+
+/** The trading-strategy families a report can test. */
+export const STRATEGY_FAMILIES = [
+  "Momentum",
+  "Mean reversion",
+  "Event-driven",
+  "Carry",
+  "Value and quality",
+  "Pairs",
+  "Sentiment and news",
+] as const;
+export type StrategyFamily = (typeof STRATEGY_FAMILIES)[number];
+
+const optText = z.preprocess((v) => (v === "" || v === null ? undefined : v), z.string().optional());
 
 export const ResearchFrontmatterSchema = z
   .object({
+    // The asset
     ticker: z.string().min(1),
     name: z.string().min(1),
     assetClass: z.enum(ASSET_CLASSES),
-    method: z.string().min(1),
-    status: z.enum(["published", "in-progress"]),
+    /** Where it trades, e.g. NASDAQ, TSE, KRX, ASX, COMEX */
+    exchange: optText,
     author: z.string().min(1),
+    /** First publication; set by the form the first time the status is published */
+    published: z.preprocess((v) => (v === "" || v === null ? undefined : v), isoDate.optional()),
     updated: isoDate,
-    fairValue: z.number().positive().optional(),
-    conclusion: z.enum(CONCLUSIONS).optional(),
+    status: z.enum(["published", "in-progress"]),
+    // The call
+    view: z.enum(VIEWS).optional(),
     thesis: z.string().min(1),
-    sellTrigger: z.string().optional(),
-    model: z.string().optional(),
-    /** Method-specific headline outputs, e.g. "Terminal value share of EV: 68%" */
-    keyOutputs: z
-      .array(z.object({ label: z.string(), value: z.string() }))
+    conviction: z.enum(CONVICTIONS).optional(),
+    /** The three or four figures that matter most right now */
+    keyNumbers: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          value: z.string().min(1),
+          unit: optText,
+          asOf: z.preprocess((v) => (v === "" || v === null ? undefined : v), isoDate.optional()),
+          source: optText,
+        }),
+      )
       .optional(),
+    strategy: z
+      .object({
+        family: z.enum(STRATEGY_FAMILIES),
+        /** The rule being tested, in plain words */
+        rule: z.string().min(1),
+        entry: optText,
+        exit: optText,
+        holding: optText,
+        /** Source paper(s) the rule comes from */
+        papers: optText,
+      })
+      .optional(),
+    // Optional Excel model
+    model: optText,
   })
-  .refine((f) => f.status === "in-progress" || (f.fairValue !== undefined && f.conclusion !== undefined), {
-    message: "published research needs fairValue and conclusion",
+  .refine((f) => f.status === "in-progress" || (f.view && f.conviction && f.strategy), {
+    message: "published research needs a view, a conviction and a strategy",
   })
-  .refine((f) => f.status === "in-progress" || f.conclusion !== "Buy" || f.sellTrigger, {
-    message: "a Buy conclusion needs a sellTrigger",
+  .refine((f) => f.status === "in-progress" || !(f.view === "Long" || f.view === "Short") || (f.strategy?.entry && f.strategy?.exit), {
+    message: "a Long or Short view needs the strategy's entry trigger and exit rule",
   });
 export type ResearchFrontmatter = z.infer<typeof ResearchFrontmatterSchema>;

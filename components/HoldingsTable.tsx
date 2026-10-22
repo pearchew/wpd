@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Face } from "./Face";
-import { VerdictPill } from "./Verdict";
+import { VerdictPill, ViewPill } from "./Verdict";
 import { hasActiveResearch, type FundData, type HoldingRow, type PaperRow, type View } from "@/lib/fund";
-import { money, price, signedMoney, signedPct, tone, pct } from "@/lib/format";
+import { money, signedMoney, signedPct, tone, pct } from "@/lib/format";
 import { displayTicker } from "@/lib/team";
 
 function TickerCell({ row }: { row: HoldingRow }) {
@@ -14,14 +14,13 @@ function TickerCell({ row }: { row: HoldingRow }) {
   );
 }
 
-function FairValueCell({ row }: { row: HoldingRow }) {
+/** The author's view and the strategy being tested. */
+function CallCell({ row }: { row: HoldingRow }) {
   if (row.research?.status === "in-progress") return <span className="in-progress-chip">Analysis in progress</span>;
-  if (!row.research?.fairValue) return <span className="muted">—</span>;
-  const fv = row.research.fairValue;
+  if (!row.research?.view) return <span className="muted">—</span>;
   return (
     <span>
-      {price(fv, row.currency)} / {price(row.price, row.currency)}{" "}
-      <span className={tone(row.upside ?? 0)}>{signedPct(row.upside ?? 0, 0)}</span>
+      <ViewPill view={row.research.view} /> {row.research.strategy && <span className="muted">{row.research.strategy}</span>}
     </span>
   );
 }
@@ -48,7 +47,7 @@ function RealRows({ rows }: { rows: HoldingRow[] }) {
           <td className={tone(r.returnPct)}>{signedPct(r.returnPct)}</td>
           <td><ByCell row={r} /></td>
           <td>{r.research ? <VerdictPill verdict={r.verdict} /> : <span className="muted">·</span>}</td>
-          <td><FairValueCell row={r} /></td>
+          <td><CallCell row={r} /></td>
         </tr>
       ))}
     </>
@@ -88,7 +87,7 @@ export function HoldingsTable({ d, view }: { d: FundData; view: View }) {
             <th>Return</th>
             <th>By</th>
             <th>Verdict</th>
-            <th>Fair value / price</th>
+            <th>View / strategy</th>
           </tr>
         </thead>
         <tbody>

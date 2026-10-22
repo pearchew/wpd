@@ -73,7 +73,7 @@ The toggle only appears once `data/trades.csv` has a `book=paper` row. It sits a
   │ ♛ #1 MES    [B] │ │ #2 MCL      [C] │ │ ☠ #3 SPY P  [A] │
   │ +$425  +17% RoM │ │ −$230 −21% RoM  │ │ −$230 −27% prem │
   └─────────────────┘ └─────────────────┘ └─────────────────┘
-      Table: notional, margin and Greeks instead of weight and fair value
+      Table: notional, margin and Greeks instead of weight and view
 
 
    [ ● Combined | Real | Paper only ]   Includes paper derivatives, scaled to
@@ -119,17 +119,17 @@ The toggle only appears once `data/trades.csv` has a `book=paper` row. It sits a
 
                    HOLDINGS   rows link to /research/[ticker]
 ──────────────────────────────────────────────────────────────────────────────
-TICKER CLASS         WEIGHT  VALUE   RETURN  BY   VERDICT   FAIR VALUE / PRICE
+TICKER CLASS         WEIGHT  VALUE   RETURN  BY   VERDICT   VIEW / STRATEGY
 ──────────────────────────────────────────────────────────────────────────────
-NVDA   Equities      10.9%   $11.27  +12.7%  [B]  Include   $210 / $182  +15%
-MSFT   Equities      10.2%   $10.55  +5.4%   [A]  Include   $625 / $540  +16%
-XOM    Equities      10.1%   $10.45  +4.5%   [C]  Include   $128 / $110  +16%
+NVDA   Equities      10.9%   $11.27  +12.7%  [B]  Include   Long · Momentum
+MSFT   Equities      10.2%   $10.55  +5.4%   [A]  Include   Long · Event-driven
+XOM    Equities      10.1%   $10.45  +4.5%   [C]  Include   Long · Carry
 COST   Equities       9.9%   $10.24  +2.4%   [C]  ·         Analysis in progress
-CAT    Equities       9.8%   $10.14  +1.4%   [B]  Watch     $410 / $385   +6%
-JNJ    Equities       9.5%    $9.83  -1.7%   [B]  Include   $182 / $158  +15%
-JPM    Equities       9.3%    $9.62  -3.8%   [A]  Watch     $290 / $268   +8%
-NEE    Equities       9.1%    $9.41  -5.9%   [A]  Include    $92 / $76   +21%
-GLD    Commodities    7.4%    $7.65  +9.3%   [B]  Include   Scorecard 4/5
+CAT    Equities       9.8%   $10.14  +1.4%   [B]  Watch     Watch · Mean reversion
+JNJ    Equities       9.5%    $9.83  -1.7%   [B]  Include   Long · Value and quality
+JPM    Equities       9.3%    $9.62  -3.8%   [A]  Watch     Neutral · Pairs
+NEE    Equities       9.1%    $9.41  -5.9%   [A]  Include   Long · Sentiment and news
+GLD    Commodities    7.4%    $7.65  +9.3%   [B]  Include   Long · Carry
 IEF    Fixed Income   6.8%    $7.03  +0.4%   [A]  Include   Yield 4.1% · dur 7.2
 LQD    Fixed Income   6.6%    $6.83  -2.4%   [C]  ·         Analysis in progress
 CASH   ·              0.4%    $0.40
@@ -171,13 +171,13 @@ TOTAL                100.0%  $103.42 +3.42%
                            RESEARCH   All research →
  ──────────────────────────────────────────────────────────────────────────────
  ▾ Equities (8)
-   NVDA  Data-centre demand outlasts capex    $210 / $182  Include   by [B]
-   MSFT  Azure + Copilot keep margins rising  $625 / $540  Include   by [A]
-   XOM   Low-cost barrels fund buybacks       $128 / $110  Include   by [C]
-   NEE   Rate cuts re-rate the utility         $92 / $76   Include   by [A]
-   JNJ   Pharma pipeline offsets talc risk    $182 / $158  Include   by [B]
-   CAT   Infrastructure cycle mostly priced   $410 / $385  Watch     by [B]
-   JPM   Best bank, but NII has peaked        $290 / $268  Watch     by [A]
+   NVDA  Data-centre demand outlasts capex    Long · Mom.  Include   by [B]
+   MSFT  Azure + Copilot keep margins rising  Long · Event Include   by [A]
+   XOM   Low-cost barrels fund buybacks       Long · Carry Include   by [C]
+   NEE   Rate cuts re-rate the utility        Long · News  Include   by [A]
+   JNJ   Pharma pipeline offsets talc risk    Long · V&Q   Include   by [B]
+   CAT   Infrastructure cycle mostly priced   Watch · M.R. Watch     by [B]
+   JPM   Best bank, but NII has peaked        Neutral      Watch     by [A]
    ┆ COST  ░░ Analysis in progress ░░                              by [C] ┆
  ▸ Fixed Income (2)
  ▸ Commodities (1)
@@ -205,32 +205,18 @@ TOTAL                100.0%  $103.42 +3.42%
  Author: ( All ) ( [A] ) ( [B] ) ( [C] )                  Sort: [ Updated ▾ ]
 
  ┌────────────────────────────────────┐  ┌────────────────────────────────────┐
- │ Microsoft                     MSFT │  │ NVIDIA                        NVDA │
- │ DCF                                │  │ DCF                                │
- │ Fair value $625 · price $540 +16%  │  │ Fair value $210 · price $182 +15%  │
- │ Verdict: Include                   │  │ Verdict: Include                   │
+ │ Hanwha Ocean             042660.KS │  │ Lynas Rare Earths           LYC.AX │
+ │ [Long] High conviction · Event-dri │  │ [Watch] Medium · Sentiment and news│
+ │ "Navy orders keep the backlog…"    │  │ "Export curbs set the price; we…"  │
+ │ Price ₩87,075            Include   │  │ Price A$7.42             Watch     │
  │ [A] Person A · updated Nov 10      │  │ [B] Person B · updated Nov 8       │
  └────────────────────────────────────┘  └────────────────────────────────────┘
- ┌────────────────────────────────────┐  ┌────────────────────────────────────┐
- │ JPMorgan Chase                 JPM │  │ NextEra Energy                 NEE │
- │ Residual income / P/B              │  │ Two-stage DDM                      │
- │ Fair value $290 · price $268  +8%  │  │ Fair value $92 · price $76  +21%   │
- │ Verdict: Watch                     │  │ Verdict: Include                   │
- │ [A] Person A · updated Nov 5       │  │ [A] Person A · updated Oct 30      │
- └────────────────────────────────────┘  └────────────────────────────────────┘
- ┌────────────────────────────────────┐  ┌────────────────────────────────────┐
- │ Johnson & Johnson              JNJ │  │ Caterpillar                    CAT │
- │ Two-stage DDM                      │  │ DCF                                │
- │ Fair value $182 · price $158 +15%  │  │ Fair value $410 · price $385  +6%  │
- │ Verdict: Include                   │  │ Verdict: Watch                     │
- │ [B] Person B · updated Nov 1       │  │ [B] Person B · updated Oct 28      │
- └────────────────────────────────────┘  └────────────────────────────────────┘
  ┌────────────────────────────────────┐  ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
- │ Exxon Mobil                    XOM │  ┆ Costco                        COST ┆
- │ DCF                                │  ┆ DCF                                ┆
- │ Fair value $128 · price $110 +16%  │  ┆ ░░ Analysis in progress ░░         ┆
- │ Verdict: Include                   │  ┆ Price $1,012 · since buy +2.4%     ┆
- │ [C] Person C · updated Oct 12      │  ┆ [C] Person C · started Nov 2       ┆
+ │ Daiichi Life Group          8750.T │  ┆ Johnson & Johnson              JNJ ┆
+ │ [Neutral] Low · Momentum           │  ┆ Event-driven                       ┆
+ │ "Rate rises are priced in; no…"    │  ┆ ░░ Analysis in progress ░░         ┆
+ │ Price ¥4,032             ·         │  ┆ Last close $158                    ┆
+ │ [C] Person C · updated Nov 5       │  ┆ [B] started by Person B            ┆
  └────────────────────────────────────┘  └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘
 
      /research?author=B lands here with Author = [B] preselected.
@@ -241,65 +227,60 @@ TOTAL                100.0%  $103.42 +3.42%
 ================================================================================
 ```
 
-## 3b. Asset page `/research/msft`
+## 3b. Asset page `/research/hgz26`
 
 ```
 ================================================================================
  WDP FUND        Home · Research · Inside the Fund · Fund Rules            [☾]
 ================================================================================
-                             ← Research / Equities
+                             ← Research / Derivatives
 
-                                Microsoft (MSFT)
-                                 Equities · DCF
-      [A] Research by Person A · Updated Nov 10, 2026   [ ⬇ Excel model ]
+                     COMEX copper future (Dec 2026) (HGZ26)
+                      COMEX · Future · Derivatives (paper)
+             [C] Research by Person C · Published Nov 3 · Updated Nov 10
 
-                                     THESIS
+     Chinese grid spending keeps the curve in backwardation into year end.
+
+      VIEW              PRICE             STRATEGY              VERDICT
+     [Long]             $4.91             Carry                 Include
+  High conviction    Nov 13 close       until Dec roll        2 · 1 · 0
+
+   LME STOCKS          SHFE STOCKS         CHINA GRID CAPEX
+   152,000 tonnes      48,300 tonnes       +11 % y/y
+   as of Nov 12 · LME  as of Nov 7 · SHFE  as of Oct 31 · NEA
+
+                                   STRATEGY
  ──────────────────────────────────────────────────────────────────────────────
-      Azure and Copilot keep cloud growth above 25%, so operating margins
-                          keep expanding through 2030.
-
-                                 VALUATION  DCF
- ──────────────────────────────────────────────────────────────────────────────
-      FAIR VALUE           PRICE              UPSIDE            VERDICT
-         $625               $540               +16%             Include
-
-                                Key assumptions
-              Revenue CAGR (5y)   14.0%     WACC              8.5%
-              Op. margin (yr 5)   47.0%     Terminal growth   3.0%
-                        Terminal value share of EV: 68%
-
-               Sensitivity: fair value by WACC × terminal growth
-                              2.5%     3.0%     3.5%
-                     8.0%     $640     $672     $712
-                     8.5%     $598    [$625]    $657
-                     9.0%     $561     $585     $612
-
-                             WHAT THE PRICE IMPLIES
- ──────────────────────────────────────────────────────────────────────────────
-  Reverse DCF: $540 implies ~11% revenue CAGR for five years (we assume 14%).
-
-                              RISK & SELL TRIGGER
-──────────────────────────────────────────────────────────────────────────────
-      Biggest risk   AI capex outruns monetisation; FCF margin compresses.
- Sell trigger   Fair value reached, or Azure growth below 20% for two quarters.
+   Rule            Long the front contract while the curve is backwardated
+   Entry trigger   Dec–Mar spread above +2¢ with falling exchange stocks
+   Exit rule       Spread back under 0, or roll date, whichever first
+   Holding period  Until the Dec roll
+   Source paper(s) Gorton, Hayashi & Rouwenhorst (2013)
 
                               PRICE SINCE PURCHASE
  ──────────────────────────────────────────────────────────────────────────────
-  $625 ┤┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ fair value $625
-  $575 ┤
-  $550 ┤                                    ╭───╮
-  $540 ┤                          ╭──╮  ╭───╯   ╰───────● $540
-  $525 ┤           ╭────╮   ╭─────╯  ╰──╯
-  $512 ●───────────╯    ╰───╯
-       Oct 19 (bought $512.40)                         Nov 13
+  $5.00 ┤                                    ╭───╮
+  $4.90 ┤                          ╭──╮  ╭───╯   ╰───────● $4.91
+  $4.80 ●───────────╮    ╭─────────╯  ╰──╯
+        Oct 19 (bought $4.80)                         Nov 13
 
-                     COMMITTEE   Verdict: INCLUDE (3 of 3)
+                              POSITION AND P&L
+ ──────────────────────────────────────────────────────────────────────────────
+   Paper card (amber): entry, mark, $ P&L, return on margin, notional,
+   leverage, margin-call days. A real holding shows a row instead:
+   BOOK  ENTRY DATE  AVG COST  SHARES  PRICE  VALUE  RETURN
+
+   ## What it is · ## Demand breakdown · ## Price drivers · ## Catalyst calendar
+   ## Evidence · ## Valuation check · ## Risks · ## What would change our mind
+   ## Contract specs · ## Curve and inventories · ## Supply-demand balance
+   ## Event log · ## Review notes · ## Sources          (the write-up)
+
+                     COMMITTEE   Verdict: INCLUDE (2 of 3)
  ──────────────────────────────────────────────────────────────────────────────
   DATE     VOTER  VOTE      CONVICTION  NOTE
-  Nov 9    [B]    Include   High        Copilot seat data changed my mind
-  Oct 18   [A]    Include   High
-  Oct 18   [B]    Watch     Medium      Waiting for Q1 earnings
-  Oct 18   [C]    Include   Medium
+  Nov 9    [B]    Include   High        Inventories confirm it
+  Nov 4    [C]    Include   High
+  Nov 4    [A]    Watch     Medium      Wants the evidence sample bigger
 
 ================================================================================
  The WDP Fund is a student learning exercise, not investment advice.
@@ -319,18 +300,20 @@ TOTAL                100.0%  $103.42 +3.42%
                       How the fund decides what to own.
 
           HOUSE RULES                           DECISION THRESHOLDS
-   · Asset class targets: equities       Include  weighted fair value ≥ 15%
-     35–65%, bonds 15–35%, commodities            above price and bear case
-     and gold 5–25%, cash 0–15%                   loses ≤ 30% (stocks), or
+   · Asset class targets: equities       Include  entry trigger has fired
+     35–65%, bonds 15–35%, commodities            and the evidence holds up
+     and gold 5–25%, cash 0–15%                   (sample size stated), or
    · No position above 20%, no theme              lowers vol / raises Sharpe
      above 40%                                    at a 10% weight
-   · Every report ends Buy / Watch /      Watch    0–15% upside
-     Avoid; Avoid is published too        Reject   fair value below price, or the
-   · Bear / base / bull, reverse DCF,              risk case fails
-     teammate's bear case
+   · Every report ends long / short /     Watch    trigger not fired yet, or
+     neutral / watch, with conviction;             evidence still thin
+     every view is published             Reject   evidence says the rule
+   · Strategy (rule, entry, exit,                  fails here, or the risk
+     holding, paper), evidence, and a              case fails
+     teammate's risk
    · Include needs 2 of 3 votes; the
      author's vote alone never carries
-   · Measurable sell trigger at entry;
+   · Measurable exit rule at entry;
      when it fires, sell unless 2 of 3
      vote to keep
    · Down 20% → re-vote; every exit
@@ -401,39 +384,42 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
 ```
  Admin › Research › New report
  ┌─ 1. The asset ───────────────────────── ✓ ┐ ┌─ Preview ───────────────────────┐
- │ Ticker [ JNJ    ] ✓ known asset           │ │   JNJ · Johnson & Johnson       │
- │ Name   [ Johnson & Johnson ]  (autofill)  │ │   Equities · Two-stage DDM      │
- │ Class  [ Equities ▾ ]  Method [ DDM ▾ ]   │ │   [B] by Person B               │
- │ (unknown ticker → "Add JNJ to the asset   │ │   Fair value $182 · price $158  │
- │  list": type, currency, feed symbol)      │ │   Upside +15.2%                 │
- ├─ 2. The call ─────────────────────── ⚠ 1 ┤ │   "Steady dividends, a cheap…"  │
- │ (•) In progress   ( ) Published           │ │                                 │
- │ Fair value [ 182 ]                        │ │   ## Valuation                  │
- │   Latest close $158 → +15.2% · Clears the │ │   ┌──────────┬────────┐         │
- │   15% Include bar                         │ │   │ Scenario │ Growth │         │
- │ Conclusion (•) Buy ( ) Watch ( ) Avoid    │
- │ Thesis       [ One sentence…   ] 57 / 160 │ │   │ Bear     │   6.0% │         │
- │ Sell trigger [                 ]          │ │   └──────────┴────────┘         │
- ├─ 3. Key outputs (optional) ───────────────┤ │   ## What the price implies     │
- │ [ Sustainable growth ] [ 9.9% ]  ✕        │ │   ## Biggest risk               │
- │ + add output                              │ │   ┌ SELL TRIGGER ─────────────┐ │
- ├─ 4. Excel model (optional) ───────────────┤ │   │ Fair value reached, or …  │ │
- │ ┌ ─ Drop an .xlsx here or choose ─ ┐      │ │   └───────────────────────────┘ │
- ├─ 5. The write-up ─────────────────────────┤ │   📊 Download the model         │
- │ [B][I][H2][H3][• List][1. List][Link]     │ └─────────────────────────────────┘
- │ [⊞ Table ▾]  in a table: [+ row][+ column]│
- │                [− row][− column][Delete]  │   ⊞ Table ▾
- │  ## Valuation                             │   ┌──────────────────────────────┐
- │  The DDM uses a five-year high-growth…    │   │ Paste from Excel / Sheets    │
- │  ┌──────────┬────────┬────────────┐       │   │ Blank table (3 × 2)          │
- │  │ Scenario │ Growth │ Fair value │       │   │ Valuation assumptions        │
- │  │ Bear     │   6.0% │       $141 │       │   │ Scenario table (bear/base/   │
- │  └──────────┴────────┴────────────┘       │   │   bull)                      │
+ │ Ticker [ LYC.AX ] ✓ known asset · Stock   │ │   LYC.AX · Lynas Rare Earths    │
+ │ Name   [ Lynas Rare Earths ]  (autofill)  │ │   ASX · Equities · Stock        │
+ │ Class  [ Equities ▾ ]  Exchange [ ASX ]   │ │   [B] by Person B               │
+ │ (unknown ticker → "Add it to the asset    │ │   [Watch] Medium conviction     │
+ │  list": type, currency, feed symbol)      │ │   "Export curbs set the price…" │
+ │ Author Person B · updated Nov 10          │ │   NdPr price  US$62/kg          │
+ ├─ 2. The call ─────────────────────── ⚠ 1 ┤ │ ┌ STRATEGY · SENTIMENT ───────┐ │
+ │ (•) In progress   ( ) Published           │ │ │ Buy when news tone turns …  │ │
+ │ View ( ) Long ( ) Short ( ) Neutral (•) Watch │ │ Exit: tone flips negative   │ │
+ │ Thesis      [ One line…        ] 57 / 160 │ │ └─────────────────────────────┘ │
+ │ Conviction  ( ) Low (•) Medium ( ) High   │ │   ## What it is                 │
+ │ Key numbers                               │ │   ## Revenue breakdown          │
+ │ [NdPr price][62][US$/kg][2026-11-10][SMM]✕│ │   ## Price drivers …            │
+ │ + add a number                            │ │   📊 Download the model         │
+ │ Strategy                                  │ └─────────────────────────────────┘
+ │ Family [ Sentiment and news ▾ ]  Holding [ 20 days ]
+ │ Rule [ Buy when … ]                       │
+ │ Entry trigger [ … ]   Exit rule [ … ] ⚠   │
+ │ Source paper(s) [ Tetlock (2007) ]        │
+ ├─ 3. Excel model (optional) ───────────────┤
+ │ ┌ ─ Drop an .xlsx here or choose ─ ┐      │
+ ├─ 4. The write-up ─────────────────────────┤
+ │ Template for a stock or ETF: fill in what │   ⊞ Table ▾
+ │ you have and delete what doesn't apply.   │   ┌──────────────────────────────┐
+ │ [B][I][H2][H3][• List][1. List][Link]     │   │ Paste from Excel / Sheets    │
+ │ [⊞ Table ▾]  in a table: [+ row][+ column]│   │ Blank table (3 × 2)          │
+ │  ## What it is                            │   │ Event log row                │
+ │  ## Revenue breakdown                     │   │ Catalyst calendar            │
+ │  | Segment | Description | Value | Src |  │   │ Risks                        │
+ │  ## Price drivers …                       │   │ Valuation check              │
  └───────────────────────────────────────────┘   └──────────────────────────────┘
  ──────────────────────────────────────────────────────────────────────────────
   ✓ All required fields done                [ Save draft ] [ Submit for review → ]
 ```
 
+- The write-up template depends on the asset type: futures add Contract specs; futures and commodities add Curve and inventories and Supply-demand balance; stocks and ETFs add Peer / pair and Currency exposure. Picking a different asset swaps the template until someone types in it.
 - Paste dialog: a box to paste copied cells into, "First row is the header", a preview table, and [ Insert table ]. Number columns are right-aligned on the site automatically.
 - Phone: an [ Edit | Preview ] tab bar replaces the side-by-side preview; the action bar stays pinned at the bottom.
 
@@ -474,8 +460,8 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │ Asset [ MSFT · Microsoft ▾ ]            │  MEMBER           LATEST VOTE         CONV.  DATE
  │ ┃ Microsoft · Equities · held           │  [A] Person A (author)  Include       High   Oct 12
  │ ┃ "Cloud and AI monetisation…"          │  [B] Person B           Watch         Medium Oct 12
- │ ┃ Published · by Person A · fair value  │  [C] Person C (you)     Include → Reject  High  today
- │ ┃ $615 · price $520.41 · +18.2% upside  │  ┌──────────────────────────────────────┐
+ │ ┃ Published · by Person A · Long (High  │  [C] Person C (you)     Include → Reject  High  today
+ │ ┃ conviction) · Momentum · price $520.41│  ┌──────────────────────────────────────┐
  │ ┃ Read the write-up ↗                   │  │ VERDICT NOW  →  WITH YOUR VOTE       │
  │ Vote       [ Include | Watch |█Reject█] │  │   Include          Watch             │
  │ Conviction [█High█ | Medium | Low ]     │  └──────────────────────────────────────┘

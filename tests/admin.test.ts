@@ -3,7 +3,7 @@ import remarkGfm from "remark-gfm";
 import { describe, expect, it } from "vitest";
 import { type Node, inline, tableFromRows, toMarkdown } from "@/lib/admin/markdown";
 import { parsePastedCells } from "@/lib/admin/paste";
-import { emptyDraft, fromMdx, modelPath, problems, toMdx, withInstrument } from "@/lib/admin/report";
+import { emptyDraft, fromMdx, modelPath, problems, starterBody, toMdx, withInstrument } from "@/lib/admin/report";
 import { splitFrontmatter } from "@/lib/frontmatter";
 import { ResearchFrontmatterSchema } from "@/lib/schemas";
 
@@ -93,39 +93,68 @@ describe("report files", () => {
     ...emptyDraft("B", "2026-10-20"),
     ticker: "jnj",
     name: "Johnson & Johnson",
-    method: "Two-stage DDM",
-    fairValue: "$182",
+    exchange: "NYSE",
     thesis: "Steady: dividends: and growth",
-    keyOutputs: [{ label: "Sustainable growth", value: "9.9%" }],
+    keyNumbers: [{ label: "Dividend yield", value: "3.1", unit: "%", asOf: "2026-10-20", source: "Company filings" }],
+  };
+  const strategy = {
+    family: "Event-driven" as const,
+    rule: "Buy after a positive earnings surprise",
+    entry: "Q3 beat by 5%",
+    exit: "20 trading days, or a close below the pre-earnings price",
+    holding: "20 days",
+    papers: "Bernard & Thomas (1989)",
   };
 
   it("round-trips through MDX and passes the site's schema", () => {
-    const mdx = toMdx(draft, "## Valuation\n\nText.");
+    const full = { ...draft, view: "Long" as const, conviction: "High" as const, strategy };
+    const mdx = toMdx(full, "## What it is\n\nText.");
     const { data, body } = splitFrontmatter(mdx);
     expect(ResearchFrontmatterSchema.safeParse(data).success).toBe(true);
-    expect(body.trim()).toBe("## Valuation\n\nText.");
+    expect(body.trim()).toBe("## What it is\n\nText.");
     const back = fromMdx(mdx).draft;
     expect(back.ticker).toBe("JNJ");
-    expect(back.fairValue).toBe("182");
+    expect(back.exchange).toBe("NYSE");
     expect(back.thesis).toBe(draft.thesis);
-    expect(back.keyOutputs).toEqual(draft.keyOutputs);
+    expect(back.keyNumbers).toEqual(draft.keyNumbers);
+    expect(back.strategy).toEqual(strategy);
+    expect(back.view).toBe("Long");
   });
 
-  it("asks for a fair value and conclusion before publishing, and a sell trigger only for a Buy", () => {
+  it("asks for a view, conviction and strategy before publishing, and entry and exit only for long or short", () => {
     expect(problems(draft)).toEqual({});
-    const pub = problems({ ...draft, status: "published", fairValue: "" });
-    expect(pub.fairValue).toBeDefined();
-    expect(pub.conclusion).toBeDefined();
-    expect(pub.sellTrigger).toBeUndefined();
-    expect(problems({ ...draft, status: "published", conclusion: "Buy" }).sellTrigger).toBeDefined();
-    expect(problems({ ...draft, status: "published", conclusion: "Avoid" })).toEqual({});
+    const pub = problems({ ...draft, status: "published" });
+    expect(pub.view).toBeDefined();
+    expect(pub.conviction).toBeDefined();
+    expect(pub.family).toBeDefined();
+    const watch = { ...draft, status: "published" as const, view: "Watch" as const, conviction: "Low" as const };
+    expect(problems({ ...watch, strategy: { ...strategy, entry: "", exit: "" } })).toEqual({});
+    const short = problems({ ...watch, view: "Short", strategy: { ...strategy, entry: "", exit: "" } });
+    expect(short.entry).toBeDefined();
+    expect(short.exit).toBeDefined();
   });
 
-  it("round-trips the conclusion and publishes an Avoid without a sell trigger", () => {
-    const avoid = { ...draft, status: "published" as const, conclusion: "Avoid" as const };
-    const mdx = toMdx(avoid, "Text.");
-    expect(ResearchFrontmatterSchema.safeParse(splitFrontmatter(mdx).data).success).toBe(true);
-    expect(fromMdx(mdx).draft.conclusion).toBe("Avoid");
+  it("stamps the first publish date and keeps it on later edits", () => {
+    const pub = { ...draft, status: "published" as const, view: "Neutral" as const, conviction: "Medium" as const, strategy };
+    const first = fromMdx(toMdx(pub, "x")).draft;
+    expect(first.published).toBe("2026-10-20");
+    expect(fromMdx(toMdx({ ...first, updated: "2026-11-02" }, "x")).draft.published).toBe("2026-10-20");
+  });
+
+  it("starts the write-up with the sections for the asset type", () => {
+    const heads = (md: string) => md.split("\n").filter((l) => l.startsWith("## ")).map((l) => l.slice(3));
+    const stock = heads(starterBody("stock", "Equities"));
+    const future = heads(starterBody("future", "Derivatives"));
+    expect(stock).toContain("Peer / pair");
+    expect(stock).toContain("Currency exposure");
+    expect(stock).not.toContain("Contract specs");
+    expect(future).toEqual(expect.arrayContaining(["Contract specs", "Curve and inventories", "Supply-demand balance"]));
+    expect(future).not.toContain("Peer / pair");
+    expect(heads(starterBody("etf", "Commodities"))).toContain("Curve and inventories");
+    for (const core of ["What it is", "Price drivers", "Catalyst calendar", "Evidence", "Valuation check", "Risks", "What would change our mind", "Event log", "Review notes", "Sources"]) {
+      expect(stock).toContain(core);
+      expect(future).toContain(core);
+    }
   });
 
   it("adds a new asset to instruments.csv once", () => {

@@ -134,8 +134,8 @@ export async function saveReport(form: FormData): Promise<SaveResult> {
         body: [
           `${p.isNew ? "New" : "Updated"} research report for **${ticker}**, ${draft.status === "published" ? "to publish" : "in progress"}.`,
           "",
-          `- Fair value: ${draft.fairValue || "not set"}`,
-          `- Method: ${draft.method}`,
+          `- View: ${draft.view || "not set"}${draft.conviction ? ` (${draft.conviction} conviction)` : ""}`,
+          `- Strategy: ${draft.strategy.family || "not set"}${draft.strategy.rule ? `: ${draft.strategy.rule}` : ""}`,
           `- Thesis: ${draft.thesis}`,
           files.length > 1 ? `- Also changes: ${files.slice(1).map((f) => `\`${f.path}\``).join(", ")}` : "",
           "",

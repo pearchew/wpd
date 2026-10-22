@@ -6,16 +6,17 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { type SavePayload, type SaveResult, saveReport } from "@/app/admin/research/actions";
 import type { FormContext } from "@/lib/admin/load";
 import {
-  METHODS,
   MODEL_MAX_BYTES,
   type NewAsset,
   type ReportDraft,
   THESIS_HINT,
+  emptyKeyNumber,
   problems,
+  starterBody,
   usesMdxComponents,
 } from "@/lib/admin/report";
-import { ASSET_CLASSES, type AssetClass, CONCLUSIONS } from "@/lib/schemas";
-import { ConclusionPill } from "../Verdict";
+import { ASSET_CLASSES, type AssetClass, CONVICTIONS, STRATEGY_FAMILIES, VIEWS } from "@/lib/schemas";
+import { ViewPill } from "../Verdict";
 import { RichEditor } from "./RichEditor";
 
 interface Props {
@@ -29,20 +30,16 @@ interface Props {
 
 const money = (n: number, currency = "USD") =>
   new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-const pct = (n: number) => `${n >= 0 ? "+" : "−"}${Math.abs(n * 100).toFixed(1)}%`;
-
-/** The committee's thresholds from Fund Rules, as a hint while typing the fair value. */
-function upsideHint(cls: AssetClass, upside: number): { text: string; tone: "gain" | "loss" | "flat" } {
-  if (cls !== "Equities") return { text: "Bonds and gold are judged on volatility and Sharpe, not upside", tone: "flat" };
-  if (upside >= 0.15) return { text: "Clears the 15% Include bar", tone: "gain" };
-  if (upside >= 0) return { text: "Watch range (0–15% upside)", tone: "flat" };
-  return { text: "Below the price: Reject range", tone: "loss" };
-}
+const KIND_LABEL: Record<string, string> = { stock: "Stock", etf: "ETF", future: "Future", option: "Option" };
 
 export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, ctx, connected }: Props) {
   const router = useRouter();
   const [d, setD] = useState<ReportDraft>(initial);
   const [body, setBody] = useState(initialBody);
+  // A new report's write-up follows the asset type until someone types in it.
+  const [seed, setSeed] = useState(initialBody);
+  const [seedKey, setSeedKey] = useState(0);
+  const [pristine, setPristine] = useState(isNew);
   const [html, setHtml] = useState("");
   const [file, setFile] = useState<File | undefined>();
   const [asset, setAsset] = useState<NewAsset>({ kind: "stock", currency: "USD", feedSymbol: "" });
@@ -58,9 +55,8 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
   const known = ctx.assets.find((a) => a.ticker === ticker);
   const duplicate = isNew && !pr && ctx.reports.includes(ticker);
   const price = ctx.prices[ticker];
-  const currency = ctx.assets.find((a) => a.ticker === ticker)?.currency ?? "USD";
-  const fv = Number(d.fairValue.replace(/[$,\s]/g, ""));
-  const upside = price && fv > 0 ? fv / price - 1 : undefined;
+  const currency = known?.currency ?? asset.currency ?? "USD";
+  const kind = known?.kind ?? asset.kind;
   const author = ctx.team.find((t) => t.initials === d.author);
   const mdxWarning = useMemo(() => usesMdxComponents(initialBody), [initialBody]);
 
@@ -85,6 +81,14 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
     setDirty(true);
     setResult(undefined);
   };
+  const setStrategy = (k: keyof ReportDraft["strategy"], v: string) => set("strategy", { ...d.strategy, [k]: v });
+  const setNumber = (i: number, k: keyof ReportDraft["keyNumbers"][number], v: string) =>
+    set("keyNumbers", d.keyNumbers.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  const reseed = (k: string, cls: string) => {
+    if (!pristine) return;
+    setSeed(starterBody(k, cls));
+    setSeedKey((n) => n + 1);
+  };
 
   const pickTicker = (raw: string) => {
     const t = raw.toUpperCase().replace(/\s+/g, "");
@@ -96,6 +100,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
     }));
     setDirty(true);
     setResult(undefined);
+    if (a) reseed(a.kind, a.assetClass);
   };
 
   const save = (mode: "draft" | "submit") => {
@@ -153,7 +158,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
         <div className="report-fields">
           <details open className="form-section">
             <summary>
-              1. The asset {sectionBadge(["ticker", "name", "assetClass", "method"])}
+              1. The asset {sectionBadge(["ticker", "name", "assetClass"])}
             </summary>
             <div className="field-grid">
               <label>
@@ -168,7 +173,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 />
                 {err("ticker") ||
                   (ticker &&
-                    (known ? <span className="field-ok">✓ known asset</span> : <span className="field-note">New to the site</span>))}
+                    (known ? <span className="field-ok">✓ known asset · {KIND_LABEL[known.kind] ?? known.kind}</span> : <span className="field-note">New to the site</span>))}
               </label>
               <datalist id="known-tickers">
                 {ctx.assets.map((a) => <option key={a.ticker} value={a.ticker}>{a.name}</option>)}
@@ -180,19 +185,23 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
               </label>
               <label>
                 Asset class
-                <select value={d.assetClass} disabled={Boolean(known)} onChange={(e) => set("assetClass", e.target.value as AssetClass)}>
+                <select
+                  value={d.assetClass}
+                  disabled={Boolean(known)}
+                  onChange={(e) => {
+                    set("assetClass", e.target.value as AssetClass);
+                    reseed(kind, e.target.value);
+                  }}
+                >
                   {ASSET_CLASSES.map((c) => <option key={c}>{c}</option>)}
                 </select>
                 {err("assetClass") || (known && <span className="field-note">From the asset list</span>)}
               </label>
               <label>
-                Method
-                <input value={d.method} onChange={(e) => set("method", e.target.value)} list="methods" />
-                {err("method") || <span className="field-note">Pick one or type your own</span>}
+                Exchange
+                <input value={d.exchange} onChange={(e) => set("exchange", e.target.value)} placeholder="NASDAQ, TSE, KRX, ASX, COMEX" />
+                <span className="field-note">Optional</span>
               </label>
-              <datalist id="methods">
-                {METHODS.map((m) => <option key={m} value={m} />)}
-              </datalist>
             </div>
             {ticker && !known && !tickerLocked && (
               <fieldset className="new-asset">
@@ -204,7 +213,13 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 <div className="field-grid">
                   <label>
                     Type
-                    <select value={asset.kind} onChange={(e) => setAsset({ ...asset, kind: e.target.value as NewAsset["kind"] })}>
+                    <select
+                      value={asset.kind}
+                      onChange={(e) => {
+                        setAsset({ ...asset, kind: e.target.value as NewAsset["kind"] });
+                        reseed(e.target.value, d.assetClass);
+                      }}
+                    >
                       <option value="stock">Stock</option>
                       <option value="etf">ETF</option>
                     </select>
@@ -216,16 +231,20 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                   <label>
                     Price feed symbol
                     <input value={asset.feedSymbol} placeholder={ticker} onChange={(e) => setAsset({ ...asset, feedSymbol: e.target.value })} />
-                    <span className="field-note">Leave blank if it matches the ticker</span>
+                    <span className="field-note">Yahoo Finance&apos;s symbol; leave blank if it matches the ticker</span>
                   </label>
                 </div>
               </fieldset>
             )}
+            <p className="field-note">
+              Author {author?.name ?? d.author} · updated {d.updated}
+              {d.published ? ` · first published ${d.published}` : " · the publish date is set when it is first published"}
+            </p>
           </details>
 
           <details open className="form-section">
             <summary>
-              2. The call {sectionBadge(["status", "fairValue", "conclusion", "thesis", "sellTrigger"])}
+              2. The call {sectionBadge(["status", "view", "thesis", "conviction", "keyNumbers", "family", "rule", "entry", "exit"])}
             </summary>
             <div className="radio-row" role="radiogroup" aria-label="Status">
               <label className="check">
@@ -235,83 +254,99 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 <input type="radio" checked={d.status === "published"} onChange={() => set("status", "published")} /> Published
               </label>
             </div>
-            <label>
-              Fair value (per share{currency !== "USD" && `, ${currency}`})
-              <input value={d.fairValue} inputMode="decimal" onChange={(e) => set("fairValue", e.target.value)} placeholder="182.00" />
-              {err("fairValue") ||
-                (price ? (
-                  upside !== undefined ? (
-                    <span className={`field-note ${upsideHint(d.assetClass, upside).tone}`}>
-                      Latest close {money(price, currency)} → {pct(upside)} · {upsideHint(d.assetClass, upside).text}
-                    </span>
-                  ) : (
-                    <span className="field-note">Latest close {money(price, currency)}</span>
-                  )
-                ) : (
-                  ticker && <span className="field-note">No price yet for {ticker}</span>
-                ))}
-            </label>
-            <fieldset className="conclusion-field">
-              <legend>Conclusion</legend>
-              <div className="radio-row" role="radiogroup" aria-label="Conclusion">
-                {CONCLUSIONS.map((c) => (
-                  <label className="check" key={c}>
-                    <input type="radio" checked={d.conclusion === c} onChange={() => set("conclusion", c)} /> {c}
+            <fieldset className="choice-field">
+              <legend>View</legend>
+              <div className="radio-row wrap" role="radiogroup" aria-label="View">
+                {VIEWS.map((v) => (
+                  <label className="check" key={v}>
+                    <input type="radio" checked={d.view === v} onChange={() => set("view", v)} /> {v}
                   </label>
                 ))}
               </div>
-              {err("conclusion") || <span className="field-note">Your own call from the research. Avoid reports are published too.</span>}
+              {err("view") || <span className="field-note">Your position from the research. Every view is published, neutral and watch too.</span>}
             </fieldset>
             <label>
               Thesis
-              <textarea rows={2} value={d.thesis} onChange={(e) => set("thesis", e.target.value)} placeholder="One sentence on what the research concluded and why" />
+              <textarea rows={2} value={d.thesis} onChange={(e) => set("thesis", e.target.value)} placeholder="One line: what you think will happen and why" />
               {err("thesis") || (
                 <span className={`field-note${d.thesis.length > THESIS_HINT ? " loss" : ""}`}>
                   Shown on the site · {d.thesis.length} / {THESIS_HINT}
                 </span>
               )}
             </label>
-            <label>
-              Sell trigger
-              <textarea rows={2} value={d.sellTrigger} onChange={(e) => set("sellTrigger", e.target.value)} placeholder="What would make us sell" />
-              {err("sellTrigger") || (
-                <span className="field-note">Price, thesis metric or date. Required to publish a Buy, so it is written at entry.</span>
-              )}
-            </label>
-          </details>
+            <fieldset className="choice-field">
+              <legend>Conviction</legend>
+              <div className="radio-row" role="radiogroup" aria-label="Conviction">
+                {CONVICTIONS.map((c) => (
+                  <label className="check" key={c}>
+                    <input type="radio" checked={d.conviction === c} onChange={() => set("conviction", c)} /> {c}
+                  </label>
+                ))}
+              </div>
+              {err("conviction")}
+            </fieldset>
 
-          <details open={d.keyOutputs.length > 0} className="form-section">
-            <summary>
-              3. Key outputs <span className="badge">optional</span>
-            </summary>
-            {d.keyOutputs.map((o, i) => (
-              <div className="output-row" key={i}>
-                <input
-                  aria-label="Label"
-                  placeholder="Sustainable growth"
-                  value={o.label}
-                  onChange={(e) => set("keyOutputs", d.keyOutputs.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
-                />
-                <input
-                  aria-label="Value"
-                  placeholder="9.9%"
-                  value={o.value}
-                  onChange={(e) => set("keyOutputs", d.keyOutputs.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
-                />
-                <button type="button" className="icon-button" aria-label="Remove output" onClick={() => set("keyOutputs", d.keyOutputs.filter((_, j) => j !== i))}>
+            <h4 className="form-subhead">Key numbers</h4>
+            <p className="field-note">The three or four figures that matter most right now{price ? ` · latest close ${money(price, currency)}` : ""}.</p>
+            {d.keyNumbers.map((k, i) => (
+              <div className="number-row" key={i}>
+                <input aria-label="Label" placeholder="Copper inventories" value={k.label} onChange={(e) => setNumber(i, "label", e.target.value)} />
+                <input aria-label="Value" placeholder="152,000" value={k.value} onChange={(e) => setNumber(i, "value", e.target.value)} />
+                <input aria-label="Unit" placeholder="tonnes" value={k.unit} onChange={(e) => setNumber(i, "unit", e.target.value)} />
+                <input aria-label="As of" placeholder="YYYY-MM-DD" value={k.asOf} onChange={(e) => setNumber(i, "asOf", e.target.value)} />
+                <input aria-label="Source" placeholder="LME" value={k.source} onChange={(e) => setNumber(i, "source", e.target.value)} />
+                <button type="button" className="icon-button" aria-label="Remove number" onClick={() => set("keyNumbers", d.keyNumbers.filter((_, j) => j !== i))}>
                   ✕
                 </button>
               </div>
             ))}
-            {err("keyOutputs")}
-            <button type="button" className="link-button" onClick={() => set("keyOutputs", [...d.keyOutputs, { label: "", value: "" }])}>
-              + add output
+            {err("keyNumbers")}
+            <button type="button" className="link-button" onClick={() => set("keyNumbers", [...d.keyNumbers, emptyKeyNumber(d.updated)])}>
+              + add a number
             </button>
+
+            <h4 className="form-subhead">Strategy</h4>
+            <p className="field-note">The trading rule you&apos;re testing and where it comes from.</p>
+            <div className="field-grid">
+              <label>
+                Family
+                <select value={d.strategy.family} onChange={(e) => setStrategy("family", e.target.value)}>
+                  <option value="">Choose…</option>
+                  {STRATEGY_FAMILIES.map((f) => <option key={f}>{f}</option>)}
+                </select>
+                {err("family")}
+              </label>
+              <label>
+                Holding period
+                <input value={d.strategy.holding} onChange={(e) => setStrategy("holding", e.target.value)} placeholder="20 trading days" />
+              </label>
+            </div>
+            <label>
+              Rule
+              <textarea rows={2} value={d.strategy.rule} onChange={(e) => setStrategy("rule", e.target.value)} placeholder="Buy after a positive earnings surprise and hold while the drift lasts" />
+              {err("rule")}
+            </label>
+            <div className="field-grid">
+              <label>
+                Entry trigger
+                <textarea rows={2} value={d.strategy.entry} onChange={(e) => setStrategy("entry", e.target.value)} placeholder="What has to happen before we trade" />
+                {err("entry")}
+              </label>
+              <label>
+                Exit rule
+                <textarea rows={2} value={d.strategy.exit} onChange={(e) => setStrategy("exit", e.target.value)} placeholder="A price, a signal or a date" />
+                {err("exit") || <span className="field-note">Written at entry: when it fires, we sell unless 2 of 3 vote to keep it</span>}
+              </label>
+            </div>
+            <label>
+              Source paper(s)
+              <input value={d.strategy.papers} onChange={(e) => setStrategy("papers", e.target.value)} placeholder="Bernard & Thomas (1989), post-earnings drift" />
+            </label>
           </details>
 
           <details open={Boolean(d.model || file)} className="form-section">
             <summary>
-              4. Excel model <span className="badge">optional</span>
+              3. Excel model <span className="badge">optional</span>
             </summary>
             <label
               className="dropzone"
@@ -351,14 +386,22 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
           </details>
 
           <details open className="form-section">
-            <summary>5. The write-up</summary>
+            <summary>4. The write-up</summary>
+            {pristine && (
+              <p className="field-note">
+                Template for {kind === "future" ? "a future" : d.assetClass === "Commodities" ? "a commodity" : "a stock or ETF"}: fill in what you
+                have and delete what doesn&apos;t apply.
+              </p>
+            )}
             <RichEditor
-              markdown={initialBody}
+              key={seedKey}
+              markdown={seed}
               onChange={(md, h, first) => {
                 setBody(md);
                 setHtml(h);
                 if (!first) {
                   setDirty(true);
+                  setPristine(false);
                   setResult(undefined);
                 }
               }}
@@ -374,7 +417,8 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
               {d.name && <span> · {d.name}</span>}
             </h2>
             <p className="sub">
-              {d.assetClass} · {d.method || "method"} · {d.status === "published" ? "Published" : "Analysis in progress"}
+              {[d.exchange, d.assetClass, known ? KIND_LABEL[known.kind] : undefined].filter(Boolean).join(" · ")} ·{" "}
+              {d.status === "published" ? "Published" : "Analysis in progress"}
             </p>
             {author && (
               <p className="byline center">
@@ -382,36 +426,28 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 <img className="pixel-img" src={author.avatar} alt="" width={20} height={20} /> by {author.name}
               </p>
             )}
-            {d.status === "published" && fv > 0 && (
-              <div className="preview-kv">
-                <div><span>Fair value</span><b>{money(fv, currency)}</b></div>
-                {price && <div><span>Price</span><b>{money(price, currency)}</b></div>}
-                {upside !== undefined && (
-                  <div><span>Upside</span><b className={upside >= 0 ? "gain" : "loss"}>{pct(upside)}</b></div>
-                )}
-              </div>
-            )}
-            {d.conclusion && (
+            {(d.view || d.conviction) && (
               <p className="byline center">
-                Conclusion <ConclusionPill conclusion={d.conclusion} />
+                <ViewPill view={d.view || undefined} /> {d.conviction && `${d.conviction} conviction`}
               </p>
             )}
             {d.thesis && <p className="preview-thesis">&ldquo;{d.thesis}&rdquo;</p>}
-            {d.keyOutputs.some((o) => o.label) && (
+            {d.keyNumbers.some((k) => k.label) && (
               <div className="preview-kv">
-                {d.keyOutputs.filter((o) => o.label).map((o, i) => (
-                  <div key={i}><span>{o.label}</span><b>{o.value}</b></div>
+                {d.keyNumbers.filter((k) => k.label).map((k, i) => (
+                  <div key={i}><span>{k.label}</span><b>{k.value}{k.unit && ` ${k.unit}`}</b></div>
                 ))}
               </div>
             )}
           </header>
-          <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />
-          {d.sellTrigger && (
+          {(d.strategy.family || d.strategy.rule) && (
             <div className="callout">
-              <span className="pixel">Sell trigger</span>
-              {d.sellTrigger}
+              <span className="pixel">Strategy{d.strategy.family && ` · ${d.strategy.family}`}</span>
+              {d.strategy.rule}
+              {d.strategy.exit && <div className="muted">Exit: {d.strategy.exit}</div>}
             </div>
           )}
+          <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />
           {(file || d.model) && <p className="preview-model">📊 Download the model</p>}
         </aside>
       </div>

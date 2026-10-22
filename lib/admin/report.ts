@@ -2,25 +2,47 @@ import Papa from "papaparse";
 import { stringify } from "yaml";
 import { splitFrontmatter } from "../frontmatter";
 import { appendInstrumentRow, emptyAsset, instrumentRow } from "./assets";
-import { ASSET_CLASSES, type AssetClass, CONCLUSIONS, type Conclusion, ResearchFrontmatterSchema } from "../schemas";
+import {
+  ASSET_CLASSES,
+  type AssetClass,
+  CONVICTIONS,
+  type Conviction,
+  ResearchFrontmatterSchema,
+  STRATEGY_FAMILIES,
+  type StrategyFamily,
+  VIEWS,
+  type View,
+} from "../schemas";
 
-/** What the research form edits. Numbers stay strings until they are checked, so half-typed input survives. */
+export interface KeyNumberDraft {
+  label: string;
+  value: string;
+  unit: string;
+  asOf: string;
+  source: string;
+}
+
+/** What the research form edits. Everything stays a string until it is checked, so half-typed input survives. */
 export interface ReportDraft {
+  // The asset
   ticker: string;
   name: string;
   assetClass: AssetClass;
-  method: string;
-  status: "published" | "in-progress";
+  exchange: string;
   author: string;
+  /** First publication date; filled in the first time the report is saved as published. */
+  published: string;
   updated: string;
-  fairValue: string;
-  /** Empty until the author has reached a call. */
-  conclusion: Conclusion | "";
+  // The call
+  status: "published" | "in-progress";
+  /** Empty until the author has reached a view. */
+  view: View | "";
   thesis: string;
-  sellTrigger: string;
-  /** Path under public/, e.g. /models/jnj-ddm.xlsx. Kept when no new file is uploaded. */
+  conviction: Conviction | "";
+  keyNumbers: KeyNumberDraft[];
+  strategy: { family: StrategyFamily | ""; rule: string; entry: string; exit: string; holding: string; papers: string };
+  // Optional Excel model: path under public/, e.g. /models/jnj-model.xlsx. Kept when no new file is uploaded.
   model: string;
-  keyOutputs: { label: string; value: string }[];
 }
 
 /** A ticker the site doesn't know yet, added to instruments.csv in the same pull request. Stocks and ETFs only. */
@@ -35,70 +57,129 @@ export const BRANCH_PREFIX = "admin/research-";
 
 export const THESIS_HINT = 160;
 export const MODEL_MAX_BYTES = 4 * 1024 * 1024;
-export const METHODS = ["DCF", "Reverse DCF", "Two-stage DDM", "Comparables", "Sum of the parts", "Portfolio fit (vol / Sharpe)"];
+export const emptyKeyNumber = (asOf: string): KeyNumberDraft => ({ label: "", value: "", unit: "", asOf, source: "" });
 
 export const emptyDraft = (author: string, today: string): ReportDraft => ({
   ticker: "",
   name: "",
   assetClass: "Equities",
-  method: "DCF",
-  status: "in-progress",
+  exchange: "",
   author,
+  published: "",
   updated: today,
-  fairValue: "",
-  conclusion: "",
+  status: "in-progress",
+  view: "",
   thesis: "",
-  sellTrigger: "",
+  conviction: "",
+  keyNumbers: [],
+  strategy: { family: "", rule: "", entry: "", exit: "", holding: "", papers: "" },
   model: "",
-  keyOutputs: [],
 });
 
-export const STARTER_BODY =
-  "## Valuation\n\n## Bear, base and bull\n\n## What the price implies\n\n## The bear case (written by a teammate)\n\n## Conclusion\n";
+const table = (head: string[], align: ("l" | "r")[], first: string[] = head.map(() => "")) =>
+  [
+    `| ${head.join(" | ")} |`,
+    `| ${align.map((a) => (a === "r" ? "---:" : "---")).join(" | ")} |`,
+    `| ${first.map((c) => c || " ").join(" | ")} |`,
+  ].join("\n");
+
+/**
+ * The write-up's starting point: the core sections every report has, plus the ones for its kind of asset
+ * (futures and commodities: contract, curve, supply and demand; stocks and ETFs: peer and currency).
+ */
+export function starterBody(kind?: string, assetClass?: string): string {
+  const future = kind === "future";
+  const commodity = future || assetClass === "Commodities";
+  const stock = !commodity && kind !== "option";
+  const parts = [
+    "## What it is\n\nWhat the asset is and how it makes money. Link a \"how the money flows\" diagram if you have one.",
+    `## ${commodity ? "Demand breakdown" : "Revenue breakdown"}\n\nWhere the ${commodity ? "demand" : "money"} comes from.\n\n${table(["Segment", "Description", "Value or %", "Source"], ["l", "l", "r", "l"])}`,
+    `## Price drivers\n\nWhat actually moves the price, most important first, and where to watch it.\n\n${table(["Rank", "Driver", "Direction (+/−)", "Where to track it"], ["r", "l", "l", "l"], ["1", "", "", ""])}`,
+    `## Catalyst calendar\n\nUpcoming dated events that could move the price. Type: earnings, policy, data or deal.\n\n${table(["Date", "Event", "Type", "Expected impact"], ["l", "l", "l", "l"])}`,
+    "## Evidence\n\nHas the strategy's rule worked on this asset so far? Link a chart, or put it in the Excel model.\n\n- **Sample size:**\n- **Result:**\n- **Limitations:**",
+    `## Valuation check\n\nIs the good news already in the price? No price target.\n\n${table(["Metric", "Current", "Own history", "Peers", "Comment"], ["l", "r", "r", "r", "l"])}`,
+    `## Risks\n\nWhat would break the thesis. A teammate writes at least one.\n\n${table(["Risk", "Likelihood", "Impact", "What would signal it"], ["l", "l", "l", "l"])}`,
+    "## What would change our mind\n\nThe kill switch, set before the trade so we don't rationalise later.\n\n- ",
+    ...(future
+      ? [`## Contract specs\n\n${table(["Exchange", "Contract size", "Tick value", "Expiry months", "Margin"], ["l", "l", "r", "l", "r"])}`]
+      : []),
+    ...(commodity
+      ? [
+          `## Curve and inventories\n\nBackwardation (later months cheaper) means a tight market; contango means a loose one.\n\n${table(["Month", "Price"], ["l", "r"])}\n\n- **Exchange inventories:**\n- **Roll yield:**`,
+          `## Supply-demand balance\n\nWhose surplus or deficit forecast do we believe?\n\n${table(["Forecaster", "Year", "Balance (tonnes)", "Date"], ["l", "l", "r", "l"])}`,
+        ]
+      : []),
+    ...(stock
+      ? [
+          "## Peer / pair\n\n- **Peer ticker:**\n- **Why it's comparable:**\n- **Correlation or cointegration:**",
+          "## Currency exposure\n\n- **Reporting currency:**\n- **Main revenue currencies:**\n- **Sensitivity:** how much FX could add to or wipe out the return.",
+        ]
+      : []),
+    `## Event log\n\nEach news event and how the price reacted. Returns are from the close before the news.\n\n${table(["Date", "Headline", "Link", "Tone (+/0/−)", "News or no-news", "1-day", "5-day", "20-day"], ["l", "l", "l", "l", "l", "r", "r", "r"])}`,
+    "## Review notes\n\n### YYYY-MM-DD\n\n- **What happened:**\n- **Rule followed:** yes / no\n- **Lesson:**",
+    `## Sources\n\n${table(["Title", "URL", "Date accessed"], ["l", "l", "l"])}`,
+  ];
+  return `${parts.join("\n\n")}\n`;
+}
 
 export const slugFor = (ticker: string) => ticker.trim().toLowerCase();
 export const reportPath = (ticker: string) => `content/research/${slugFor(ticker)}.mdx`;
 
-/** Frontmatter in the same key order as the hand-written reports, with empty optional fields left out. */
+/** Frontmatter in the order the form shows it, with empty optional fields left out. */
 export function frontmatter(d: ReportDraft): Record<string, unknown> {
-  const fv = d.fairValue.trim() === "" ? undefined : Number(d.fairValue.replace(/[$,\s]/g, ""));
-  const outputs = d.keyOutputs
-    .map((o) => ({ label: o.label.trim(), value: o.value.trim() }))
-    .filter((o) => o.label || o.value);
+  const t = (v: string) => v.trim() || undefined;
+  const numbers = d.keyNumbers
+    .map((k) => ({ label: k.label.trim(), value: k.value.trim(), unit: t(k.unit), asOf: t(k.asOf), source: t(k.source) }))
+    .filter((k) => k.label || k.value)
+    .map((k) => Object.fromEntries(Object.entries(k).filter(([, v]) => v !== undefined)));
+  const st = d.strategy;
+  const strategy = st.family || st.rule.trim()
+    ? Object.fromEntries(
+        Object.entries({ family: st.family || undefined, rule: st.rule.trim(), entry: t(st.entry), exit: t(st.exit), holding: t(st.holding), papers: t(st.papers) })
+          .filter(([, v]) => v !== undefined),
+      )
+    : undefined;
   const f: Record<string, unknown> = {
     ticker: d.ticker.trim().toUpperCase(),
     name: d.name.trim(),
     assetClass: d.assetClass,
-    method: d.method.trim(),
-    status: d.status,
+    exchange: t(d.exchange),
     author: d.author,
+    published: t(d.published) ?? (d.status === "published" ? d.updated : undefined),
     updated: d.updated,
-    fairValue: fv,
-    conclusion: d.conclusion || undefined,
+    status: d.status,
+    view: d.view || undefined,
     thesis: d.thesis.trim(),
-    sellTrigger: d.sellTrigger.trim() || undefined,
-    model: d.model.trim() || undefined,
-    keyOutputs: outputs.length ? outputs : undefined,
+    conviction: d.conviction || undefined,
+    keyNumbers: numbers.length ? numbers : undefined,
+    strategy,
+    model: t(d.model),
   };
   for (const k of Object.keys(f)) if (f[k] === undefined) delete f[k];
   return f;
 }
 
 /** Problems a person can fix in the form, keyed by field. Empty means the file will pass `npm run validate`. */
-export function problems(d: ReportDraft): Partial<Record<keyof ReportDraft | "form", string>> {
-  const out: Partial<Record<keyof ReportDraft | "form", string>> = {};
+export function problems(d: ReportDraft): Partial<Record<string, string>> {
+  const out: Partial<Record<string, string>> = {};
   if (!/^[A-Za-z0-9.\-]{1,24}$/.test(d.ticker.trim())) out.ticker = "Letters, numbers, dots or dashes";
   if (!d.name.trim()) out.name = "Required";
-  if (!d.method.trim()) out.method = "Required";
   if (!d.thesis.trim()) out.thesis = "Required";
-  const fv = d.fairValue.trim();
-  if (fv && !(Number(fv.replace(/[$,\s]/g, "")) > 0)) out.fairValue = "A positive number";
+  const st = d.strategy;
+  if (st.rule.trim() && !st.family) out.family = "Pick the family the rule belongs to";
+  if (st.family && !st.rule.trim()) out.rule = "Write the rule";
   if (d.status === "published") {
-    if (!fv) out.fairValue ??= "Required to publish";
-    if (!d.conclusion) out.conclusion = "Required to publish";
-    if (d.conclusion === "Buy" && !d.sellTrigger.trim()) out.sellTrigger = "Required to publish a Buy";
+    if (!d.view) out.view = "Required to publish";
+    if (!d.conviction) out.conviction = "Required to publish";
+    if (!st.family) out.family ??= "Required to publish";
+    if (!st.rule.trim()) out.rule ??= "Required to publish";
+    if (d.view === "Long" || d.view === "Short") {
+      if (!st.entry.trim()) out.entry = `Required to publish a ${d.view} view`;
+      if (!st.exit.trim()) out.exit = `Required to publish a ${d.view} view`;
+    }
   }
-  if (d.keyOutputs.some((o) => !o.label.trim() !== !o.value.trim())) out.keyOutputs = "Each output needs a label and a value";
+  if (d.keyNumbers.some((k) => !k.label.trim() !== !k.value.trim())) out.keyNumbers = "Each number needs a label and a value";
+  else if (d.keyNumbers.some((k) => k.asOf.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(k.asOf.trim()))) out.keyNumbers = "As-of dates are YYYY-MM-DD";
   if (Object.keys(out).length === 0) {
     const r = ResearchFrontmatterSchema.safeParse(frontmatter(d));
     if (!r.success) out.form = r.error.issues.map((i) => `${i.path.join(".") || "report"}: ${i.message}`).join("; ");
@@ -116,23 +197,31 @@ export function fromMdx(raw: string): { draft: ReportDraft; body: string } {
   const { data, body } = splitFrontmatter(raw);
   const f = data as Record<string, unknown>;
   const str = (v: unknown) => (v === undefined || v === null ? "" : String(v));
+  const pick = <T extends string>(list: readonly T[], v: unknown): T | "" => ((list as readonly string[]).includes(str(v)) ? (v as T) : "");
+  const st = (f.strategy ?? {}) as Record<string, unknown>;
   return {
     draft: {
       ticker: str(f.ticker),
       name: str(f.name),
-      assetClass: (ASSET_CLASSES as readonly string[]).includes(str(f.assetClass)) ? (f.assetClass as AssetClass) : "Equities",
-      method: str(f.method),
-      status: f.status === "published" ? "published" : "in-progress",
+      assetClass: pick(ASSET_CLASSES, f.assetClass) || "Equities",
+      exchange: str(f.exchange),
       author: str(f.author),
+      published: str(f.published),
       updated: str(f.updated),
-      fairValue: str(f.fairValue),
-      conclusion: (CONCLUSIONS as readonly string[]).includes(str(f.conclusion)) ? (f.conclusion as Conclusion) : "",
+      status: f.status === "published" ? "published" : "in-progress",
+      view: pick(VIEWS, f.view),
       thesis: str(f.thesis),
-      sellTrigger: str(f.sellTrigger),
-      model: str(f.model),
-      keyOutputs: Array.isArray(f.keyOutputs)
-        ? (f.keyOutputs as { label?: unknown; value?: unknown }[]).map((o) => ({ label: str(o.label), value: str(o.value) }))
+      conviction: pick(CONVICTIONS, f.conviction),
+      keyNumbers: Array.isArray(f.keyNumbers)
+        ? (f.keyNumbers as Record<string, unknown>[]).map((k) => ({
+            label: str(k.label), value: str(k.value), unit: str(k.unit), asOf: str(k.asOf), source: str(k.source),
+          }))
         : [],
+      strategy: {
+        family: pick(STRATEGY_FAMILIES, st.family),
+        rule: str(st.rule), entry: str(st.entry), exit: str(st.exit), holding: str(st.holding), papers: str(st.papers),
+      },
+      model: str(f.model),
     },
     body: body.trim(),
   };
