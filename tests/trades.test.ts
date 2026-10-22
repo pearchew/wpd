@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { addedRows, appendTrades, emptyTrade, parseTrades, toTrade, tradeProblems } from "@/lib/admin/trades";
 import type { Instrument } from "@/lib/schemas";
-import { checkLedger } from "@/lib/tradeChecks";
+import { checkLedger, fxLookup } from "@/lib/tradeChecks";
+import { price } from "@/lib/format";
+import { displayTicker } from "@/lib/team";
 
 const HEADER = "date,book,ticker,action,shares,price,fees,currency,notional_slice,note";
 const CSV = `${HEADER}\n2026-10-14,real,CASH,deposit,,100,,USD,,Starting capital\n2026-10-14,real,NVDA,buy,0.2245,222.69,0,USD,,Half\n`;
@@ -81,5 +83,38 @@ describe("ledger checks", () => {
   it("refuses real-book derivatives", () => {
     const fut = toTrade(row({ action: "buy", ticker: "MESZ6", shares: "1", price: "1" }), INST);
     expect(checkLedger([...base, fut], INST, m).errors[0]).toContain("must be a paper trade");
+  });
+
+  it("converts trades in other currencies at the stored rate for their date", () => {
+    const jp: Instrument = { ...inst("8750.T"), currency: "JPY" };
+    const fx = fxLookup({ dates: ["2026-10-13", "2026-10-14"], fx: { JPYUSD: [0.0066, 0.0068] } }, "USD");
+    const buy = toTrade(row({ date: "2026-10-14", action: "buy", ticker: "8750.T", shares: "1", price: "4000" }), [...INST, jp]);
+    expect(buy.currency).toBe("JPY");
+    const c = checkLedger([...base, buy], [...INST, jp], m, undefined, fx);
+    expect(c.errors).toEqual([]);
+    expect(c.cash).toBeCloseTo(100 - 0.2245 * 222.69 - 4000 * 0.0068, 6);
+    expect(c.cost["8750.T"]).toBeCloseTo(27.2, 6);
+    // A trade dated after the last stored rate uses the latest one
+    expect(fx("JPY", "2026-10-20")).toBe(0.0068);
+  });
+
+  it("flags a foreign-currency trade with no exchange rate", () => {
+    const jp: Instrument = { ...inst("8750.T"), currency: "JPY" };
+    const buy = toTrade(row({ action: "buy", ticker: "8750.T", shares: "1", price: "4000" }), [...INST, jp]);
+    expect(checkLedger([...base, buy], [...INST, jp], m).errors[0]).toContain("no JPYUSD exchange rate");
+  });
+});
+
+describe("display", () => {
+  it("shortens only real option tickers", () => {
+    expect(displayTicker("SPY261218P640")).toBe("SPY put");
+    expect(displayTicker("SPY261218C700")).toBe("SPY call");
+    expect(displayTicker("042660.KS")).toBe("042660.KS");
+  });
+
+  it("formats prices in the asset's own currency", () => {
+    expect(price(182)).toBe("$182");
+    expect(price(4032.04, "JPY")).toBe("¥4,032");
+    expect(price(7.5, "AUD")).toBe("A$7.50");
   });
 });

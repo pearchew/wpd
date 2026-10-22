@@ -9,7 +9,7 @@ import { readFile } from "./github";
 
 /** What the research form needs to know about the rest of the site. Plain data, so it can cross to the client. */
 export interface FormContext {
-  assets: { ticker: string; name: string; assetClass: string }[];
+  assets: { ticker: string; name: string; assetClass: string; currency: string }[];
   prices: Record<string, number>;
   team: { initials: string; name: string; avatar: string }[];
   reports: string[];
@@ -17,7 +17,7 @@ export interface FormContext {
 
 export async function formContext(cfg: RepoConfig | undefined, ref?: string): Promise<FormContext> {
   const d = await getFundData();
-  let assets = instruments().map((i) => ({ ticker: i.ticker, name: i.name, assetClass: i.asset_class as string }));
+  let assets = instruments().map((i) => ({ ticker: i.ticker, name: i.name, assetClass: i.asset_class as string, currency: i.currency }));
   // On a pull request branch the asset list may already include a ticker that branch added.
   if (cfg && ref) {
     const csv = await readFile(cfg, "data/instruments.csv", ref);
@@ -26,6 +26,7 @@ export async function formContext(cfg: RepoConfig | undefined, ref?: string): Pr
         ticker: r.ticker?.trim() ?? "",
         name: r.name?.trim() ?? "",
         assetClass: r.asset_class?.trim() ?? "",
+        currency: r.currency?.trim() || "USD",
       }));
     }
   }

@@ -1,7 +1,8 @@
 import Papa from "papaparse";
 import { checkInstruments } from "../instrumentChecks";
 import { type Instrument, InstrumentSchema, type Trade, TradeSchema } from "../schemas";
-import { checkLedger } from "../tradeChecks";
+import type { PriceBook } from "../prices/types";
+import { checkLedger, fxLookup } from "../tradeChecks";
 
 /** Every pull request the delete page opens lives on a branch starting with this. */
 export const DELETE_PREFIX = "admin/delete-";
@@ -35,6 +36,9 @@ export interface Sources {
   reports: ReportInfo[];
   benchmark: string;
   maxPositionWeight: number;
+  /** Exchange rates for trades in other currencies (plain data: this goes to the browser) */
+  fx?: Pick<PriceBook, "dates" | "fx">;
+  reportingCurrency?: string;
 }
 
 export interface PlannedRow {
@@ -168,7 +172,13 @@ export function planDeletion(src: Sources, sel: Selection): Plan {
     const instruments: Instrument[] = parseRows(inst.header, instLeft, InstrumentSchema);
     errors.push(...checkInstruments(instruments, src.benchmark));
     const ledger: Trade[] = parseRows(trades.header, tradesLeft, TradeSchema);
-    errors.push(...checkLedger(ledger, instruments, { maxPositionWeight: src.maxPositionWeight }, (i) => `remaining trade ${i + 1}`).errors);
+    errors.push(...checkLedger(
+      ledger,
+      instruments,
+      { maxPositionWeight: src.maxPositionWeight, reportingCurrency: src.reportingCurrency },
+      (i) => `remaining trade ${i + 1}`,
+      src.fx && fxLookup(src.fx, src.reportingCurrency ?? "USD"),
+    ).errors);
   } catch (e) {
     errors.push(`The remaining rows don't parse: ${(e as Error).message}`);
   }

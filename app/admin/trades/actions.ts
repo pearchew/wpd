@@ -16,9 +16,10 @@ import {
 } from "@/lib/admin/trades";
 import { meta } from "@/lib/data";
 import { getFundData } from "@/lib/fund";
+import { getPriceBook } from "@/lib/prices";
 import { toISO } from "@/lib/dates";
 import type { Trade } from "@/lib/schemas";
-import { checkLedger } from "@/lib/tradeChecks";
+import { checkLedger, fxLookup } from "@/lib/tradeChecks";
 
 export type TradeSaveResult =
   | { ok: true; pr: { number: number; url: string } }
@@ -63,8 +64,12 @@ export async function saveTrades(inputs: TradeInput[], pr?: number): Promise<Tra
   if (rowProblems.length) return { ok: false, error: "Some trades need fixing.", problems: rowProblems };
 
   const rows = inputs.map((t) => toTrade(t, inst));
-  const check = checkLedger([...existing, ...rows], inst, meta(), (i) =>
-    i < existing.length ? `trades.csv row ${i + 2}` : `Trade ${i - existing.length + 1}`,
+  const check = checkLedger(
+    [...existing, ...rows],
+    inst,
+    meta(),
+    (i) => (i < existing.length ? `trades.csv row ${i + 2}` : `Trade ${i - existing.length + 1}`),
+    fxLookup(await getPriceBook(), meta().reportingCurrency),
   );
   if (check.errors.length) return { ok: false, error: "These trades would fail the site's checks.", problems: check.errors };
 

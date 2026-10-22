@@ -18,7 +18,8 @@ import {
 import { fmtDate } from "@/lib/dates";
 import { money, signedMoney } from "@/lib/format";
 import type { Instrument, Trade } from "@/lib/schemas";
-import { checkLedger } from "@/lib/tradeChecks";
+import { checkLedger, fxLookup } from "@/lib/tradeChecks";
+import type { PriceBook } from "@/lib/prices/types";
 
 interface Props {
   today: string;
@@ -28,6 +29,9 @@ interface Props {
   pending: Trade[];
   instruments: Instrument[];
   prices: Record<string, number>;
+  /** Exchange rates, so trades in other currencies are checked and shown in the reporting currency */
+  fx: Pick<PriceBook, "dates" | "fx">;
+  reportingCurrency: string;
   maxWeight: number;
   openPr?: { number: number; url: string };
   connected: boolean;
@@ -76,7 +80,7 @@ function Holdings({ before, after }: { before: ReturnType<typeof checkLedger>; a
   );
 }
 
-export function TradeForm({ today, trades, pending, instruments, prices, maxWeight, openPr, connected }: Props) {
+export function TradeForm({ today, trades, pending, instruments, prices, fx, reportingCurrency, maxWeight, openPr, connected }: Props) {
   const router = useRouter();
   const [t, setT] = useState<TradeInput>(emptyTrade(today));
   const [list, setList] = useState<TradeInput[]>([]);
@@ -87,14 +91,25 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
   // Real-book trades only: futures and options stay paper trades, recorded by hand for now.
   const tradeable = useMemo(() => instruments.filter((i) => i.kind === "stock" || i.kind === "etf"), [instruments]);
   const known = useMemo(() => new Set(tradeable.map((i) => i.ticker)), [tradeable]);
-  const before = useMemo(() => checkLedger(trades, instruments, { maxPositionWeight: maxWeight }), [trades, instruments, maxWeight]);
+  const rates = useMemo(() => fxLookup(fx, reportingCurrency), [fx, reportingCurrency]);
+  const m = { maxPositionWeight: maxWeight, reportingCurrency };
+  const before = useMemo(
+    () => checkLedger(trades, instruments, m, undefined, rates),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [trades, instruments, maxWeight, rates],
+  );
   const listed = useMemo(() => list.map((x) => toTrade(x, instruments)), [list, instruments]);
   const after = useMemo(
     () =>
-      checkLedger([...trades, ...listed], instruments, { maxPositionWeight: maxWeight }, (i) =>
-        i < trades.length ? `trades.csv row ${i + 2}` : `Trade ${i - trades.length + 1}`,
+      checkLedger(
+        [...trades, ...listed],
+        instruments,
+        m,
+        (i) => (i < trades.length ? `trades.csv row ${i + 2}` : `Trade ${i - trades.length + 1}`),
+        rates,
       ),
-    [trades, listed, instruments, maxWeight],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [trades, listed, instruments, maxWeight, rates],
   );
   // Rows already in trades.csv can't be fixed here; only flag what the new rows cause.
   const newErrors = after.errors.filter((e) => !before.errors.includes(e));
@@ -107,7 +122,13 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
   const held = after.held[ticker] ?? 0;
   const price = prices[ticker];
   const shares = sharesFor(t);
-  const effect = cashEffect(t);
+  /** The row's currency (the asset's, or the reporting currency for cash rows) and its cash effect in the reporting currency. */
+  const currencyOf = (x: TradeInput) =>
+    CASH_ACTIONS.includes(x.action) ? reportingCurrency : (instruments.find((i) => i.ticker === x.ticker.trim().toUpperCase())?.currency ?? reportingCurrency);
+  const cashIn = (x: TradeInput) => cashEffect(x) * (rates(currencyOf(x), x.date) ?? 1);
+  const ccy = currencyOf(t);
+  const amountLabel = `Amount (${ccy === "USD" ? "$" : ccy})`;
+  const effect = cashIn(t);
 
   const set = <K extends keyof TradeInput>(k: K, v: TradeInput[K]) => {
     setT((prev) => ({ ...prev, [k]: v }));
@@ -213,7 +234,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
                   <input type="radio" checked={t.sizeBy === "shares"} onChange={() => set("sizeBy", "shares")} /> Shares
                 </label>
                 <label className="check">
-                  <input type="radio" checked={t.sizeBy === "dollars"} onChange={() => set("sizeBy", "dollars")} /> Dollar amount
+                  <input type="radio" checked={t.sizeBy === "dollars"} onChange={() => set("sizeBy", "dollars")} /> {ccy === "USD" ? "Dollar amount" : `Amount in ${ccy}`}
                 </label>
               </div>
               <div className="field-grid three">
@@ -230,13 +251,13 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
                   </label>
                 ) : (
                   <label>
-                    Amount ($)
+                    {amountLabel}
                     <input inputMode="decimal" value={t.amount} onChange={(e) => set("amount", e.target.value)} placeholder="20.00" />
                     {err("amount") || (shares ? <span className="field-note">= {shares.toFixed(4)} shares</span> : null)}
                   </label>
                 )}
                 <label>
-                  Price per share
+                  Price per share{ccy !== "USD" && ` (${ccy})`}
                   <input inputMode="decimal" value={t.price} onChange={(e) => set("price", e.target.value)} placeholder="160.25" />
                   {err("price") || (price && t.price === price.toFixed(2) && <span className="field-note">Prefilled from the latest close: use the fill price</span>)}
                 </label>
@@ -251,7 +272,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
 
           {(isCash || t.action === "dividend") && (
             <label>
-              Amount ($)
+              {amountLabel}
               <input inputMode="decimal" value={t.amount} onChange={(e) => set("amount", e.target.value)} placeholder="50.00" />
               {err("amount")}
             </label>
@@ -301,7 +322,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, maxWeig
                         <td>{row.ticker}</td>
                         <td>{row.shares ?? ""}</td>
                         <td>{row.price !== undefined ? money(row.price) : ""}</td>
-                        <td className={cashEffect(x) < 0 ? "loss" : "gain"}>{cashEffect(x) ? signedMoney(cashEffect(x)) : ""}</td>
+                        <td className={cashIn(x) < 0 ? "loss" : "gain"}>{cashIn(x) ? signedMoney(cashIn(x)) : ""}</td>
                         <td className="row-actions">
                           <button
                             type="button"

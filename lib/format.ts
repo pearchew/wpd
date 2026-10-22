@@ -3,6 +3,15 @@ const usd = (min: number, max: number) =>
 
 export const money = (n: number, dp = 2): string => usd(dp, dp).format(n);
 
+/** A share price or fair value in the asset's own currency: "$182", "¥4,032", "A$108.40". Whole units from 100 up. */
+export const price = (n: number, currency = "USD"): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: n >= 100 ? 0 : 2,
+    maximumFractionDigits: n >= 100 ? 0 : 2,
+  }).format(n);
+
 export const signedMoney = (n: number, dp = 2): string =>
   `${n < 0 ? "−" : "+"}${usd(dp, dp).format(Math.abs(n))}`;
 

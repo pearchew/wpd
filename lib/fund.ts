@@ -5,6 +5,7 @@ import {
   dailyReturns,
   dateIndexOnOrBefore,
   firstTradeDate,
+  fxRate,
   indexTo100,
   instrumentMap,
   positionPnl,
@@ -43,7 +44,10 @@ export interface HoldingRow {
   book: "real" | "paper";
   kind: Instrument["kind"];
   qty: number;
+  /** latest close, in `currency` */
   price: number;
+  currency: string;
+  /** in the reporting currency */
   value: number;
   weight: number;
   returnPct: number;
@@ -168,6 +172,7 @@ export const getFundData = cache(async (): Promise<FundData> => {
       kind: inst.kind,
       qty: pos.qty,
       price,
+      currency: inst.currency,
       research: researchInfo(pos.ticker),
       verdict,
       upside: fv ? fv / price - 1 : undefined,
@@ -188,13 +193,15 @@ export const getFundData = cache(async (): Promise<FundData> => {
 
     if (pos.book === "real") {
       if (pos.qty === 0) continue;
-      const value = pos.qty * price;
+      // The ledger keeps cost in the reporting currency; closes are in the asset's own currency.
+      const priceRep = price * fxRate(ctx, inst.currency, last);
+      const value = pos.qty * priceRep;
       real.push({
         ...base(pos, inst, price),
         value,
         weight: value / nav,
-        returnPct: price / pos.avg - 1,
-        pnl: positionPnl(pos, price) + pos.dividends,
+        returnPct: priceRep / pos.avg - 1,
+        pnl: positionPnl(pos, priceRep) + pos.dividends,
       });
       continue;
     }
@@ -418,6 +425,8 @@ export interface ResearchCard {
   thesis: string;
   fairValue?: number;
   conclusion?: Conclusion;
+  /** fair value and price are in this currency */
+  currency: string;
   price?: number;
   upside?: number;
   verdict: Verdict;
@@ -441,6 +450,7 @@ export function researchCards(d: FundData): ResearchCard[] {
       thesis: front.thesis,
       fairValue: pub ? front.fairValue : undefined,
       conclusion: pub ? front.conclusion : undefined,
+      currency: d.instruments.get(front.ticker)?.currency ?? d.meta.reportingCurrency,
       price,
       upside: pub && front.fairValue && price ? front.fairValue / price - 1 : undefined,
       verdict,

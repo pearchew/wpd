@@ -143,6 +143,15 @@ The quickest way is **Add asset** in [Team admin](#team-admin). By hand: the sit
 2. **Merge that pull request first**, then ask the **owner** to load the prices: they run `npm run db:backfill` on their machine, or click **Run** on the cron job in Vercel (Settings → Cron Jobs). The daily job picks up the new ticker automatically from then on.
 3. **Then** open a second pull request with the trade (and the report).
 
+**Assets in other currencies.** Set `currency` to the currency the stock trades in (`JPY`, `KRW`, `AUD`, …). Everything about the asset itself stays in that currency: its prices, the price and fees on its trade rows, and the fair value in its report. The price job also fetches that currency's daily rate against USD (`JPY/USD`), and the site converts at each day's rate. Cash, NAV, weights, returns and the 20% cap are all in USD. So a holding's return includes the currency move: if the yen falls 5%, a flat Tokyo stock shows −5%. Recording a trade in a currency needs at least one stored rate for it, so load prices (step 2) first.
+
+**Futures** need the contract details as well. The COMEX copper row is a worked example: one contract is 25,000 lb priced in dollars per lb, so `multiplier` is `25000`. The `underlying` is a copper spot row (`HG1`) used for the basis and roll yield. `expiry` is the last trading day, and `margin` / `maint_margin` are the broker's dollars per contract:
+   ```
+   HG1,"Copper spot (COMEX, $ per lb)",Commodities,USD,HG1,etf,1,,,,,,,
+   HGZ26,COMEX copper future (Dec 2026),Derivatives,USD,HG1,future,25000,HG1,1,2026-12-29,,,13200,12000
+   ```
+   Futures are paper trades only: `book=paper` plus a `notional_slice`. Roll to a new row (`HGH27`, …) before expiry.
+
 ### Write or update a research report
 
 Each asset has one file: `content/research/<ticker>.mdx`, with the ticker in **lower case** (`msft.mdx`, `nvda.mdx`).
@@ -360,7 +369,7 @@ Without the secret keys the site shows made-up prices and an orange demo banner,
 3. As soon as the two Supabase variables exist, the site reads real closes and the demo banner disappears. `vercel.json` schedules the daily job.
 4. **Current data:** `data/trades.csv` splits the $100 deposit evenly between NVDA and MSFT at the 2026-10-14 close, and `content/research/` has placeholder reports for both. Replace them with the real ledger and write-ups as you go. `votes.csv` and `team.csv` are placeholders too.
 
-The price feed is behind one interface in [lib/feed](lib/feed/index.ts); Twelve Data is wired up. Check that it covers every ticker you hold (futures and options symbols especially) before relying on it, and note the free plan's 8-requests-a-minute limit. Run `npm run db:backfill` once to load history since launch (the daily job only fetches the last few days), then `npm run db:check` to see the latest close for every instrument.
+The price feed is behind one interface in [lib/feed](lib/feed/index.ts); Twelve Data is wired up. Check that it covers every ticker you hold (futures and options symbols especially) before relying on it, and note the free plan's 8-requests-a-minute limit. The free plan covers US stocks and currency rates. Non-US exchanges (Tokyo, Korea, ASX) and commodities such as copper (`HG1`) need a paid plan. `feed_symbol` must be the provider's own name for the asset, which isn't always the Yahoo-style ticker (`8750.T`, `042660.KS`, `LYC.AX`). After a backfill, `npm run db:check` lists any instrument that came back with no prices. Run `npm run db:backfill` once to load history since launch (the daily job only fetches the last few days), then `npm run db:check` to see the latest close for every instrument.
 
 ## How the numbers work
 

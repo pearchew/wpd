@@ -1,5 +1,6 @@
 import { meta, researchDocs } from "../data";
 import { splitFrontmatter } from "../frontmatter";
+import { getPriceBook } from "../prices";
 import { readFiles } from "./change";
 import type { RepoConfig } from "./config";
 import type { ReportInfo, Sources } from "./deletions";
@@ -28,5 +29,9 @@ export async function deleteSources(cfg: RepoConfig | undefined, ref?: string): 
     reports = researchDocs().map((d) => ({ slug: d.slug, ticker: d.front.ticker, name: d.front.name, model: d.front.model }));
   }
   const m = meta();
-  return { instrumentsCsv, tradesCsv, votesCsv, reports, benchmark: m.benchmark, maxPositionWeight: m.maxPositionWeight };
+  const book = await getPriceBook();
+  return {
+    instrumentsCsv, tradesCsv, votesCsv, reports, benchmark: m.benchmark, maxPositionWeight: m.maxPositionWeight,
+    fx: { dates: book.dates, fx: book.fx }, reportingCurrency: m.reportingCurrency,
+  };
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Face } from "./Face";
 import { VerdictPill } from "./Verdict";
 import { hasActiveResearch, type FundData, type HoldingRow, type PaperRow, type View } from "@/lib/fund";
-import { money, signedMoney, signedPct, tone, pct } from "@/lib/format";
+import { money, price, signedMoney, signedPct, tone, pct } from "@/lib/format";
 import { displayTicker } from "@/lib/team";
 
 function TickerCell({ row }: { row: HoldingRow }) {
@@ -18,10 +18,9 @@ function FairValueCell({ row }: { row: HoldingRow }) {
   if (row.research?.status === "in-progress") return <span className="in-progress-chip">Analysis in progress</span>;
   if (!row.research?.fairValue) return <span className="muted">—</span>;
   const fv = row.research.fairValue;
-  const fmt = (n: number) => (n >= 100 ? `$${Math.round(n)}` : `$${n.toFixed(2)}`);
   return (
     <span>
-      {fmt(fv)} / {fmt(row.price)}{" "}
+      {price(fv, row.currency)} / {price(row.price, row.currency)}{" "}
       <span className={tone(row.upside ?? 0)}>{signedPct(row.upside ?? 0, 0)}</span>
     </span>
   );
