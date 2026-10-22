@@ -95,7 +95,6 @@ describe("report files", () => {
     name: "Johnson & Johnson",
     exchange: "NYSE",
     thesis: "Steady: dividends: and growth",
-    keyNumbers: [{ label: "Dividend yield", value: "3.1", unit: "%", asOf: "2026-10-20", source: "Company filings" }],
   };
   const strategy = {
     family: "Event-driven" as const,
@@ -105,9 +104,10 @@ describe("report files", () => {
     holding: "20 days",
     papers: "Bernard & Thomas (1989)",
   };
+  const noText = { family: "Carry" as const, rule: "", entry: "", exit: "", holding: "", papers: "" };
 
   it("round-trips through MDX and passes the site's schema", () => {
-    const full = { ...draft, view: "Long" as const, conviction: "High" as const, strategy };
+    const full = { ...draft, view: "Long" as const, strategy };
     const mdx = toMdx(full, "## What it is\n\nText.");
     const { data, body } = splitFrontmatter(mdx);
     expect(ResearchFrontmatterSchema.safeParse(data).success).toBe(true);
@@ -116,45 +116,39 @@ describe("report files", () => {
     expect(back.ticker).toBe("JNJ");
     expect(back.exchange).toBe("NYSE");
     expect(back.thesis).toBe(draft.thesis);
-    expect(back.keyNumbers).toEqual(draft.keyNumbers);
     expect(back.strategy).toEqual(strategy);
     expect(back.view).toBe("Long");
   });
 
-  it("asks for a view, conviction and strategy before publishing, and entry and exit only for long or short", () => {
+  it("needs only a thesis, a view and a strategy family to publish: the strategy's text boxes are optional", () => {
     expect(problems(draft)).toEqual({});
     const pub = problems({ ...draft, status: "published" });
     expect(pub.view).toBeDefined();
-    expect(pub.conviction).toBeDefined();
     expect(pub.family).toBeDefined();
-    const watch = { ...draft, status: "published" as const, view: "Watch" as const, conviction: "Low" as const };
-    expect(problems({ ...watch, strategy: { ...strategy, entry: "", exit: "" } })).toEqual({});
-    const short = problems({ ...watch, view: "Short", strategy: { ...strategy, entry: "", exit: "" } });
-    expect(short.entry).toBeDefined();
-    expect(short.exit).toBeDefined();
+    const long = { ...draft, status: "published" as const, view: "Long" as const, strategy: noText };
+    expect(problems(long)).toEqual({});
+    expect(ResearchFrontmatterSchema.safeParse(splitFrontmatter(toMdx(long, "x")).data).success).toBe(true);
+    expect(problems({ ...long, thesis: "" }).thesis).toBeDefined();
+    // Text in the strategy without a family can't be saved
+    expect(problems({ ...draft, strategy: { ...noText, family: "", rule: "Some rule" } }).family).toBeDefined();
   });
 
   it("stamps the first publish date and keeps it on later edits", () => {
-    const pub = { ...draft, status: "published" as const, view: "Neutral" as const, conviction: "Medium" as const, strategy };
+    const pub = { ...draft, status: "published" as const, view: "Neutral" as const, strategy };
     const first = fromMdx(toMdx(pub, "x")).draft;
     expect(first.published).toBe("2026-10-20");
     expect(fromMdx(toMdx({ ...first, updated: "2026-11-02" }, "x")).draft.published).toBe("2026-10-20");
   });
 
-  it("starts the write-up with the sections for the asset type", () => {
+  it("starts the write-up with the sections for the asset type, without tables", () => {
     const heads = (md: string) => md.split("\n").filter((l) => l.startsWith("## ")).map((l) => l.slice(3));
-    const stock = heads(starterBody("stock", "Equities"));
+    const core = ["What it is", "Price drivers", "Catalyst calendar", "Evidence", "Sources"];
+    expect(heads(starterBody("stock", "Equities"))).toEqual(["What it is", "Revenue breakdown", "Price drivers", "Catalyst calendar", "Evidence", "Sources"]);
     const future = heads(starterBody("future", "Derivatives"));
-    expect(stock).toContain("Peer / pair");
-    expect(stock).toContain("Currency exposure");
-    expect(stock).not.toContain("Contract specs");
-    expect(future).toEqual(expect.arrayContaining(["Contract specs", "Curve and inventories", "Supply-demand balance"]));
-    expect(future).not.toContain("Peer / pair");
+    expect(future).toEqual(expect.arrayContaining([...core, "Demand breakdown", "Contract specs", "Curve and inventories", "Supply-demand balance"]));
     expect(heads(starterBody("etf", "Commodities"))).toContain("Curve and inventories");
-    for (const core of ["What it is", "Price drivers", "Catalyst calendar", "Evidence", "Valuation check", "Risks", "What would change our mind", "Event log", "Review notes", "Sources"]) {
-      expect(stock).toContain(core);
-      expect(future).toContain(core);
-    }
+    expect(heads(starterBody("etf", "Commodities"))).not.toContain("Contract specs");
+    for (const body of [starterBody("stock", "Equities"), starterBody("future", "Derivatives")]) expect(body).not.toContain("|");
   });
 
   it("adds a new asset to instruments.csv once", () => {

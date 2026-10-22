@@ -16,7 +16,6 @@ interface Research {
   status: "published" | "in-progress";
   thesis: string;
   view?: string;
-  conviction?: string;
   strategy?: string;
   price?: number;
   currency: string;
@@ -125,7 +124,7 @@ export function VoteForm({ me, votes, assets, research, held, team, initialTicke
                   <p className="field-note">
                     {r.status === "published" ? "Published" : "Analysis in progress"} · by{" "}
                     {team.find((t) => t.initials === r.author)?.name ?? r.author}
-                    {r.view && <> · {r.view}{r.conviction && ` (${r.conviction} conviction)`}</>}
+                    {r.view && <> · {r.view}</>}
                     {r.strategy && <> · {r.strategy}</>}
                     {r.price && <> · price {fmtPrice(r.price, r.currency)}</>}
                   </p>

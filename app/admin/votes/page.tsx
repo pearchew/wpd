@@ -39,7 +39,6 @@ export default async function RecordVote({ searchParams }: { searchParams: Promi
           status: front.status,
           thesis: front.thesis,
           view: front.status === "published" ? front.view : undefined,
-          conviction: front.status === "published" ? front.conviction : undefined,
           strategy: front.strategy?.family,
           price: series?.[series.length - 1],
           currency: d.instruments.get(front.ticker)?.currency ?? d.meta.reportingCurrency,

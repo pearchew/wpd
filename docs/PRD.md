@@ -129,7 +129,7 @@ The Research page holds a report for every asset we look at, grouped by asset cl
 **Index (`/research`)**
 
 - Four tabs: Equities, Fixed Income, Commodities, Derivatives (Paper).
-- One card per asset: name, ticker, view and conviction, strategy family, thesis, price, verdict, byline, last updated.
+- One card per asset: name, ticker, view, strategy family, thesis, price, verdict, byline, last updated.
 - Filter by author (kept in the URL, e.g. `/research?author=B`).
 - Unpublished assets show a greyed "Analysis in progress" card.
 
@@ -140,18 +140,17 @@ A report has four parts, in this order on the research form:
 | Part | Sections |
 | --- | --- |
 | The asset | Header: asset name, ticker, exchange, asset type (from `instruments.csv`), author, first published, last updated |
-| The call | View (long / short / neutral / watch), one-line thesis, conviction (low / medium / high); key numbers (label, value, unit, as-of date, source); strategy (family, rule, entry trigger, exit rule, holding period, source papers) |
+| The call | View (long / short / neutral / watch), one-line thesis, strategy family; optional rule, entry trigger, exit rule, holding period and source papers. To publish: thesis, view and family |
 | Excel model | Optional download |
-| Write-up | Every asset: What it is · Revenue or demand breakdown · Price drivers · Catalyst calendar · Evidence · Valuation check (is the news priced in, no target) · Risks · What would change our mind · Event log (headline, tone, news or no-news, 1/5/20-day returns) · Review notes · Sources. Futures: Contract specs. Futures and commodities: Curve and inventories · Supply-demand balance. Stocks and ETFs: Peer / pair · Currency exposure |
+| Write-up | Free text, no tables in the template. Every asset: What it is · Revenue or demand breakdown · Price drivers · Catalyst calendar · Evidence · Sources. Futures: Contract specs. Futures and commodities: Curve and inventories · Supply-demand balance |
 
 Strategy families: momentum, mean reversion, event-driven, carry, value and quality, pairs, sentiment and news.
 
 **Asset page (`/research/[ticker]`)**
 
 - Header: **Microsoft (MSFT)** · exchange · asset type · asset class, then "Research by ____", published and updated dates.
-- Thesis, then tiles: view and conviction, price, strategy family and holding period, committee verdict.
-- Key numbers, each with its as-of date and source.
-- Strategy: rule, entry trigger, exit rule, holding period, source papers.
+- Thesis, then tiles: view, price, strategy family and holding period, committee verdict.
+- Strategy: whichever of rule, entry trigger, exit rule, holding period and source papers are filled in.
 - Price chart since purchase (or recent history for assets we only research).
 - Position and P&L, built from the ledger: entry date, average cost, size, price, value, return; the paper card for paper positions.
 - The write-up, then the committee verdict and vote history, then the Excel model download.
@@ -164,7 +163,7 @@ Fund Rules (`/fund`) shows how the fund decides what to own. It was called "Insi
 
 **House rules and thresholds**
 
-- House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's view (long, short, neutral or watch) with a conviction, and every view is published; every report names the trading strategy it tests, shows the evidence so far and has at least one risk written by a teammate; Include needs 2 of 3 votes and the author's vote alone never carries it; a measurable exit rule is written at entry and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
+- House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's view (long, short, neutral or watch), and every view is published; every report names the trading strategy it tests and shows the evidence so far; Include needs 2 of 3 votes and the author's vote alone never carries it; an exit rule is written at entry, not after, and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
 - Decision thresholds: Include when the strategy's entry trigger has fired and its evidence on this asset holds up, or (bonds, gold) it lowers volatility / raises Sharpe at a 10% weight; Watch while the trigger hasn't fired or the evidence is thin; Reject if the evidence says the rule doesn't work on this asset or the risk case fails.
 
 **Vote history**
@@ -263,17 +262,10 @@ status: published           # or in-progress → "Analysis in progress" card
 # The call
 view: Long                  # Long | Short | Neutral | Watch; required to publish
 thesis: One-line thesis used in the teaser and cards
-conviction: Medium          # Low | Medium | High; required to publish
-keyNumbers:                 # optional
-  - label: Brent
-    value: "78.40"
-    unit: $/bbl
-    asOf: 2026-10-14
-    source: ICE
-strategy:                   # required to publish
+strategy:                   # family required to publish
   family: Event-driven      # Momentum | Mean reversion | Event-driven | Carry | Value and quality | Pairs | Sentiment and news
   rule: Buy after OPEC+ cuts and hold while the curve stays in backwardation
-  entry: An announced cut of 500k bbl/day or more   # entry and exit required for Long or Short
+  entry: An announced cut of 500k bbl/day or more   # rule, entry, exit, holding, papers: optional
   exit: Curve flips to contango, or 40 trading days
   holding: 40 trading days
   papers: Kilian (2009)

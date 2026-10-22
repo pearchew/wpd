@@ -21,7 +21,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | --- | --- |
 | `/` | Home: view toggle (`?view=real\|combined\|paper`, default Real; hidden while there are no paper trades), hero tiles, fund vs SPY, our analysts |
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
-| `/research/[ticker]` | One report: view and conviction, thesis, key numbers, strategy, price chart, position and P&L from the ledger, the write-up, committee votes, Excel model |
+| `/research/[ticker]` | One report: view, thesis, strategy, price chart, position and P&L from the ledger, the write-up, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
 | `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
 | `/admin` | Team admin (sign-in required): research, trade, vote, asset and delete forms that open pull requests. See [Team admin](#team-admin) |
@@ -159,12 +159,11 @@ Each asset has one file: `content/research/<ticker>.mdx`, with the ticker in **l
 A report has four parts, in this order on the research form:
 
 1. **The asset**: name, ticker, exchange, asset class and author. The asset type (stock, ETF, future) comes from `instruments.csv`, and the first-published and last-updated dates are kept for you.
-2. **The call**: your view (long, short, neutral or watch), a one-line thesis, your conviction (low, medium or high), the key numbers that matter right now, and the **strategy** you're testing (family, rule, entry trigger, exit rule, holding period, source papers).
+2. **The call**: your view (long, short, neutral or watch), a one-line thesis, and the **strategy** you're testing: its family, plus an optional rule, entry trigger, exit rule, holding period and source papers. Only the thesis, the view and the strategy family are needed to publish.
 3. **Excel model** (optional): a spreadsheet readers can download.
 4. **The write-up**: everything else, written in the editor. A new report starts from a template for its asset type:
-   - **Every asset**: What it is · Revenue (or Demand) breakdown · Price drivers · Catalyst calendar · Evidence · Valuation check · Risks · What would change our mind · Event log · Review notes · Sources
+   - **Every asset**: What it is · Revenue (or Demand) breakdown · Price drivers · Catalyst calendar · Evidence · Sources
    - **Futures**: Contract specs. **Futures and commodities**: Curve and inventories · Supply-demand balance
-   - **Stocks and ETFs**: Peer / pair · Currency exposure
 
    Fill in what you have and delete what doesn't apply.
 
@@ -183,13 +182,6 @@ updated: 2026-10-20
 status: in-progress
 view: Long
 thesis: One line on what you think will happen and why, shown on the site.
-conviction: Medium
-keyNumbers:
-  - label: Dividend yield
-    value: "3.1"
-    unit: "%"
-    asOf: 2026-10-20
-    source: Company filings
 strategy:
   family: Event-driven
   rule: Buy after a positive earnings surprise and hold while the drift lasts.
@@ -206,9 +198,7 @@ What the asset is and how it makes money.
 
 ## Price drivers
 
-| Rank | Driver | Direction (+/−) | Where to track it |
-| ---: | --- | --- | --- |
-| 1 | Pharma pipeline readouts | + | Company press releases |
+Pharma pipeline readouts, then the talc litigation.
 ```
 
 Copy the rest of the section headings from the list above.
@@ -226,30 +216,27 @@ What each field means:
 | `status` | `in-progress` shows a greyed "Analysis in progress" card on the Research page only. `published` shows it everywhere (Home, holdings table, Research). |
 | `view` | `Long`, `Short`, `Neutral` or `Watch`. **Required to publish.** Every view is published, so the site shows what we passed on as well. |
 | `thesis` | One line, shown on cards and the asset page. |
-| `conviction` | `Low`, `Medium` or `High`. **Required to publish.** |
-| `keyNumbers` | Optional: the three or four figures that matter most right now. Each has a `label` and `value`, plus optional `unit`, `asOf` (YYYY-MM-DD) and `source`. Quote numbers that start with a symbol or look like a percentage. |
-| `strategy` | **Required to publish**: `family` (`Momentum`, `Mean reversion`, `Event-driven`, `Carry`, `Value and quality`, `Pairs` or `Sentiment and news`) and `rule`. A `Long` or `Short` view also needs `entry` and `exit`: the exit is written at entry, not after. `holding` and `papers` are optional. |
+| `strategy` | `family` is **required to publish** (`Momentum`, `Mean reversion`, `Event-driven`, `Carry`, `Value and quality`, `Pairs` or `Sentiment and news`). `rule`, `entry`, `exit`, `holding` and `papers` are optional. If you set an exit, write it at entry, not after. |
 | `model` | Optional link to the Excel file in `public/models/`. If set, the file must exist. |
 
 **To update an existing report:** open the file, edit the text or numbers, bump `updated`, and follow the normal pull request flow.
 
 **To upload the Excel model:** use **Add file → Upload files**, upload into `public/models/`, and set `model: /models/<file name>.xlsx` in the report.
 
-**To publish:** change `status: in-progress` to `status: published` (with `view`, `conviction` and `strategy` filled in) and merge.
+**To publish:** change `status: in-progress` to `status: published` (with `view` and `strategy.family` filled in) and merge.
 
 Tips for the report body:
 
 - It is Markdown with `##` headings and `|` tables. Use `**bold**` and `-` bullet lists.
 - ⚠️ **Do not type `<` or `{` `}` in the text.** The report format reads them as code and the build fails. Write "less than" instead of `<`, and avoid curly brackets.
 - The editor has no image upload yet. For the evidence chart or a "how the money flows" diagram, link to an image or put it in the Excel model.
-- Keep the event log going: every news event, its tone, and the 1-, 5- and 20-day returns. Over time it becomes your own evidence for the strategy.
 
 ### Team admin
 
 The easiest way to write research is the form at **`/admin`** on the live site. Sign in with GitHub, then **Research report → New report**, or **Edit** next to an existing one.
 
-- Fill in the asset and the call (view, thesis, conviction, key numbers and strategy), attach the Excel model if you have one, then write it up. The write-up starts from the template for the asset's type and switches template if you change the asset before typing in it.
-- The write-up is a normal word-processor editor: bold, headings, lists and links from the toolbar. **⊞ Table** pastes cells copied from Excel or Google Sheets, inserts a blank table or a starter template, and shows + row / + column buttons while you're in a table. Number columns are right-aligned on the site automatically.
+- Fill in the asset and the call (view, thesis and strategy), attach the Excel model if you have one, then write it up. The write-up starts from the template for the asset's type and switches template if you change the asset before typing in it.
+- The write-up is a normal word-processor editor: bold, headings, lists and links from the toolbar. **⊞ Table** pastes cells copied from Excel or Google Sheets, inserts a blank table, and shows + row / + column buttons while you're in a table. Number columns are right-aligned on the site automatically.
 - The preview on the right (the **Preview** tab on a phone) shows how the page will look.
 - **Save draft** opens a draft pull request that the whole team can read and comment on. **Submit for review** marks it ready for the owner. Saving again updates the same pull request.
 - A ticker the site doesn't know yet (stocks and ETFs) is added to `instruments.csv` in the same pull request.
@@ -349,8 +336,7 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | `cash goes negative` | A buy is larger than the cash on hand | Add a deposit row, or reduce the buy |
 | `sells more X than is held` | A sell exceeds the holding | Check the share count |
 | `… over the 20% cap` | One position is too big | Reduce it, or check the numbers |
-| `published research needs a view, a conviction and a strategy` | Missing field | Fill them in, or set `status: in-progress` |
-| `a Long or Short view needs the strategy's entry trigger and exit rule` | Missing field | Write the entry and exit, or change the view |
+| `published research needs a view and a strategy family` | Missing field | Fill them in, or set `status: in-progress` |
 | `model file … does not exist` | The `model:` path doesn't match an uploaded file | Upload the file or fix the name |
 | A report page errors or the build fails with no validation message | A `<` or `{` in the report text | Remove or reword it |
 | The site shows an error for one ticker | No prices stored for it yet | Ask the owner to run the price backfill |

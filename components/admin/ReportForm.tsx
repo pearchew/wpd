@@ -10,12 +10,11 @@ import {
   type NewAsset,
   type ReportDraft,
   THESIS_HINT,
-  emptyKeyNumber,
   problems,
   starterBody,
   usesMdxComponents,
 } from "@/lib/admin/report";
-import { ASSET_CLASSES, type AssetClass, CONVICTIONS, STRATEGY_FAMILIES, VIEWS } from "@/lib/schemas";
+import { ASSET_CLASSES, type AssetClass, STRATEGY_FAMILIES, VIEWS } from "@/lib/schemas";
 import { ViewPill } from "../Verdict";
 import { RichEditor } from "./RichEditor";
 
@@ -82,8 +81,6 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
     setResult(undefined);
   };
   const setStrategy = (k: keyof ReportDraft["strategy"], v: string) => set("strategy", { ...d.strategy, [k]: v });
-  const setNumber = (i: number, k: keyof ReportDraft["keyNumbers"][number], v: string) =>
-    set("keyNumbers", d.keyNumbers.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   const reseed = (k: string, cls: string) => {
     if (!pristine) return;
     setSeed(starterBody(k, cls));
@@ -244,7 +241,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
 
           <details open className="form-section">
             <summary>
-              2. The call {sectionBadge(["status", "view", "thesis", "conviction", "keyNumbers", "family", "rule", "entry", "exit"])}
+              2. The call {sectionBadge(["status", "view", "thesis", "family"])}
             </summary>
             <div className="radio-row" role="radiogroup" aria-label="Status">
               <label className="check">
@@ -274,39 +271,9 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 </span>
               )}
             </label>
-            <fieldset className="choice-field">
-              <legend>Conviction</legend>
-              <div className="radio-row" role="radiogroup" aria-label="Conviction">
-                {CONVICTIONS.map((c) => (
-                  <label className="check" key={c}>
-                    <input type="radio" checked={d.conviction === c} onChange={() => set("conviction", c)} /> {c}
-                  </label>
-                ))}
-              </div>
-              {err("conviction")}
-            </fieldset>
-
-            <h4 className="form-subhead">Key numbers</h4>
-            <p className="field-note">The three or four figures that matter most right now{price ? ` · latest close ${money(price, currency)}` : ""}.</p>
-            {d.keyNumbers.map((k, i) => (
-              <div className="number-row" key={i}>
-                <input aria-label="Label" placeholder="Copper inventories" value={k.label} onChange={(e) => setNumber(i, "label", e.target.value)} />
-                <input aria-label="Value" placeholder="152,000" value={k.value} onChange={(e) => setNumber(i, "value", e.target.value)} />
-                <input aria-label="Unit" placeholder="tonnes" value={k.unit} onChange={(e) => setNumber(i, "unit", e.target.value)} />
-                <input aria-label="As of" placeholder="YYYY-MM-DD" value={k.asOf} onChange={(e) => setNumber(i, "asOf", e.target.value)} />
-                <input aria-label="Source" placeholder="LME" value={k.source} onChange={(e) => setNumber(i, "source", e.target.value)} />
-                <button type="button" className="icon-button" aria-label="Remove number" onClick={() => set("keyNumbers", d.keyNumbers.filter((_, j) => j !== i))}>
-                  ✕
-                </button>
-              </div>
-            ))}
-            {err("keyNumbers")}
-            <button type="button" className="link-button" onClick={() => set("keyNumbers", [...d.keyNumbers, emptyKeyNumber(d.updated)])}>
-              + add a number
-            </button>
 
             <h4 className="form-subhead">Strategy</h4>
-            <p className="field-note">The trading rule you&apos;re testing and where it comes from.</p>
+            <p className="field-note">The trading rule you&apos;re testing and where it comes from. Only the family is needed to publish; the text boxes are optional.</p>
             <div className="field-grid">
               <label>
                 Family
@@ -314,7 +281,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                   <option value="">Choose…</option>
                   {STRATEGY_FAMILIES.map((f) => <option key={f}>{f}</option>)}
                 </select>
-                {err("family")}
+                {err("family") || <span className="field-note">Required to publish</span>}
               </label>
               <label>
                 Holding period
@@ -324,18 +291,16 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
             <label>
               Rule
               <textarea rows={2} value={d.strategy.rule} onChange={(e) => setStrategy("rule", e.target.value)} placeholder="Buy after a positive earnings surprise and hold while the drift lasts" />
-              {err("rule")}
             </label>
             <div className="field-grid">
               <label>
                 Entry trigger
                 <textarea rows={2} value={d.strategy.entry} onChange={(e) => setStrategy("entry", e.target.value)} placeholder="What has to happen before we trade" />
-                {err("entry")}
               </label>
               <label>
                 Exit rule
                 <textarea rows={2} value={d.strategy.exit} onChange={(e) => setStrategy("exit", e.target.value)} placeholder="A price, a signal or a date" />
-                {err("exit") || <span className="field-note">Written at entry: when it fires, we sell unless 2 of 3 vote to keep it</span>}
+                <span className="field-note">If you set one, write it at entry: when it fires, we sell unless 2 of 3 vote to keep it</span>
               </label>
             </div>
             <label>
@@ -426,19 +391,12 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
                 <img className="pixel-img" src={author.avatar} alt="" width={20} height={20} /> by {author.name}
               </p>
             )}
-            {(d.view || d.conviction) && (
+            {d.view && (
               <p className="byline center">
-                <ViewPill view={d.view || undefined} /> {d.conviction && `${d.conviction} conviction`}
+                <ViewPill view={d.view} />
               </p>
             )}
             {d.thesis && <p className="preview-thesis">&ldquo;{d.thesis}&rdquo;</p>}
-            {d.keyNumbers.some((k) => k.label) && (
-              <div className="preview-kv">
-                {d.keyNumbers.filter((k) => k.label).map((k, i) => (
-                  <div key={i}><span>{k.label}</span><b>{k.value}{k.unit && ` ${k.unit}`}</b></div>
-                ))}
-              </div>
-            )}
           </header>
           {(d.strategy.family || d.strategy.rule) && (
             <div className="callout">

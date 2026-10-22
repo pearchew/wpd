@@ -90,9 +90,6 @@ export type Meta = z.infer<typeof MetaSchema>;
 export const VIEWS = ["Long", "Short", "Neutral", "Watch"] as const;
 export type View = (typeof VIEWS)[number];
 
-export const CONVICTIONS = ["Low", "Medium", "High"] as const;
-export type Conviction = (typeof CONVICTIONS)[number];
-
 /** The trading-strategy families a report can test. */
 export const STRATEGY_FAMILIES = [
   "Momentum",
@@ -123,24 +120,11 @@ export const ResearchFrontmatterSchema = z
     // The call
     view: z.enum(VIEWS).optional(),
     thesis: z.string().min(1),
-    conviction: z.enum(CONVICTIONS).optional(),
-    /** The three or four figures that matter most right now */
-    keyNumbers: z
-      .array(
-        z.object({
-          label: z.string().min(1),
-          value: z.string().min(1),
-          unit: optText,
-          asOf: z.preprocess((v) => (v === "" || v === null ? undefined : v), isoDate.optional()),
-          source: optText,
-        }),
-      )
-      .optional(),
     strategy: z
       .object({
         family: z.enum(STRATEGY_FAMILIES),
         /** The rule being tested, in plain words */
-        rule: z.string().min(1),
+        rule: optText,
         entry: optText,
         exit: optText,
         holding: optText,
@@ -151,10 +135,7 @@ export const ResearchFrontmatterSchema = z
     // Optional Excel model
     model: optText,
   })
-  .refine((f) => f.status === "in-progress" || (f.view && f.conviction && f.strategy), {
-    message: "published research needs a view, a conviction and a strategy",
-  })
-  .refine((f) => f.status === "in-progress" || !(f.view === "Long" || f.view === "Short") || (f.strategy?.entry && f.strategy?.exit), {
-    message: "a Long or Short view needs the strategy's entry trigger and exit rule",
+  .refine((f) => f.status === "in-progress" || (f.view && f.strategy), {
+    message: "published research needs a view and a strategy family",
   });
 export type ResearchFrontmatter = z.infer<typeof ResearchFrontmatterSchema>;

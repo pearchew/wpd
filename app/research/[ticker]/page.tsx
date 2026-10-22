@@ -79,7 +79,6 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
         <div className="tile">
           <div className="tile-label">View</div>
           <div className="tile-value" style={{ fontSize: "1.4rem", paddingTop: 6 }}><ViewPill view={f.view} /></div>
-          <div className="tile-sub">{f.conviction ? `${f.conviction} conviction` : ""}</div>
         </div>
         <div className="tile">
           <div className="tile-label">Price</div>
@@ -98,29 +97,12 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
         </div>
       </div>
 
-      {f.keyNumbers && f.keyNumbers.length > 0 && (
-        <div className="stat-row key-numbers" style={{ marginTop: 20 }}>
-          {f.keyNumbers.map((k) => (
-            <div className="stat" key={k.label}>
-              <div className="tile-label">{k.label}</div>
-              <div className="tile-value" style={{ fontSize: "1.3rem" }}>
-                {k.value}
-                {k.unit && <span className="unit"> {k.unit}</span>}
-              </div>
-              {(k.asOf || k.source) && (
-                <div className="tile-sub">{[k.asOf && `as of ${fmtDate(k.asOf, true)}`, k.source].filter(Boolean).join(" · ")}</div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {f.strategy && (
+      {/* The family is already in the tiles; the section is for whatever the author wrote about the rule. */}
+      {f.strategy && (f.strategy.rule || f.strategy.entry || f.strategy.exit || f.strategy.holding || f.strategy.papers) && (
         <section className="section">
           <div className="section-head"><h2>Strategy</h2><p className="sub">{f.strategy.family}</p></div>
           <dl className="strategy">
-            <dt>Rule</dt>
-            <dd>{f.strategy.rule}</dd>
+            {f.strategy.rule && (<><dt>Rule</dt><dd>{f.strategy.rule}</dd></>)}
             {f.strategy.entry && (<><dt>Entry trigger</dt><dd>{f.strategy.entry}</dd></>)}
             {f.strategy.exit && (<><dt>Exit rule</dt><dd>{f.strategy.exit}</dd></>)}
             {f.strategy.holding && (<><dt>Holding period</dt><dd>{f.strategy.holding}</dd></>)}

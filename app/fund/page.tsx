@@ -10,10 +10,10 @@ export const metadata: Metadata = { title: "Fund Rules" };
 const RULES = [
   "Asset class targets once invested: equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%. Rebalance quarterly, or sooner if a class leaves its band.",
   "No position above 20%, and no theme above 40%: positions that move together count together.",
-  "Every report ends in the author's view (long, short, neutral or watch) with a conviction. Every view is published.",
-  "Every report names the trading strategy it tests (rule, entry, exit, holding period and source paper), shows the evidence so far, and has at least one risk written by a teammate.",
+  "Every report ends in the author's view: long, short, neutral or watch. Every view is published.",
+  "Every report names the trading strategy it tests and shows the evidence so far.",
   "Include needs 2 of 3 votes, and the author's vote alone never carries it.",
-  "A measurable exit rule (a price, a signal or a date) is written at entry. When it fires, the position is sold unless 2 of 3 vote to keep it.",
+  "An exit rule (a price, a signal or a date) is written at entry, not after. When it fires, the position is sold unless 2 of 3 vote to keep it.",
   "Any position down 20% from entry gets a re-vote, and every exit gets a short post-mortem.",
   "No trade under about $5. Derivatives stay on the paper book.",
 ];
