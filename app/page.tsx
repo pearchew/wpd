@@ -5,6 +5,9 @@ import { ViewToggle } from "@/components/ViewToggle";
 import { chartFor } from "@/lib/charts";
 import { getFundData, parseView } from "@/lib/fund";
 
+// Without paper trades this page is built once at deploy; rebuild it at least hourly so new closes show.
+export const revalidate = 3600;
+
 export default async function Home({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {
   const d = await getFundData();
   // No ?view= means Real, so a fresh visit never lands on paper numbers by accident.

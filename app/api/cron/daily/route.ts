@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { instruments, meta } from "@/lib/data";
 import { getFeed } from "@/lib/feed";
@@ -84,6 +85,8 @@ export async function GET(req: Request) {
       { onConflict: "date,book" },
     );
     if (navErr) throw new Error(`nav_snapshots upsert: ${navErr.message}`);
+    // Pages built from earlier closes refresh on their next visit instead of waiting out the hour.
+    revalidatePath("/", "layout");
 
     const status = missing.length ? "partial" : "ok";
     const note = missing.length ? `no close for: ${missing.join(", ")} (previous close carried forward)` : null;
