@@ -8,6 +8,8 @@ import { WinnersLosers } from "@/components/WinnersLosers";
 import { allocation, getFundData, parseView, researchCards } from "@/lib/fund";
 
 export const metadata: Metadata = { title: "Inside the Fund" };
+// Without paper trades this page is built once at deploy; rebuild it at least hourly so new closes show.
+export const revalidate = 3600;
 
 export default async function InsideTheFund({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {
   const d = await getFundData();

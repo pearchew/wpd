@@ -326,7 +326,8 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 
 - **Prices:** a daily job fetches the closing prices each weekday at 21:30 UTC (after the US close) and stores them in the database. Nobody needs to enter prices.
 - **NAV, returns, charts, risk:** calculated from `data/trades.csv` and those prices. They change every day without any edit.
-- **After a merge:** the site redeploys in a minute or two. Pages refresh their prices on their own.
+- **After a merge:** the site redeploys in a minute or two.
+- **New prices on the live site:** the daily job refreshes every page as soon as it has stored the closes. Prices loaded any other way (a `npm run db:backfill` from your machine) go straight into the same database, and pages pick them up within an hour. To see them at once, redeploy in Vercel (Deployments → ⋯ → Redeploy).
 
 ### Troubleshooting
 
