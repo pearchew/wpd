@@ -28,8 +28,8 @@ export function ResearchCardView({ c }: { c: ResearchCard }) {
         <span className="ticker">{displayTicker(c.ticker)}</span>
       </div>
       <div className="meta">
-        <ViewPill view={c.view} /> {c.conviction && `${c.conviction} conviction`}
-        {c.strategy && ` · ${c.strategy}`}
+        <ViewPill view={c.view} />
+        {c.strategy && ` ${c.strategy}`}
       </div>
       <p className="rcard-thesis">{c.thesis}</p>
       <div className="fv">

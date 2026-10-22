@@ -206,14 +206,14 @@ TOTAL                100.0%  $103.42 +3.42%
 
  ┌────────────────────────────────────┐  ┌────────────────────────────────────┐
  │ Hanwha Ocean             042660.KS │  │ Lynas Rare Earths           LYC.AX │
- │ [Long] High conviction · Event-dri │  │ [Watch] Medium · Sentiment and news│
+ │ [Long] Event-driven                │  │ [Watch] Sentiment and news         │
  │ "Navy orders keep the backlog…"    │  │ "Export curbs set the price; we…"  │
  │ Price ₩87,075            Include   │  │ Price A$7.42             Watch     │
  │ [A] Person A · updated Nov 10      │  │ [B] Person B · updated Nov 8       │
  └────────────────────────────────────┘  └────────────────────────────────────┘
  ┌────────────────────────────────────┐  ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
  │ Daiichi Life Group          8750.T │  ┆ Johnson & Johnson              JNJ ┆
- │ [Neutral] Low · Momentum           │  ┆ Event-driven                       ┆
+ │ [Neutral] Momentum                 │  ┆ Event-driven                       ┆
  │ "Rate rises are priced in; no…"    │  ┆ ░░ Analysis in progress ░░         ┆
  │ Price ¥4,032             ·         │  ┆ Last close $158                    ┆
  │ [C] Person C · updated Nov 5       │  ┆ [B] started by Person B            ┆
@@ -243,11 +243,7 @@ TOTAL                100.0%  $103.42 +3.42%
 
       VIEW              PRICE             STRATEGY              VERDICT
      [Long]             $4.91             Carry                 Include
-  High conviction    Nov 13 close       until Dec roll        2 · 1 · 0
-
-   LME STOCKS          SHFE STOCKS         CHINA GRID CAPEX
-   152,000 tonnes      48,300 tonnes       +11 % y/y
-   as of Nov 12 · LME  as of Nov 7 · SHFE  as of Oct 31 · NEA
+                    Nov 13 close       until Dec roll        2 · 1 · 0
 
                                    STRATEGY
  ──────────────────────────────────────────────────────────────────────────────
@@ -271,9 +267,8 @@ TOTAL                100.0%  $103.42 +3.42%
    BOOK  ENTRY DATE  AVG COST  SHARES  PRICE  VALUE  RETURN
 
    ## What it is · ## Demand breakdown · ## Price drivers · ## Catalyst calendar
-   ## Evidence · ## Valuation check · ## Risks · ## What would change our mind
-   ## Contract specs · ## Curve and inventories · ## Supply-demand balance
-   ## Event log · ## Review notes · ## Sources          (the write-up)
+   ## Evidence · ## Contract specs · ## Curve and inventories
+   ## Supply-demand balance · ## Sources                (the write-up)
 
                      COMMITTEE   Verdict: INCLUDE (2 of 3)
  ──────────────────────────────────────────────────────────────────────────────
@@ -306,14 +301,13 @@ TOTAL                100.0%  $103.42 +3.42%
    · No position above 20%, no theme              lowers vol / raises Sharpe
      above 40%                                    at a 10% weight
    · Every report ends long / short /     Watch    trigger not fired yet, or
-     neutral / watch, with conviction;             evidence still thin
-     every view is published             Reject   evidence says the rule
-   · Strategy (rule, entry, exit,                  fails here, or the risk
-     holding, paper), evidence, and a              case fails
-     teammate's risk
+     neutral / watch; every view is                evidence still thin
+     published                           Reject   evidence says the rule
+   · Names the strategy it tests and               fails here, or the risk
+     shows the evidence so far                     case fails
    · Include needs 2 of 3 votes; the
      author's vote alone never carries
-   · Measurable exit rule at entry;
+   · Exit rule written at entry;
      when it fires, sell unless 2 of 3
      vote to keep
    · Down 20% → re-vote; every exit
@@ -387,22 +381,18 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │ Ticker [ LYC.AX ] ✓ known asset · Stock   │ │   LYC.AX · Lynas Rare Earths    │
  │ Name   [ Lynas Rare Earths ]  (autofill)  │ │   ASX · Equities · Stock        │
  │ Class  [ Equities ▾ ]  Exchange [ ASX ]   │ │   [B] by Person B               │
- │ (unknown ticker → "Add it to the asset    │ │   [Watch] Medium conviction     │
+ │ (unknown ticker → "Add it to the asset    │ │   [Watch]                       │
  │  list": type, currency, feed symbol)      │ │   "Export curbs set the price…" │
- │ Author Person B · updated Nov 10          │ │   NdPr price  US$62/kg          │
+ │ Author Person B · updated Nov 10          │ │                                 │
  ├─ 2. The call ─────────────────────── ⚠ 1 ┤ │ ┌ STRATEGY · SENTIMENT ───────┐ │
  │ (•) In progress   ( ) Published           │ │ │ Buy when news tone turns …  │ │
  │ View ( ) Long ( ) Short ( ) Neutral (•) Watch │ │ Exit: tone flips negative   │ │
  │ Thesis      [ One line…        ] 57 / 160 │ │ └─────────────────────────────┘ │
- │ Conviction  ( ) Low (•) Medium ( ) High   │ │   ## What it is                 │
- │ Key numbers                               │ │   ## Revenue breakdown          │
- │ [NdPr price][62][US$/kg][2026-11-10][SMM]✕│ │   ## Price drivers …            │
- │ + add a number                            │ │   📊 Download the model         │
- │ Strategy                                  │ └─────────────────────────────────┘
- │ Family [ Sentiment and news ▾ ]  Holding [ 20 days ]
- │ Rule [ Buy when … ]                       │
- │ Entry trigger [ … ]   Exit rule [ … ] ⚠   │
- │ Source paper(s) [ Tetlock (2007) ]        │
+ │ Strategy (only the family is required)    │ │   ## What it is                 │
+ │ Family [ Sentiment and news ▾ ]  Holding [ 20 days ]│ ## Revenue breakdown        │
+ │ Rule [ Buy when … ]          (optional)   │ │   ## Price drivers …            │
+ │ Entry trigger [ … ]   Exit rule [ … ]     │ │   📊 Download the model         │
+ │ Source paper(s) [ Tetlock (2007) ]        │ └─────────────────────────────────┘
  ├─ 3. Excel model (optional) ───────────────┤
  │ ┌ ─ Drop an .xlsx here or choose ─ ┐      │
  ├─ 4. The write-up ─────────────────────────┤
@@ -410,16 +400,16 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │ you have and delete what doesn't apply.   │   ┌──────────────────────────────┐
  │ [B][I][H2][H3][• List][1. List][Link]     │   │ Paste from Excel / Sheets    │
  │ [⊞ Table ▾]  in a table: [+ row][+ column]│   │ Blank table (3 × 2)          │
- │  ## What it is                            │   │ Event log row                │
- │  ## Revenue breakdown                     │   │ Catalyst calendar            │
- │  | Segment | Description | Value | Src |  │   │ Risks                        │
- │  ## Price drivers …                       │   │ Valuation check              │
- └───────────────────────────────────────────┘   └──────────────────────────────┘
+ │  ## What it is                            │   └──────────────────────────────┘
+ │  ## Revenue breakdown                     │
+ │  Where the money comes from.              │
+ │  ## Price drivers …                       │
+ └───────────────────────────────────────────┘
  ──────────────────────────────────────────────────────────────────────────────
   ✓ All required fields done                [ Save draft ] [ Submit for review → ]
 ```
 
-- The write-up template depends on the asset type: futures add Contract specs; futures and commodities add Curve and inventories and Supply-demand balance; stocks and ETFs add Peer / pair and Currency exposure. Picking a different asset swaps the template until someone types in it.
+- The write-up template is headings and prompts, no tables. It depends on the asset type: futures add Contract specs; futures and commodities add Curve and inventories and Supply-demand balance. Picking a different asset swaps the template until someone types in it.
 - Paste dialog: a box to paste copied cells into, "First row is the header", a preview table, and [ Insert table ]. Number columns are right-aligned on the site automatically.
 - Phone: an [ Edit | Preview ] tab bar replaces the side-by-side preview; the action bar stays pinned at the bottom.
 
@@ -460,8 +450,8 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
  │ Asset [ MSFT · Microsoft ▾ ]            │  MEMBER           LATEST VOTE         CONV.  DATE
  │ ┃ Microsoft · Equities · held           │  [A] Person A (author)  Include       High   Oct 12
  │ ┃ "Cloud and AI monetisation…"          │  [B] Person B           Watch         Medium Oct 12
- │ ┃ Published · by Person A · Long (High  │  [C] Person C (you)     Include → Reject  High  today
- │ ┃ conviction) · Momentum · price $520.41│  ┌──────────────────────────────────────┐
+ │ ┃ Published · by Person A · Long ·      │  [C] Person C (you)     Include → Reject  High  today
+ │ ┃ Momentum · price $520.41              │  ┌──────────────────────────────────────┐
  │ ┃ Read the write-up ↗                   │  │ VERDICT NOW  →  WITH YOUR VOTE       │
  │ Vote       [ Include | Watch |█Reject█] │  │   Include          Watch             │
  │ Conviction [█High█ | Medium | Low ]     │  └──────────────────────────────────────┘

@@ -9,13 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import { type Node, tableFromRows, toMarkdown } from "@/lib/admin/markdown";
 import { PasteTableDialog } from "./PasteTableDialog";
 
-const TEMPLATES: { label: string; rows: string[][] }[] = [
-  { label: "Event log row", rows: [["Date", "Headline", "Link", "Tone (+/0/−)", "News or no-news", "1-day", "5-day", "20-day"], ["", "", "", "", "", "", "", ""]] },
-  { label: "Catalyst calendar", rows: [["Date", "Event", "Type", "Expected impact"], ["", "", "", ""]] },
-  { label: "Risks", rows: [["Risk", "Likelihood", "Impact", "What would signal it"], ["", "", "", ""]] },
-  { label: "Valuation check", rows: [["Metric", "Current", "Own history", "Peers", "Comment"], ["", "", "", "", ""]] },
-];
-
 export function RichEditor({
   markdown,
   onChange,
@@ -61,7 +54,7 @@ export function RichEditor({
 
   return (
     <div className="rich-editor">
-      <Toolbar editor={editor} menu={menu} setMenu={setMenu} onPaste={() => setPasting(true)} insertTable={insertTable} />
+      <Toolbar editor={editor} menu={menu} setMenu={setMenu} onPaste={() => setPasting(true)} />
       <EditorContent editor={editor} />
       {pasting && (
         <PasteTableDialog
@@ -81,13 +74,11 @@ function Toolbar({
   menu,
   setMenu,
   onPaste,
-  insertTable,
 }: {
   editor: Editor;
   menu: boolean;
   setMenu: (v: boolean) => void;
   onPaste: () => void;
-  insertTable: (rows: string[][]) => void;
 }) {
   const s = useEditorState({
     editor,
@@ -141,11 +132,6 @@ function Toolbar({
             <button type="button" role="menuitem" onClick={() => c().insertTable({ rows: 3, cols: 2, withHeaderRow: true }).run()}>
               Blank table (3 × 2)
             </button>
-            {TEMPLATES.map((t) => (
-              <button key={t.label} type="button" role="menuitem" onClick={() => insertTable(t.rows)}>
-                {t.label}
-              </button>
-            ))}
           </span>
         )}
       </span>

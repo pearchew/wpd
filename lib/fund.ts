@@ -18,7 +18,7 @@ import { bsGreeks, bsPrice, impliedVol } from "./calc/options";
 import { annualVol, riskBreakdown, sharpe } from "./calc/risk";
 import { daysBetween } from "./dates";
 import { getPriceBook, usingDummyPrices } from "./prices";
-import type { AssetClass, Conviction, Instrument, Meta, StrategyFamily, TeamMember, View as ReportView, Vote } from "./schemas";
+import type { AssetClass, Instrument, Meta, StrategyFamily, TeamMember, View as ReportView, Vote } from "./schemas";
 import { computeVerdict, type Verdict } from "./verdict";
 import type { ResearchDoc } from "./data";
 
@@ -33,7 +33,6 @@ export interface ResearchInfo {
   author: string;
   thesis: string;
   view?: ReportView;
-  conviction?: Conviction;
   strategy?: StrategyFamily;
 }
 
@@ -159,7 +158,7 @@ export const getFundData = cache(async (): Promise<FundData> => {
     const d = docs.get(ticker);
     return d && {
       status: d.front.status, author: d.front.author, thesis: d.front.thesis,
-      view: d.front.view, conviction: d.front.conviction, strategy: d.front.strategy?.family,
+      view: d.front.view, strategy: d.front.strategy?.family,
     };
   };
 
@@ -427,7 +426,6 @@ export interface ResearchCard {
   updated: string;
   thesis: string;
   view?: ReportView;
-  conviction?: Conviction;
   strategy?: StrategyFamily;
   /** price is in this currency */
   currency: string;
@@ -451,7 +449,6 @@ export function researchCards(d: FundData): ResearchCard[] {
       updated: front.updated,
       thesis: front.thesis,
       view: pub ? front.view : undefined,
-      conviction: pub ? front.conviction : undefined,
       strategy: front.strategy?.family,
       currency: d.instruments.get(front.ticker)?.currency ?? d.meta.reportingCurrency,
       price,
