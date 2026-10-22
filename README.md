@@ -138,10 +138,19 @@ The quickest way is **Add asset** in [Team admin](#team-admin). By hand: the sit
    JNJ,Johnson & Johnson,Equities,USD,JNJ,stock,1,,,,,,,
    ```
    - `asset_class` must be exactly one of `Equities`, `Fixed Income`, `Commodities`, `Derivatives`.
-   - `feed_symbol` is the symbol the price provider uses (usually the ticker).
+   - `feed_symbol` is Yahoo Finance's symbol (usually the ticker; non-US stocks carry an exchange suffix such as `.T`, `.KS` or `.AX`).
    - `kind` is `stock`, `etf`, `future` or `option`.
 2. **Merge that pull request first**, then ask the **owner** to load the prices: they run `npm run db:backfill` on their machine, or click **Run** on the cron job in Vercel (Settings → Cron Jobs). The daily job picks up the new ticker automatically from then on.
 3. **Then** open a second pull request with the trade (and the report).
+
+**Assets in other currencies.** Set `currency` to the currency the stock trades in (`JPY`, `KRW`, `AUD`, …). Everything about the asset itself stays in that currency: its prices, the price and fees on its trade rows, and the fair value in its report. The price job also fetches that currency's daily rate against USD (`JPY/USD`), and the site converts at each day's rate. Cash, NAV, weights, returns and the 20% cap are all in USD. So a holding's return includes the currency move: if the yen falls 5%, a flat Tokyo stock shows −5%. Recording a trade in a currency needs at least one stored rate for it, so load prices (step 2) first.
+
+**Futures** need the contract details as well. The COMEX copper row is a worked example: one contract is 25,000 lb priced in dollars per lb, so `multiplier` is `25000`. The `underlying` is the front-month contract (`HG1`, Yahoo's `HG=F`) used for the basis and roll yield; Yahoo has no true copper spot price. `expiry` is the last trading day, and `margin` / `maint_margin` are the broker's dollars per contract:
+   ```
+   HG1,"Copper, COMEX front month ($ per lb)",Commodities,USD,HG=F,etf,1,,,,,,,
+   HGZ26,COMEX copper future (Dec 2026),Derivatives,USD,HGZ26.CMX,future,25000,HG1,1,2026-12-29,,,13200,12000
+   ```
+   Futures are paper trades only: `book=paper` plus a `notional_slice`. Roll to a new row (`HGH27`, feed `HGH27.CMX`) before expiry.
 
 ### Write or update a research report
 
@@ -338,7 +347,7 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 
 These need the secret keys, so they aren't part of the normal pull request flow:
 
-- Vercel environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRICE_API_KEY`, `CRON_SECRET`), set under Settings → Environment Variables. Never put them in the repo.
+- Vercel environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`), set under Settings → Environment Variables. Never put them in the repo.
 - Loading price history for new assets: `npm run db:backfill`.
 - Checking the database and daily job: `npm run db:check`, or Vercel → Settings → Cron Jobs → **Run**.
 
@@ -356,11 +365,13 @@ Without the secret keys the site shows made-up prices and an orange demo banner,
 ## Going live
 
 1. **Supabase:** the `wdp-fund` project exists and its tables are created (the same SQL is in `supabase/migrations/`). For a new project, run [supabase/schema.sql](supabase/schema.sql) in its SQL editor. Put the project URL and service-role key in `.env.local`, then `npm run db:check` confirms the tables exist.
-2. **Vercel:** import the repo and set the variables from [.env.example](.env.example): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRICE_API_KEY`, `CRON_SECRET`, and optionally `RESEND_API_KEY` + `ALERT_EMAIL` for failure emails.
+2. **Vercel:** import the repo and set the variables from [.env.example](.env.example): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, and optionally `RESEND_API_KEY` + `ALERT_EMAIL` for failure emails.
 3. As soon as the two Supabase variables exist, the site reads real closes and the demo banner disappears. `vercel.json` schedules the daily job.
 4. **Current data:** `data/trades.csv` splits the $100 deposit evenly between NVDA and MSFT at the 2026-10-14 close, and `content/research/` has placeholder reports for both. Replace them with the real ledger and write-ups as you go. `votes.csv` and `team.csv` are placeholders too.
 
-The price feed is behind one interface in [lib/feed](lib/feed/index.ts); Twelve Data is wired up. Check that it covers every ticker you hold (futures and options symbols especially) before relying on it, and note the free plan's 8-requests-a-minute limit. Run `npm run db:backfill` once to load history since launch (the daily job only fetches the last few days), then `npm run db:check` to see the latest close for every instrument.
+The price feed is behind one interface in [lib/feed](lib/feed/index.ts). It uses **Yahoo Finance**, which needs no key and covers every market the fund trades: Tokyo (`8750.T`), Korea (`042660.KS`), ASX (`LYC.AX`), COMEX contracts (`HGZ26.CMX`), options (OCC codes) and currency rates (`JPYUSD=X`). `feed_symbol` is Yahoo's symbol, the one in the address bar of the stock's page on finance.yahoo.com.
+
+Yahoo's chart endpoint is unofficial: it can change, or throttle requests from cloud servers, without notice. One symbol failing shows up as missing (the daily job emails a "partial" alert, and the site keeps the last close); every symbol failing fails the job. If it stops working, run `npm run db:backfill` from your own machine, or switch to Twelve Data by setting `PRICE_FEED=twelvedata` and `PRICE_API_KEY` (its free plan covers US stocks and currency rates only, and uses its own symbols). After a backfill, `npm run db:check` lists any instrument that came back with no prices. Run `npm run db:backfill` once to load history since launch (the daily job only fetches the last few days), then `npm run db:check` to see the latest close for every instrument.
 
 ## How the numbers work
 

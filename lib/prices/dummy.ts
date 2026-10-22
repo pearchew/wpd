@@ -44,12 +44,24 @@ const STOCK_PARAMS: Record<string, Params> = {
   IEF: P(96, 0.04, -0.05, 1.0, 0.012),
   LQD: P(108, 0.045, 0.1, 1.05, 0.025),
   USO: P(72, 0.02, 0.5, 0, 0.3),
+  HG1: P(5, 0.05, 0.5, 0, 0.25),
 };
+
+/** Rough USD value of one unit of each currency, so demo FX looks plausible. */
+const FX_LEVEL: Record<string, number> = { JPY: 0.0067, KRW: 0.00072, AUD: 0.65, HKD: 0.128, EUR: 1.08, GBP: 1.27, IDR: 0.000062, SGD: 0.74 };
+
+/** A believable stock for any ticker not listed above, seeded by the ticker so it never changes. Priced in its own currency. */
+function fallbackParams(inst: Instrument): Params {
+  const r = rng(`${seed()}:params:${inst.ticker}`);
+  const usd = 10 + r() * 140;
+  return P(round2(usd / (FX_LEVEL[inst.currency] ?? 1)), 0.04 + r() * 0.1, 0.6 + r() * 0.7, 0, 0.12 + r() * 0.18);
+}
 
 const FUTURE_CARRY: Record<string, { yield: number; scale: number }> = {
   // futures = underlying × scale × e^{(r − yield)·T}; a high convenience yield gives backwardation
   MES: { yield: 0.013, scale: 10 },
   MCL: { yield: 0.09, scale: 1 },
+  HGZ26: { yield: 0.01, scale: 1 },
 };
 
 function hash(s: string): number {
@@ -96,7 +108,11 @@ export function generateDummyBook(
   const dt = 1 / 252;
 
   const base: Record<string, number[]> = {};
-  for (const [ticker, p] of Object.entries(STOCK_PARAMS)) {
+  const params: Record<string, Params> = { ...STOCK_PARAMS };
+  for (const inst of instruments) {
+    if ((inst.kind === "stock" || inst.kind === "etf") && !params[inst.ticker]) params[inst.ticker] = fallbackParams(inst);
+  }
+  for (const [ticker, p] of Object.entries(params)) {
     const z = normals(`${seed()}:idio:${ticker}`, n);
     const out: number[] = [];
     let price = p.s0;
@@ -143,5 +159,12 @@ export function generateDummyBook(
     }
   }
 
-  return { dates, closes, fx: {}, source: "dummy" };
+  const fx: Record<string, number[]> = {};
+  for (const ccy of new Set(instruments.map((i) => i.currency).filter((c) => c !== "USD"))) {
+    const z = normals(`${seed()}:fx:${ccy}`, n);
+    let rate = FX_LEVEL[ccy] ?? 1;
+    fx[`${ccy}USD`] = z.map((zi, i) => (i === 0 ? rate : (rate *= Math.exp(0.08 * Math.sqrt(dt) * zi))));
+  }
+
+  return { dates, closes, fx, source: "dummy" };
 }

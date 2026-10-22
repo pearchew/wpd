@@ -2,11 +2,10 @@ import Link from "next/link";
 import { Face } from "./Face";
 import { ConclusionPill, VerdictPill } from "./Verdict";
 import type { ResearchCard } from "@/lib/fund";
-import { signedPct, tone } from "@/lib/format";
+import { price, signedPct, tone } from "@/lib/format";
 import { ASSET_CLASSES } from "@/lib/schemas";
 import { displayTicker, getMember } from "@/lib/team";
 
-const fmt = (n: number) => (n >= 100 ? `$${Math.round(n)}` : `$${n.toFixed(2)}`);
 
 export function ResearchTeaser({ cards }: { cards: ResearchCard[] }) {
   return (
@@ -26,7 +25,7 @@ export function ResearchTeaser({ cards }: { cards: ResearchCard[] }) {
                   <b>{displayTicker(c.ticker)}</b>
                   <span>{c.conclusion && <><ConclusionPill conclusion={c.conclusion} />{" "}</>}{c.thesis}</span>
                   <span>
-                    {c.fairValue && c.price ? `${fmt(c.fairValue)} / ${fmt(c.price)} ` : ""}
+                    {c.fairValue && c.price ? `${price(c.fairValue, c.currency)} / ${price(c.price, c.currency)} ` : ""}
                     {c.upside !== undefined && <span className={tone(c.upside)}>{signedPct(c.upside, 0)}</span>}
                   </span>
                   <VerdictPill verdict={c.verdict} />

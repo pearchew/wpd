@@ -10,7 +10,7 @@ import { VoteTable } from "@/components/VoteTable";
 import { researchDocs } from "@/lib/data";
 import { fmtDate } from "@/lib/dates";
 import { getFundData } from "@/lib/fund";
-import { money, signedPct, slugify, tone } from "@/lib/format";
+import { price as fmtPrice, signedPct, slugify, tone } from "@/lib/format";
 import { computeVerdict, voteHistory } from "@/lib/verdict";
 
 // Pre-built at deploy time, then refreshed hourly so prices and upside stay current.
@@ -36,6 +36,7 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
   const f = doc.front;
 
   const closes = d.closes[f.ticker] ?? [];
+  const currency = d.instruments.get(f.ticker)?.currency ?? d.meta.reportingCurrency;
   const price = closes[closes.length - 1];
   const upside = f.fairValue && price ? f.fairValue / price - 1 : undefined;
   const result = computeVerdict(d.votes, f.ticker, f.author);
@@ -73,11 +74,11 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
       <div className="tiles">
         <div className="tile">
           <div className="tile-label">Fair value</div>
-          <div className="tile-value">{f.fairValue !== undefined ? money(f.fairValue) : "—"}</div>
+          <div className="tile-value">{f.fairValue !== undefined ? fmtPrice(f.fairValue, currency) : "—"}</div>
         </div>
         <div className="tile">
           <div className="tile-label">Price</div>
-          <div className="tile-value">{price !== undefined ? money(price) : "—"}</div>
+          <div className="tile-value">{price !== undefined ? fmtPrice(price, currency) : "—"}</div>
           <div className="tile-sub">{fmtDate(d.asOf)} close</div>
         </div>
         <div className="tile">
@@ -107,7 +108,7 @@ export default async function AssetPage({ params }: { params: Promise<{ ticker: 
           <h2>Price {buy ? "since purchase" : "history"}</h2>
           <p className="sub">{f.fairValue !== undefined && "Fair value drawn as a line"}</p>
         </div>
-        <PriceChart data={series} fairValue={f.fairValue} buy={buy} />
+        <PriceChart data={series} fairValue={f.fairValue} buy={buy} currency={currency} />
       </section>
 
       <section className="section">

@@ -11,18 +11,21 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { price } from "@/lib/format";
 
 interface Props {
   data: { date: string; price: number }[];
   fairValue?: number;
   buy?: { date: string; price: number };
+  /** the asset's own currency */
+  currency?: string;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const short = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}`;
-const usd = (v: number) => `$${v.toFixed(v >= 100 ? 0 : 2)}`;
 
-export function PriceChart({ data, fairValue, buy }: Props) {
+export function PriceChart({ data, fairValue, buy, currency = "USD" }: Props) {
+  const fmt = (v: number) => price(v, currency);
   const prices = data.map((d) => d.price);
   const lo = Math.min(...prices, fairValue ?? Infinity);
   const hi = Math.max(...prices, fairValue ?? -Infinity);
@@ -35,11 +38,11 @@ export function PriceChart({ data, fairValue, buy }: Props) {
             <CartesianGrid stroke="var(--rule)" strokeDasharray="2 4" vertical={false} />
             <XAxis dataKey="date" tickFormatter={short} tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--rule)" minTickGap={32} />
             <YAxis
-              width={56}
+              width={currency === "USD" ? 56 : 72}
               domain={[Math.floor(lo - pad), Math.ceil(hi + pad)]}
               tick={{ fill: "var(--muted)", fontSize: 11 }}
               stroke="var(--rule)"
-              tickFormatter={usd}
+              tickFormatter={fmt}
             />
             <Tooltip
               cursor={{ stroke: "var(--muted)", strokeDasharray: "3 3" }}
@@ -49,7 +52,7 @@ export function PriceChart({ data, fairValue, buy }: Props) {
                     <div className="muted">{short(String(label))}</div>
                     <div className="row">
                       <span>Close</span>
-                      <b>{`$${Number(payload[0].value).toFixed(2)}`}</b>
+                      <b>{fmt(Number(payload[0].value))}</b>
                     </div>
                   </div>
                 ) : null
@@ -60,7 +63,7 @@ export function PriceChart({ data, fairValue, buy }: Props) {
                 y={fairValue}
                 stroke="var(--gain)"
                 strokeDasharray="6 4"
-                label={{ value: `Fair value ${usd(fairValue)}`, position: "insideTopRight", fill: "var(--gain)", fontSize: 12 }}
+                label={{ value: `Fair value ${fmt(fairValue)}`, position: "insideTopRight", fill: "var(--gain)", fontSize: 12 }}
               />
             )}
             <Line type="monotone" dataKey="price" name="Close" stroke="var(--accent)" strokeWidth={2} dot={false} isAnimationActive={false} />

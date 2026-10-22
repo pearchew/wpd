@@ -27,7 +27,8 @@ interface Props {
   connected: boolean;
 }
 
-const money = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (n: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const pct = (n: number) => `${n >= 0 ? "+" : "−"}${Math.abs(n * 100).toFixed(1)}%`;
 
 /** The committee's thresholds from Fund Rules, as a hint while typing the fair value. */
@@ -57,6 +58,7 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
   const known = ctx.assets.find((a) => a.ticker === ticker);
   const duplicate = isNew && !pr && ctx.reports.includes(ticker);
   const price = ctx.prices[ticker];
+  const currency = ctx.assets.find((a) => a.ticker === ticker)?.currency ?? "USD";
   const fv = Number(d.fairValue.replace(/[$,\s]/g, ""));
   const upside = price && fv > 0 ? fv / price - 1 : undefined;
   const author = ctx.team.find((t) => t.initials === d.author);
@@ -234,16 +236,16 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
               </label>
             </div>
             <label>
-              Fair value (per share)
+              Fair value (per share{currency !== "USD" && `, ${currency}`})
               <input value={d.fairValue} inputMode="decimal" onChange={(e) => set("fairValue", e.target.value)} placeholder="182.00" />
               {err("fairValue") ||
                 (price ? (
                   upside !== undefined ? (
                     <span className={`field-note ${upsideHint(d.assetClass, upside).tone}`}>
-                      Latest close {money(price)} → {pct(upside)} · {upsideHint(d.assetClass, upside).text}
+                      Latest close {money(price, currency)} → {pct(upside)} · {upsideHint(d.assetClass, upside).text}
                     </span>
                   ) : (
-                    <span className="field-note">Latest close {money(price)}</span>
+                    <span className="field-note">Latest close {money(price, currency)}</span>
                   )
                 ) : (
                   ticker && <span className="field-note">No price yet for {ticker}</span>
@@ -382,8 +384,8 @@ export function ReportForm({ initial, body: initialBody, isNew, pr: initialPr, c
             )}
             {d.status === "published" && fv > 0 && (
               <div className="preview-kv">
-                <div><span>Fair value</span><b>{money(fv)}</b></div>
-                {price && <div><span>Price</span><b>{money(price)}</b></div>}
+                <div><span>Fair value</span><b>{money(fv, currency)}</b></div>
+                {price && <div><span>Price</span><b>{money(price, currency)}</b></div>}
                 {upside !== undefined && (
                   <div><span>Upside</span><b className={upside >= 0 ? "gain" : "loss"}>{pct(upside)}</b></div>
                 )}

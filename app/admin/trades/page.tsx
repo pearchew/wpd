@@ -7,6 +7,7 @@ import { TRADES_PREFIX, addedRows, parseInstruments, parseTrades } from "@/lib/a
 import { meta } from "@/lib/data";
 import { toISO } from "@/lib/dates";
 import { getFundData } from "@/lib/fund";
+import { getPriceBook } from "@/lib/prices";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Record trades" };
@@ -32,6 +33,7 @@ export default async function RecordTrades() {
   const pending = pendingLines.length ? parseTrades(`${header}\n${pendingLines.join("\n")}`) : [];
 
   const d = await getFundData();
+  const book = await getPriceBook();
   const prices: Record<string, number> = {};
   for (const [t, series] of Object.entries(d.closes)) {
     const last = series?.[series.length - 1];
@@ -45,6 +47,8 @@ export default async function RecordTrades() {
       pending={pending}
       instruments={instruments.filter((i) => i.ticker !== meta().benchmark || trades.some((t) => t.ticker === i.ticker))}
       prices={prices}
+      fx={{ dates: book.dates, fx: book.fx }}
+      reportingCurrency={meta().reportingCurrency}
       maxWeight={meta().maxPositionWeight}
       openPr={open && { number: open.number, url: open.url }}
       connected={Boolean(cfg)}

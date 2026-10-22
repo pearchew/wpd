@@ -46,7 +46,8 @@ export async function GET(req: Request) {
     const feed = getFeed();
 
     const fxPairs = [...new Set(list.map((i) => i.currency).filter((c) => c !== m.reportingCurrency))];
-    const symbols = [...new Set([...list.map((i) => i.feed_symbol), ...fxPairs.map((c) => `${c}/${m.reportingCurrency}`)])];
+    const fxSym = (c: string) => feed.fxSymbol(c, m.reportingCurrency);
+    const symbols = [...new Set([...list.map((i) => i.feed_symbol), ...fxPairs.map(fxSym)])];
     const closes = await feed.fetchCloses(symbols);
 
     const priceRows = list.flatMap((i) =>
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
     );
     const fxRows = fxPairs.flatMap((ccy) =>
       closes
-        .filter((c) => c.symbol === `${ccy}/${m.reportingCurrency}`)
+        .filter((c) => c.symbol === fxSym(ccy))
         .map((c) => ({ date: c.date, pair: `${ccy}${m.reportingCurrency}`, rate: c.close })),
     );
 

@@ -1,4 +1,21 @@
+import type { PriceBook } from "./prices/types";
 import type { Instrument, Meta, Trade } from "./schemas";
+
+/** Reporting-currency value of one unit of `ccy` on `date`; undefined when no rate is stored. */
+export type FxLookup = (ccy: string, date: string) => number | undefined;
+
+/** The price book's rate on or before `date` (or its first rate, for dates before it), the same rates the site values the fund with. */
+export function fxLookup(book: Pick<PriceBook, "dates" | "fx">, reportingCurrency: string): FxLookup {
+  return (ccy, date) => {
+    if (ccy === reportingCurrency) return 1;
+    const series = book.fx[`${ccy}${reportingCurrency}`];
+    if (!series) return undefined;
+    let i = book.dates.length - 1;
+    while (i > 0 && book.dates[i] > date) i--;
+    for (let j = i; j < series.length; j++) if (!Number.isNaN(series[j])) return series[j];
+    return undefined;
+  };
+}
 
 export interface LedgerCheck {
   errors: string[];
@@ -6,20 +23,23 @@ export interface LedgerCheck {
   cash: number;
   /** Real-book shares held, by ticker (positive only) */
   held: Record<string, number>;
-  /** Real-book cost basis, by ticker */
+  /** Real-book cost basis in the reporting currency, by ticker */
   cost: Record<string, number>;
 }
 
 /**
  * The ledger rules `npm run validate` enforces on data/trades.csv, as a pure function so the
  * trade form can run the same checks before anything is committed. `rowOf(i)` names row i in messages.
+ * Rows in another currency are converted with `fx`; without it only reporting-currency rows can be checked.
  */
 export function checkLedger(
   ledger: Trade[],
   inst: Instrument[],
-  m: Pick<Meta, "maxPositionWeight">,
+  m: Pick<Meta, "maxPositionWeight"> & Partial<Pick<Meta, "reportingCurrency">>,
   rowOf: (i: number) => string = (i) => `trades.csv row ${i + 2}`,
+  fx?: FxLookup,
 ): LedgerCheck {
+  const rep = m.reportingCurrency ?? "USD";
   const errors: string[] = [];
   const fail = (msg: string) => errors.push(msg);
   const known = new Set(inst.map((i) => i.ticker));
@@ -48,20 +68,26 @@ export function checkLedger(
       if (!hasSlice && !hasUnderlying) fail(`${at}: paper buy needs notional_slice for the Combined view`);
     }
 
+    let rate = t.currency === rep ? 1 : fx?.(t.currency, t.date);
+    if (rate === undefined) {
+      fail(`${at}: no ${t.currency}${rep} exchange rate for ${t.date}; load prices first (npm run db:backfill)`);
+      rate = 0;
+    }
+
     const key = `${t.book}:${t.ticker}`;
     const sign = t.action === "buy" ? 1 : t.action === "sell" ? -1 : 0;
     if (sign) {
       const q = (qty.get(key) ?? 0) + sign * (t.shares ?? 0);
       if (t.book === "real" && q < -1e-9) fail(`${at}: sells more ${t.ticker} than is held`);
       qty.set(key, q);
-      cost.set(key, (cost.get(key) ?? 0) + sign * (t.shares ?? 0) * (t.price ?? 0));
-      if (t.book === "real") cash += -sign * (t.shares ?? 0) * (t.price ?? 0) - t.fees;
+      cost.set(key, (cost.get(key) ?? 0) + sign * (t.shares ?? 0) * (t.price ?? 0) * rate);
+      if (t.book === "real") cash += (-sign * (t.shares ?? 0) * (t.price ?? 0) - t.fees) * rate;
     }
     if (t.action === "split" && t.shares) qty.set(key, (qty.get(key) ?? 0) * t.shares);
     if (t.book === "real") {
-      if (t.action === "deposit") cash += t.price ?? 0;
-      if (t.action === "withdrawal" || t.action === "fee") cash -= t.price ?? 0;
-      if (t.action === "dividend") cash += t.shares ? t.shares * (t.price ?? 0) : (t.price ?? 0);
+      if (t.action === "deposit") cash += (t.price ?? 0) * rate;
+      if (t.action === "withdrawal" || t.action === "fee") cash -= (t.price ?? 0) * rate;
+      if (t.action === "dividend") cash += (t.shares ? t.shares * (t.price ?? 0) : (t.price ?? 0)) * rate;
     }
   }
   if (cash < -0.005) fail(`trades.csv: cash goes negative (${cash.toFixed(2)}); a deposit or sale is missing`);

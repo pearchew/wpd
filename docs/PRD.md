@@ -371,7 +371,7 @@ The site is a Next.js app on Vercel's free plan: content builds from the GitHub 
 | Framework | Next.js (App Router), TypeScript | Static pages + daily revalidation; MDX support |
 | Hosting | Vercel Hobby | Free; auto-deploy and preview link per pull request |
 | Database | Supabase free tier | Postgres for prices, FX and NAV history |
-| Price data | A free API (Twelve Data, Finnhub or Financial Modeling Prep) | Daily closes for US and London tickers; pick after checking coverage |
+| Price data | Yahoo Finance chart endpoint (unofficial, no key); Twelve Data as a fallback | Daily closes for US, Tokyo, Korea and ASX stocks, COMEX futures and FX |
 | Scheduling | Vercel cron, once a day | Free plan allows roughly daily runs, enough for a weekly-reviewed fund |
 | Charts | Recharts or Visx | Line, bars, donut, heatmap, sparklines |
 | Content | MDX with frontmatter | Each of us writes in Markdown |

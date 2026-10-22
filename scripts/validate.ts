@@ -6,7 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { instruments, meta, researchDocs, team, trades, votes } from "../lib/data";
 import { checkInstruments } from "../lib/instrumentChecks";
-import { checkLedger } from "../lib/tradeChecks";
+import { getPriceBook } from "../lib/prices";
+import { checkLedger, fxLookup } from "../lib/tradeChecks";
 
 const errors: string[] = [];
 const fail = (msg: string) => errors.push(msg);
@@ -32,7 +33,13 @@ if (inst) checkInstruments(inst, m?.benchmark).forEach(fail);
 const known = new Set(inst?.map((i) => i.ticker));
 const voters = new Set(people?.map((p) => p.initials));
 
-if (ledger && inst && m) checkLedger(ledger, inst, m).errors.forEach(fail);
+/** Rows in another currency are checked at the same exchange rates the site uses, so only then is the price book loaded. */
+async function checkTrades() {
+  if (!(ledger && inst && m)) return;
+  const foreign = ledger.some((t) => t.currency !== m.reportingCurrency);
+  const fx = foreign ? fxLookup(await getPriceBook(), m.reportingCurrency) : undefined;
+  checkLedger(ledger, inst, m, undefined, fx).errors.forEach(fail);
+}
 
 if (voteRows) {
   voteRows.forEach((v, i) => {
@@ -57,10 +64,14 @@ if (docs && inst) {
   }
 }
 
-if (errors.length) {
-  console.error(`\nValidation failed (${errors.length}):\n${errors.map((e) => `  ✗ ${e}`).join("\n")}\n`);
-  process.exit(1);
-}
-console.log(
-  `Validation passed: ${inst?.length} instruments, ${ledger?.length} trades, ${voteRows?.length} votes, ${docs?.length} research files.`,
-);
+checkTrades()
+  .catch((e) => fail(`trades.csv: couldn't load exchange rates: ${e instanceof Error ? e.message : String(e)}`))
+  .then(() => {
+    if (errors.length) {
+      console.error(`\nValidation failed (${errors.length}):\n${errors.map((e) => `  ✗ ${e}`).join("\n")}\n`);
+      process.exit(1);
+    }
+    console.log(
+      `Validation passed: ${inst?.length} instruments, ${ledger?.length} trades, ${voteRows?.length} votes, ${docs?.length} research files.`,
+    );
+  });

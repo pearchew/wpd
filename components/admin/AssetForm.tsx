@@ -175,8 +175,11 @@ export function AssetForm({ today, instruments, priced, pending, openPr, connect
                   {err("assetClass") || <span className="field-note">Bond ETFs are Fixed Income; gold and oil are Commodities</span>}
                 </label>
                 {text("feedSymbol", "Price feed symbol", {
-                  placeholder: a.kind === "future" ? "MES=F" : a.ticker || "JNJ",
-                  hint: a.kind === "future" ? "What the price provider calls the contract" : "Leave blank if it matches the ticker",
+                  placeholder: a.kind === "future" ? "MESZ26.CME" : a.ticker || "JNJ",
+                  hint:
+                    a.kind === "future"
+                      ? "Yahoo Finance's symbol for this contract month, e.g. HGZ26.CMX"
+                      : "Yahoo Finance's symbol; leave blank if it matches the ticker (8750.T, 042660.KS, LYC.AX already do)",
                 })}
               </div>
             </>

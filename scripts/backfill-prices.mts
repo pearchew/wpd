@@ -5,8 +5,8 @@
  *   npm run db:backfill            # history from 30 days before launch to today
  *   npm run db:backfill -- 400     # or a specific number of trading days
  *
- * Needs SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and PRICE_API_KEY in .env.local.
- * Twelve Data's free plan allows 8 symbols a minute, so this pauses between batches.
+ * Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local. Prices come from Yahoo Finance
+ * (no key); with PRICE_FEED=twelvedata it uses Twelve Data, whose free plan allows 8 symbols a minute.
  */
 import { createClient } from "@supabase/supabase-js";
 import { firstTradeDate } from "../lib/calc/ledger";
@@ -31,16 +31,18 @@ const defaultDays = Math.ceil(((Date.now() - Date.parse(launch)) / 86_400_000) *
 const days = Number(process.argv[2]) || defaultDays;
 
 const fxPairs = [...new Set(list.map((i) => i.currency).filter((c) => c !== m.reportingCurrency))];
-const symbols = [...new Set([...list.map((i) => i.feed_symbol), ...fxPairs.map((c) => `${c}/${m.reportingCurrency}`)])];
-console.log(`Fetching ${days} trading days for ${symbols.length} symbols (about ${Math.ceil(symbols.length / 8)} min on the free plan)...`);
+const feed = getFeed();
+const fxSym = (c: string) => feed.fxSymbol(c, m.reportingCurrency);
+const symbols = [...new Set([...list.map((i) => i.feed_symbol), ...fxPairs.map(fxSym)])];
+console.log(`Fetching ${days} trading days for ${symbols.length} symbols...`);
 
-const closes = await getFeed().fetchCloses(symbols, days);
+const closes = await feed.fetchCloses(symbols, days);
 
 const priceRows = list.flatMap((i) =>
   closes.filter((c) => c.symbol === i.feed_symbol).map((c) => ({ date: c.date, ticker: i.ticker, close: c.close, adj_close: null, currency: i.currency })),
 );
 const fxRows = fxPairs.flatMap((ccy) =>
-  closes.filter((c) => c.symbol === `${ccy}/${m.reportingCurrency}`).map((c) => ({ date: c.date, pair: `${ccy}${m.reportingCurrency}`, rate: c.close })),
+  closes.filter((c) => c.symbol === fxSym(ccy)).map((c) => ({ date: c.date, pair: `${ccy}${m.reportingCurrency}`, rate: c.close })),
 );
 
 async function upsert(table: string, rows: object[], onConflict: string) {
