@@ -178,8 +178,8 @@ export function AssetForm({ today, instruments, priced, pending, openPr, connect
                   placeholder: a.kind === "future" ? "MESZ26.CME" : a.ticker || "JNJ",
                   hint:
                     a.kind === "future"
-                      ? "Yahoo Finance's symbol for this contract month, e.g. HGZ26.CMX"
-                      : "Yahoo Finance's symbol; leave blank if it matches the ticker (8750.T, 042660.KS, LYC.AX already do)",
+                      ? "Yahoo Finance's symbol for this contract month, e.g. HGZ26.CMX or MGCZ26.CMX"
+                      : "Yahoo Finance's symbol; leave blank if it matches the ticker (BMRI.JK, PTBA.JK, 042660.KS already do)",
                 })}
               </div>
             </>

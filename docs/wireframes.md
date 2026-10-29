@@ -205,17 +205,17 @@ TOTAL                100.0%  $103.42 +3.42%
  Author: ( All ) ( [A] ) ( [B] ) ( [C] )                  Sort: [ Updated ▾ ]
 
  ┌────────────────────────────────────┐  ┌────────────────────────────────────┐
- │ Hanwha Ocean             042660.KS │  │ Lynas Rare Earths           LYC.AX │
- │ [Long] Event-driven                │  │ [Watch] Sentiment and news         │
- │ "Navy orders keep the backlog…"    │  │ "Export curbs set the price; we…"  │
- │ Price ₩87,075            Include   │  │ Price A$7.42             Watch     │
+ │ Hanwha Ocean             042660.KS │  │ Bank Mandiri               BMRI.JK │
+ │ [Long] Event-driven                │  │ [Watch] Momentum                   │
+ │ "Navy orders keep the backlog…"    │  │ "Loan growth holds up while…"      │
+ │ Price ₩87,075            Include   │  │ Price Rp5,425            Watch     │
  │ [A] Person A · updated Nov 10      │  │ [B] Person B · updated Nov 8       │
  └────────────────────────────────────┘  └────────────────────────────────────┘
  ┌────────────────────────────────────┐  ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
- │ Daiichi Life Group          8750.T │  ┆ Johnson & Johnson              JNJ ┆
- │ [Neutral] Momentum                 │  ┆ Event-driven                       ┆
- │ "Rate rises are priced in; no…"    │  ┆ ░░ Analysis in progress ░░         ┆
- │ Price ¥4,032             ·         │  ┆ Last close $158                    ┆
+ │ Bukit Asam                 PTBA.JK │  ┆ Microsoft                     MSFT ┆
+ │ [Neutral] Carry                    │  ┆ Event-driven                       ┆
+ │ "Coal prices are priced in; no…"   │  ┆ ░░ Analysis in progress ░░         ┆
+ │ Price Rp2,710            ·         │  ┆ Last close $536                    ┆
  │ [C] Person C · updated Nov 5       │  ┆ [B] started by Person B            ┆
  └────────────────────────────────────┘  └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘
 
@@ -378,8 +378,8 @@ Sign-in page (`/admin/sign-in`): title, one line, and **[ Sign in with GitHub ]*
 ```
  Admin › Research › New report
  ┌─ 1. The asset ───────────────────────── ✓ ┐ ┌─ Preview ───────────────────────┐
- │ Ticker [ LYC.AX ] ✓ known asset · Stock   │ │   LYC.AX · Lynas Rare Earths    │
- │ Name   [ Lynas Rare Earths ]  (autofill)  │ │   ASX · Equities · Stock        │
+ │ Ticker [ BMRI.JK ] ✓ known asset · Stock  │ │   BMRI.JK · Bank Mandiri        │
+ │ Name   [ Bank Mandiri ]  (autofill)       │ │   IDX · Equities · Stock        │
  │ Class  [ Equities ▾ ]  Exchange [ ASX ]   │ │   [B] by Person B               │
  │ (unknown ticker → "Add it to the asset    │ │   [Watch]                       │
  │  list": type, currency, feed symbol)      │ │   "Export curbs set the price…" │
