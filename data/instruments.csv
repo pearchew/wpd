@@ -1,7 +1,10 @@
 ticker,name,asset_class,currency,feed_symbol,kind,multiplier,underlying,underlying_scale,expiry,strike,option_type,margin,maint_margin
 SPY,SPDR S&P 500 ETF (benchmark),Equities,USD,SPY,etf,1,,,,,,,
-8750.T,"Daiichi Life Group, Inc.",Equities,JPY,8750.T,stock,1,,,,,,,
-HG1,"Copper, COMEX front month ($ per lb)",Commodities,USD,HG=F,etf,1,,,,,,,
-HGZ26,COMEX copper future (Dec 2026),Derivatives,USD,HGZ26.CMX,future,25000,HG1,1,2026-12-29,,,13200,12000
+MSFT,Microsoft,Equities,USD,MSFT,stock,1,,,,,,,
+BMRI.JK,Bank Mandiri,Equities,IDR,BMRI.JK,stock,1,,,,,,,
+PTBA.JK,Bukit Asam,Equities,IDR,PTBA.JK,stock,1,,,,,,,
 042660.KS,Hanwha Ocean,Equities,KRW,042660.KS,stock,1,,,,,,,
-LYC.AX,Lynas Rare Earths,Equities,AUD,LYC.AX,stock,1,,,,,,,
+MGC1,"Gold, COMEX front month ($ per oz, underlying for MGCZ26)",Commodities,USD,MGC=F,etf,1,,,,,,,
+MGCZ26,COMEX micro gold future (Dec 2026),Derivatives,USD,MGCZ26.CMX,future,10,MGC1,1,2026-12-29,,,2320,2109
+HG1,"Copper, COMEX front month ($ per lb, underlying for HGZ26)",Commodities,USD,HG=F,etf,1,,,,,,,
+HGZ26,COMEX copper future (Dec 2026),Derivatives,USD,HGZ26.CMX,future,25000,HG1,1,2026-12-29,,,13200,12000

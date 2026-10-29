@@ -15,8 +15,8 @@ export interface PriceFeed {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Yahoo Finance's chart endpoint: no key, and it covers Tokyo (8750.T), Korea (042660.KS),
- * ASX (LYC.AX), COMEX contracts (HGZ26.CMX), OCC option codes and FX (JPYUSD=X).
+ * Yahoo Finance's chart endpoint: no key, and it covers Jakarta (BMRI.JK), Korea (042660.KS),
+ * COMEX contracts (MGCZ26.CMX, HGZ26.CMX), OCC option codes and FX (IDRUSD=X).
  * It is unofficial and can change or throttle without notice, so symbols go one at a time
  * with a short pause, and a symbol that fails is left out (the job reports it as missing).
  */

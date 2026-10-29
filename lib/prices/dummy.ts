@@ -45,6 +45,11 @@ const STOCK_PARAMS: Record<string, Params> = {
   LQD: P(108, 0.045, 0.1, 1.05, 0.025),
   USO: P(72, 0.02, 0.5, 0, 0.3),
   HG1: P(5, 0.05, 0.5, 0, 0.25),
+  MGC1: P(4100, 0.15, -0.05, 0.9, 0.15),
+  // In their own currencies: rupiah and won
+  "BMRI.JK": P(5400, 0.08, 0.8, 0.2, 0.22),
+  "PTBA.JK": P(2700, 0.05, 0.6, 0, 0.3),
+  "042660.KS": P(85000, 0.2, 1.2, 0, 0.4),
 };
 
 /** Rough USD value of one unit of each currency, so demo FX looks plausible. */
@@ -62,6 +67,7 @@ const FUTURE_CARRY: Record<string, { yield: number; scale: number }> = {
   MES: { yield: 0.013, scale: 10 },
   MCL: { yield: 0.09, scale: 1 },
   HGZ26: { yield: 0.01, scale: 1 },
+  MGCZ26: { yield: 0, scale: 1 },
 };
 
 function hash(s: string): number {
