@@ -65,13 +65,7 @@ export type Vote = z.infer<typeof VoteSchema>;
 export const TeamSchema = z.object({
   initials: z.string().min(1).max(3),
   name: z.string().min(1),
-  bio: z.string().min(1),
   avatar: z.string().min(1),
-  /** Pipe-separated in the CSV, e.g. "Hong Kong|US|Commodities" */
-  focuses: z
-    .string()
-    .default("")
-    .transform((s) => s.split("|").map((f) => f.trim()).filter(Boolean)),
 });
 export type TeamMember = z.infer<typeof TeamSchema>;
 
