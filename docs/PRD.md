@@ -161,7 +161,9 @@ A byline is per piece, not per asset owner, so if the split between us changes e
 
 Fund Rules (`/fund`) shows how the fund decides what to own. It was called "Inside the Fund" until that name moved to the positions page.
 
-**House rules and thresholds**
+**House rules and thresholds (paused)**
+
+House rules are paused while the team gets started. The page shows a short note in their place and the vote history; the build enforces no position cap (`maxPositionWeight` is optional in `data/meta.json`). The rules below are kept for when they come back.
 
 - House rules: asset class targets (equities 35–65%, fixed income 15–35%, commodities and gold 5–25%, cash 0–15%, rebalanced quarterly); no position above 20% and no theme above 40%; every report ends in the author's view (long, short, neutral or watch), and every view is published; every report names the trading strategy it tests and shows the evidence so far; Include needs 2 of 3 votes and the author's vote alone never carries it; an exit rule is written at entry, not after, and when it fires the position is sold unless 2 of 3 vote to keep it; a 20% drawdown triggers a re-vote and every exit gets a post-mortem; no trade under about $5; derivatives stay on the paper book.
 - Decision thresholds: Include when the strategy's entry trigger has fired and its evidence on this asset holds up, or (bonds, gold) it lowers volatility / raises Sharpe at a 10% weight; Watch while the trigger hasn't fired or the evidence is thin; Reject if the evidence says the rule doesn't work on this asset or the risk case fails.
@@ -394,7 +396,7 @@ The biggest risks are wrong numbers on the page, not downtime; most mitigations 
 | --- | --- | --- |
 | Missing dividends or fees in the ledger | NAV drifts from the broker; dividend payers look worse | Record every cash event; weekly reconciliation |
 | UK-listed UCITS funds and GBP prices | Wrong NAV from currency mix | Reporting currency decided before launch; FX stored daily; feed symbol per ticker in `instruments.csv` |
-| Typo in a CSV or frontmatter | Broken or misleading page | Pre-deploy validation: known tickers, valid dates, known voters, 20% cap, required fields; failed check = no deploy |
+| Typo in a CSV or frontmatter | Broken or misleading page | Pre-deploy validation: known tickers, valid dates, known voters, optional position cap, required fields; failed check = no deploy |
 | Vercel free plan blocks deploys from collaborators' commits to a private repo | Only one person can publish | The owner merges every pull request (admin ones included) with a merge commit; or a public repo / Vercel Pro |
 | Admin token leaked | Someone could open or change pull requests | Token limited to this repo, Contents + Pull requests only, kept in Vercel env vars; nothing reaches `main` without the owner's merge; rotate it yearly |
 | Wrong person signs in to the admin | Unwanted pull requests | GitHub sign-in limited to `ADMIN_USERS`; every change still waits for the owner |

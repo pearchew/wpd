@@ -9,6 +9,7 @@ import {
   TRADES_PREFIX,
   type TradeInput,
   appendTrades,
+  isPaperKind,
   parseInstruments,
   parseTrades,
   toTrade,
@@ -27,7 +28,7 @@ export type TradeSaveResult =
 
 const describe = (t: Trade) =>
   t.action === "buy" || t.action === "sell"
-    ? `${ACTION_LABEL[t.action].toLowerCase()} ${t.shares} ${t.ticker}`
+    ? `${ACTION_LABEL[t.action].toLowerCase()} ${t.shares} ${t.ticker}${t.book === "paper" ? " (paper)" : ""}`
     : t.action === "split"
       ? `${t.ticker} ${t.shares}-for-1 split`
       : `${ACTION_LABEL[t.action].toLowerCase()} $${t.price}${t.ticker !== "CASH" ? ` ${t.ticker}` : ""}`;
@@ -56,10 +57,11 @@ export async function saveTrades(inputs: TradeInput[], pr?: number): Promise<Tra
     return { ok: false, error: `The current trades.csv or instruments.csv doesn't parse: ${(e as Error).message}` };
   }
   const known = new Set(inst.map((i) => i.ticker));
+  const paper = new Set(inst.filter((i) => isPaperKind(i.kind)).map((i) => i.ticker));
   const closes = (await getFundData()).closes;
   const priced = new Set(Object.keys(closes).filter((k) => closes[k]?.some((v) => v > 0)));
   const rowProblems = inputs.flatMap((t, i) =>
-    Object.entries(tradeProblems(t, today, known, priced)).map(([k, v]) => `Trade ${i + 1}, ${k}: ${v}`),
+    Object.entries(tradeProblems(t, today, known, priced, paper)).map(([k, v]) => `Trade ${i + 1}, ${k}: ${v}`),
   );
   if (rowProblems.length) return { ok: false, error: "Some trades need fixing.", problems: rowProblems };
 

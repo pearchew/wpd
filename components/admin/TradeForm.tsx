@@ -11,6 +11,7 @@ import {
   type TradeInput,
   cashEffect,
   emptyTrade,
+  isPaperKind,
   sharesFor,
   toTrade,
   tradeProblems,
@@ -32,7 +33,8 @@ interface Props {
   /** Exchange rates, so trades in other currencies are checked and shown in the reporting currency */
   fx: Pick<PriceBook, "dates" | "fx">;
   reportingCurrency: string;
-  maxWeight: number;
+  /** Position cap from meta.json; undefined means no cap */
+  maxWeight?: number;
   openPr?: { number: number; url: string };
   connected: boolean;
 }
@@ -88,9 +90,13 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
   const [result, setResult] = useState<TradeSaveResult | undefined>();
   const [saving, start] = useTransition();
 
-  // Real-book trades only: futures and options stay paper trades, recorded by hand for now.
-  const tradeable = useMemo(() => instruments.filter((i) => i.kind === "stock" || i.kind === "etf"), [instruments]);
+  // Rows that only price a future (HG1 under HGZ26) aren't traded themselves.
+  const tradeable = useMemo(() => {
+    const underlyings = new Set(instruments.map((i) => i.underlying).filter(Boolean));
+    return instruments.filter((i) => !underlyings.has(i.ticker) || trades.some((x) => x.ticker === i.ticker));
+  }, [instruments, trades]);
   const known = useMemo(() => new Set(tradeable.map((i) => i.ticker)), [tradeable]);
+  const paperSet = useMemo(() => new Set(tradeable.filter((i) => isPaperKind(i.kind)).map((i) => i.ticker)), [tradeable]);
   const rates = useMemo(() => fxLookup(fx, reportingCurrency), [fx, reportingCurrency]);
   const m = { maxPositionWeight: maxWeight, reportingCurrency };
   const before = useMemo(
@@ -115,17 +121,20 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
   const newErrors = after.errors.filter((e) => !before.errors.includes(e));
 
   const priced = useMemo(() => new Set(Object.keys(prices)), [prices]);
-  const problems = tradeProblems(t, today, known, priced);
+  const problems = tradeProblems(t, today, known, priced, paperSet);
   const isCash = CASH_ACTIONS.includes(t.action);
   const ticker = t.ticker.trim().toUpperCase();
   const inst = tradeable.find((i) => i.ticker === ticker);
+  const isPaper = paperSet.has(ticker);
   const held = after.held[ticker] ?? 0;
   const price = prices[ticker];
   const shares = sharesFor(t);
   /** The row's currency (the asset's, or the reporting currency for cash rows) and its cash effect in the reporting currency. */
   const currencyOf = (x: TradeInput) =>
     CASH_ACTIONS.includes(x.action) ? reportingCurrency : (instruments.find((i) => i.ticker === x.ticker.trim().toUpperCase())?.currency ?? reportingCurrency);
-  const cashIn = (x: TradeInput) => cashEffect(x) * (rates(currencyOf(x), x.date) ?? 1);
+  // Paper trades move no real cash.
+  const cashIn = (x: TradeInput) =>
+    paperSet.has(x.ticker.trim().toUpperCase()) ? 0 : cashEffect(x) * (rates(currencyOf(x), x.date) ?? 1);
   const ccy = currencyOf(t);
   const amountLabel = `Amount (${ccy === "USD" ? "$" : ccy})`;
   const effect = cashIn(t);
@@ -136,7 +145,12 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
   };
   const pickTicker = (v: string) => {
     const up = v.toUpperCase();
-    setT((prev) => ({ ...prev, ticker: up, price: prev.price || (prices[up] ? prices[up].toFixed(2) : "") }));
+    setT((prev) => ({
+      ...prev,
+      ticker: up,
+      price: prev.price || (prices[up] ? prices[up].toFixed(2) : ""),
+      ...(paperSet.has(up) ? { sizeBy: "shares" as const } : {}),
+    }));
     setResult(undefined);
   };
   const err = (k: keyof TradeInput) => touched && problems[k] && <span className="field-error">{problems[k]}</span>;
@@ -160,7 +174,12 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
 
   const tickerOptions =
     t.action === "sell" || t.action === "split" || t.action === "dividend"
-      ? tradeable.filter((i) => (before.held[i.ticker] ?? 0) > 0 || (after.held[i.ticker] ?? 0) > 0)
+      ? tradeable.filter(
+          (i) =>
+            (t.action === "sell" && isPaperKind(i.kind)) || // paper positions can go short
+            (before.held[i.ticker] ?? 0) > 0 ||
+            (after.held[i.ticker] ?? 0) > 0,
+        )
       : tradeable;
 
   return (
@@ -209,13 +228,14 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
                 {tickerOptions.map((i) => (
                   <option key={i.ticker} value={i.ticker}>
                     {i.ticker} · {i.name}
+                    {isPaperKind(i.kind) ? " (paper)" : ""}
                   </option>
                 ))}
               </select>
               {err("ticker") ||
                 (inst && (
                   <span className="field-note">
-                    {held > 0 ? `Holding ${held.toFixed(4)} shares` : "Not held yet"}
+                    {isPaper ? "Paper trade: no real money moves" : held > 0 ? `Holding ${held.toFixed(4)} shares` : "Not held yet"}
                     {price ? ` · latest close ${money(price)}` : ""}
                   </span>
                 ))}
@@ -229,6 +249,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
 
           {(t.action === "buy" || t.action === "sell") && (
             <>
+              {!isPaper && (
               <div className="radio-row" role="radiogroup" aria-label="Size by">
                 <label className="check">
                   <input type="radio" checked={t.sizeBy === "shares"} onChange={() => set("sizeBy", "shares")} /> Shares
@@ -237,11 +258,12 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
                   <input type="radio" checked={t.sizeBy === "dollars"} onChange={() => set("sizeBy", "dollars")} /> {ccy === "USD" ? "Dollar amount" : `Amount in ${ccy}`}
                 </label>
               </div>
+              )}
               <div className="field-grid three">
                 {t.sizeBy === "shares" ? (
                   <label>
-                    Shares
-                    <input inputMode="decimal" value={t.shares} onChange={(e) => set("shares", e.target.value)} placeholder="0.1234" />
+                    {isPaper ? "Contracts" : "Shares"}
+                    <input inputMode="decimal" value={t.shares} onChange={(e) => set("shares", e.target.value)} placeholder={isPaper ? "1" : "0.1234"} />
                     {err("shares") ||
                       (t.action === "sell" && held > 0 && (
                         <button type="button" className="link-button field-note" onClick={() => set("shares", String(held))}>
@@ -257,7 +279,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
                   </label>
                 )}
                 <label>
-                  Price per share{ccy !== "USD" && ` (${ccy})`}
+                  {isPaper ? "Price per contract unit" : "Price per share"}{ccy !== "USD" && ` (${ccy})`}
                   <input inputMode="decimal" value={t.price} onChange={(e) => set("price", e.target.value)} placeholder="160.25" />
                   {err("price") || (price && t.price === price.toFixed(2) && <span className="field-note">Prefilled from the latest close: use the fill price</span>)}
                 </label>
@@ -267,6 +289,18 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
                   {err("fees")}
                 </label>
               </div>
+              {isPaper && t.action === "buy" && (
+                <label>
+                  Fund slice ($)
+                  <input inputMode="decimal" value={t.slice} onChange={(e) => set("slice", e.target.value)} placeholder="10" />
+                  {err("slice") || (
+                    <span className="field-note">
+                      The dollars of the fund this contract stands in for. The Combined view scales its P&amp;L to this.
+                    </span>
+                  )}
+                </label>
+              )}
+              {isPaper && err("action")}
             </>
           )}
 
@@ -296,7 +330,7 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
 
           <div className="trade-add">
             <span className={effect < 0 ? "loss" : effect > 0 ? "gain" : "flat"}>
-              {effect !== 0 ? `${signedMoney(effect)} cash` : t.action === "split" ? "No cash change" : ""}
+              {effect !== 0 ? `${signedMoney(effect)} cash` : isPaper ? "Paper: no cash moves" : t.action === "split" ? "No cash change" : ""}
             </span>
             <button type="button" className="button secondary" onClick={add}>+ Add to list</button>
           </div>
@@ -353,7 +387,11 @@ export function TradeForm({ today, trades, pending, instruments, prices, fx, rep
               {newErrors.map((e) => <li key={e}>{e}</li>)}
             </ul>
           ) : (
-            list.length > 0 && <p className="field-ok">✓ Passes the ledger checks: cash stays positive, no oversells, {Math.round(maxWeight * 100)}% cap</p>
+            list.length > 0 && (
+              <p className="field-ok">
+                ✓ Passes the ledger checks: cash stays positive, no oversells{maxWeight !== undefined && `, ${Math.round(maxWeight * 100)}% cap`}
+              </p>
+            )
           )}
 
           {pending.length > 0 && (

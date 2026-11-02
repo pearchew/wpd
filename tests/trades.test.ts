@@ -81,8 +81,36 @@ describe("ledger checks", () => {
   });
 
   it("refuses real-book derivatives", () => {
-    const fut = toTrade(row({ action: "buy", ticker: "MESZ6", shares: "1", price: "1" }), INST);
+    const fut = { ...toTrade(row({ action: "buy", ticker: "JNJ", shares: "1", price: "1" }), INST), ticker: "MESZ6" };
     expect(checkLedger([...base, fut], INST, m).errors[0]).toContain("must be a paper trade");
+  });
+
+  it("records a future from the form on the paper book, sized in contracts with a fund slice", () => {
+    const paper = new Set(["MESZ6"]);
+    const draft = row({ action: "buy", ticker: "MESZ6", shares: "1", price: "6650", slice: "10" });
+    expect(tradeProblems(draft, "2026-10-20", new Set(["MESZ6"]), undefined, paper)).toEqual({});
+    expect(tradeProblems({ ...draft, slice: "" }, "2026-10-20", new Set(["MESZ6"]), undefined, paper).slice).toBeDefined();
+    expect(tradeProblems({ ...draft, sizeBy: "dollars", amount: "50" }, "2026-10-20", new Set(["MESZ6"]), undefined, paper).amount).toBeDefined();
+    const fut = toTrade(draft, INST);
+    expect(fut.book).toBe("paper");
+    expect(fut.notional_slice).toBe(10);
+    // No real cash moves, so a contract far bigger than the fund still passes
+    const c = checkLedger([...base, fut], INST, m);
+    expect(c.errors).toEqual([]);
+    expect(c.cash).toBeCloseTo(100 - 0.2245 * 222.69, 6);
+    // A paper sell needs no slice and may go short
+    expect(toTrade(row({ action: "sell", ticker: "MESZ6", shares: "1", price: "6700" }), INST).notional_slice).toBeUndefined();
+  });
+
+  it("only applies a position cap when one is set", () => {
+    const big = ["AAA", "BBB", "CCC"].map((t) => inst(t));
+    const buys = [
+      toTrade(row({ action: "buy", ticker: "JNJ", shares: "0.3", price: "100" }), INST),
+      ...big.map((i) => toTrade(row({ action: "buy", ticker: i.ticker, shares: "0.01", price: "100" }), [...INST, ...big])),
+    ];
+    const all = [...INST, ...big];
+    expect(checkLedger([...base, ...buys], all, m).errors.some((e) => e.includes("cap"))).toBe(true);
+    expect(checkLedger([...base, ...buys], all, {}).errors).toEqual([]);
   });
 
   it("converts trades in other currencies at the stored rate for their date", () => {
