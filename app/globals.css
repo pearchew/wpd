@@ -1032,26 +1032,6 @@ a.rcard:hover {
 .analyst h3 {
   margin: 12px 0 6px;
 }
-.analyst-bio {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-.analyst-focuses {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-}
-.analyst-focuses li {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border: 1px solid var(--rule);
-  color: var(--ink);
-}
 .rules-paused {
   max-width: 620px;
   margin: 0 auto;

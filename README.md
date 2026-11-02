@@ -38,7 +38,7 @@ content/research/<ticker>.mdx   one write-up per asset (frontmatter + MDX body)
 data/trades.csv                 every buy, sell, dividend, deposit, paper trade
 data/votes.csv                  every committee vote
 data/instruments.csv            ticker, name, class, currency, feed symbol, contract details
-data/team.csv                   initials, name, bio, avatar, focuses
+data/team.csv                   initials, name, avatar
 data/meta.json                  launch date, reporting currency, last reconciled, risk-free rate
 public/models/                  Excel models for download
 public/avatars/                 8-bit faces
@@ -59,7 +59,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | Write or update a research report | `/admin` on the site (or `content/research/<ticker>.mdx`) | [Team admin](#team-admin), [Reports](#write-or-update-a-research-report) |
 | Upload an Excel model | `public/models/` | [Reports](#write-or-update-a-research-report) |
 | Record a committee vote or a change of mind | `/admin` → Record vote (or `data/votes.csv`) | [Team admin](#team-admin), [Votes](#record-a-committee-vote) |
-| Change a name, bio, focuses or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
+| Change a name or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
 | Mark the NAV as reconciled with the broker | `data/meta.json` | [Reconcile](#weekly-reconciliation) |
 | Bring back house rules or a position cap | `app/fund/page.tsx`, `data/meta.json` | [Rules](#house-rules-paused) |
 
@@ -301,9 +301,8 @@ Once a week, compare the site's NAV with the broker statement.
 
 ### Change the team
 
-- **New member:** add a row to `data/team.csv` with new initials (1–3 capital letters), their name, a short bio, an avatar path and their focuses, and upload their face to `public/avatars/`. They appear in Our analysts on the home page and as an author option on Research. To let them use the forms, also add them to `ADMIN_USERS` ([Team admin](#team-admin)). The committee rules on Fund Rules are written for three people ("2 of 3 votes"); the verdict itself counts any two Includes, so edit that wording in `app/fund/page.tsx` if the team grows.
-- **Name or bio:** edit the row in `data/team.csv` (`initials,name,bio,avatar,focuses`). The initials are used by every report and vote, so don't change them.
-- **Focuses:** the tags on each analyst card on the home page. Separate them with `|`, e.g. `Hong Kong|US|Commodities`.
+- **New member:** add a row to `data/team.csv` with new initials (1–3 capital letters), their name and an avatar path, and upload their face to `public/avatars/`. They appear in Our analysts on the home page and as an author option on Research. To let them use the forms, also add them to `ADMIN_USERS` ([Team admin](#team-admin)). The committee verdict counts any two Includes, which was written for three people; revisit it if the team grows.
+- **Name:** edit the row in `data/team.csv` (`initials,name,avatar`). The initials are used by every report and vote, so don't change them.
 - **Pixel face:** upload a square image into `public/avatars/` (a 16×16 pixel drawing saved as SVG or PNG works best, e.g. from Piskel) and set the `avatar` column to `/avatars/<file name>`.
 
 ### House rules (paused)

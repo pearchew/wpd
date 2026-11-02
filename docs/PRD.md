@@ -68,7 +68,7 @@ The home page answers two questions in ten seconds: how the fund is doing and wh
 | 3 | View toggle | `[ Combined \| ● Real \| Paper only ]` | Defaults to Real. Hidden until `data/trades.csv` has a `book=paper` row. |
 | 4 | Hero tiles | NAV, return since inception, SPY return, gap vs SPY | Green/red gap. "As of [date], US close" timestamp and a "Reconciled with broker: [date]" note. |
 | 5 | Performance chart | Fund vs SPY, both indexed to 100 at launch | No heading of its own (the page title names it), just a one-line note. 1W / 1M / since-inception toggles; markers on trade and rebalance dates. |
-| 6 | Our analysts | One card per team member: 8-bit face, name, bio, focus tags | Three across on desktop, stacked on a phone. Focuses come from the `focuses` column in `team.csv` (e.g. Hong Kong · US · Commodities). |
+| 6 | Our analysts | One card per team member: 8-bit face and name | Three across on desktop, stacked on a phone. |
 
 **Footer (every page):** "The WDP Fund is a student learning exercise, not investment advice."
 
@@ -242,7 +242,7 @@ wdp-fund/
 │   ├── trades.csv      every buy, sell, dividend, deposit, paper trade
 │   ├── votes.csv       every committee vote
 │   ├── instruments.csv ticker, name, asset class, currency, price-feed symbol
-│   ├── team.csv        initials, name, bio, avatar file, focuses (pipe-separated)
+│   ├── team.csv        initials, name, avatar file
 │   └── meta.json       launch date, reporting currency, last reconciled date
 ├── public/models/      Excel models for download
 └── public/avatars/     8-bit faces
@@ -442,7 +442,7 @@ Ship in four phases so a working tracker is live before any research is written.
 - [ ] Paper account size and `notional_slice` per contract. [initial margin; $10 slice]
 - [ ] Which free price API, and does it cover every ticker we hold? [abstract behind one provider interface]
 - [ ] Public or private repo?
-- [ ] Names, bios and 8-bit faces for the three of us. [placeholders A, B, C]
+- [x] Names for the three of us: Pierson (A), Waseem (B), David (C). 8-bit faces are still placeholders.
 
 ## Appendix: candidate asset splits
 
