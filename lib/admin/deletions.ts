@@ -35,7 +35,7 @@ export interface Sources {
   votesCsv: string;
   reports: ReportInfo[];
   benchmark: string;
-  maxPositionWeight: number;
+  maxPositionWeight?: number;
   /** Exchange rates for trades in other currencies (plain data: this goes to the browser) */
   fx?: Pick<PriceBook, "dates" | "fx">;
   reportingCurrency?: string;

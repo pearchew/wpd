@@ -23,7 +23,7 @@ The site reads real closes from Supabase when `SUPABASE_URL` and `SUPABASE_SERVI
 | `/research` | Index: asset-class tabs, author filter (`?class=equities&author=A`), "Analysis in progress" cards |
 | `/research/[ticker]` | One report: view, thesis, strategy, price chart, position and P&L from the ledger, the write-up, committee votes, Excel model |
 | `/inside` | Inside the Fund: winners/losers, holdings, allocation and risk, research teaser (same `?view=` rule as Home) |
-| `/fund` | Fund Rules: house rules, decision thresholds and the vote history, so a visitor can see how the fund works |
+| `/fund` | Fund Rules: the vote history. House rules are paused for now; the page says so |
 | `/admin` | Team admin (sign-in required): research, trade, vote, asset and delete forms that open pull requests. See [Team admin](#team-admin) |
 | `/api/cron/daily` | Daily price job (Vercel cron, weekdays 21:30 UTC) |
 
@@ -61,7 +61,7 @@ You never need to touch code to run the fund. Everything we decide is a plain fi
 | Record a committee vote or a change of mind | `/admin` → Record vote (or `data/votes.csv`) | [Team admin](#team-admin), [Votes](#record-a-committee-vote) |
 | Change a name, bio, focuses or pixel face | `data/team.csv`, `public/avatars/` | [Team](#change-the-team) |
 | Mark the NAV as reconciled with the broker | `data/meta.json` | [Reconcile](#weekly-reconciliation) |
-| Change the house rules or thresholds shown on Fund Rules | `app/fund/page.tsx` | [Rules](#change-the-house-rules-text) |
+| Bring back house rules or a position cap | `app/fund/page.tsx`, `data/meta.json` | [Rules](#house-rules-paused) |
 
 Anything else (layout, colours, new pages) is a code change. Ask the owner.
 
@@ -125,8 +125,7 @@ Things to know:
 - **You can't sell more than you hold.**
 - **Record every cash event.** Missing dividends and fees are the usual reason the site's NAV drifts away from the broker's.
 - **The ticker must already be in `data/instruments.csv`** and must have prices in the database. See the next section for a new asset.
-- **No position above 20%** once the fund holds four or more positions. The check fails if one is over.
-- **Paper trades** (futures and options, no real money) use `book` = `paper` and fill in `notional_slice`, the dollars of the fund the position stands in for in the Combined view. They need `kind`, `underlying`, `expiry` and margin details in `instruments.csv`. The Paper and Combined views appear automatically as soon as there is a paper row.
+- **Paper trades** (futures and options, no real money) use `book` = `paper` and fill in `notional_slice` on the buy, the dollars of the fund the position stands in for in the Combined view. They need `kind`, `underlying`, `expiry` and margin details in `instruments.csv`. The Paper and Combined views appear automatically as soon as there is a paper row.
 
 ### Add a new asset to the site
 
@@ -242,7 +241,7 @@ The easiest way to write research is the form at **`/admin`** on the live site. 
 - A ticker the site doesn't know yet (stocks and ETFs) is added to `instruments.csv` in the same pull request.
 - Only one change per report at a time: **Edit** on a report that already has one open takes you to that one.
 
-**Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold, the 20% cap) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Real-book stocks and ETFs only; paper derivatives still go in by hand.
+**Record trades** (`/admin/trades`): add one row per broker fill (date, action, asset, shares or a dollar amount, price, fees, note), then submit them together. The price starts at the latest close; replace it with the fill price from the broker. Before anything is sent, the form runs the same checks as the build (cash stays positive, no selling more than you hold) and shows each holding and the cash before and after. While a trade change is waiting for the owner, new trades are added to that same pull request, so two changes never clash over `trades.csv`. Futures (gold, copper) are recorded here too: they go on the paper book automatically, sized in contracts, and a buy asks for the **fund slice**, the dollars of the fund the contract stands in for in the Combined view. No real cash moves on a paper trade. The front-month rows that only price a future (`MGC1`, `HG1`) aren't offered.
 
 **Record vote** (`/admin/votes`, or **Vote** next to a report on `/admin`): pick the asset, then Include, Watch or Reject and your conviction. You always vote as yourself: the voter and date come from your sign-in. The form shows each member's latest vote and the verdict now and with your vote, using the same rules as the site. Like trades, votes cast while a vote change is waiting are added to that same pull request.
 
@@ -307,9 +306,11 @@ Once a week, compare the site's NAV with the broker statement.
 - **Focuses:** the tags on each analyst card on the home page. Separate them with `|`, e.g. `Hong Kong|US|Commodities`.
 - **Pixel face:** upload a square image into `public/avatars/` (a 16×16 pixel drawing saved as SVG or PNG works best, e.g. from Piskel) and set the `avatar` column to `/avatars/<file name>`.
 
-### Change the house rules text
+### House rules (paused)
 
-The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (look for the `RULES` list near the top and the "Decision thresholds" text). Edit the wording there. Note that changing the text does not change what the checks enforce. The asset class bands, the 40% theme cap, the drawdown re-vote and post-mortems are written rules only, kept by the team, not by the build: the 20% cap, for example, also lives in `data/meta.json` (`maxPositionWeight`) and the vote logic is in code.
+House rules are paused while the team gets started: Fund Rules says so and shows the vote history, and the build no longer enforces a position cap. The checks that keep the numbers right still run: cash can't go negative, you can't sell more than you hold, and futures and options stay on the paper book.
+
+To bring rules back, write them on `app/fund/page.tsx` (in place of the "paused" note). To bring back a position cap the build enforces, add `"maxPositionWeight": 0.2` (for 20%) to `data/meta.json`; it applies once the fund holds four or more positions. Votes and the 2-of-3 verdict are unchanged.
 
 ### Other settings in `data/meta.json`
 
@@ -319,7 +320,7 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | `reportingCurrency` | The currency NAV is shown in (`USD`). |
 | `riskFreeRate` | Used for the Sharpe ratio (`0.04` is 4%). |
 | `benchmark` | The comparison ticker (`SPY`); it must be in `instruments.csv`. |
-| `maxPositionWeight` | The position cap used by the checks (`0.2`). |
+| `maxPositionWeight` | Optional position cap used by the checks (`0.2` is 20%). Left out for now, so there is no cap. |
 
 ### What the site does by itself
 
@@ -335,7 +336,7 @@ The rules and thresholds on **Fund Rules** are written in `app/fund/page.tsx` (l
 | The Vercel check fails with `unknown ticker` | The ticker isn't in `data/instruments.csv` | Add it first (see "Add a new asset") |
 | `cash goes negative` | A buy is larger than the cash on hand | Add a deposit row, or reduce the buy |
 | `sells more X than is held` | A sell exceeds the holding | Check the share count |
-| `… over the 20% cap` | One position is too big | Reduce it, or check the numbers |
+| `… over the 20% cap` | Only if `maxPositionWeight` is set: one position is too big | Reduce it, or check the numbers |
 | `published research needs a view and a strategy family` | Missing field | Fill them in, or set `status: in-progress` |
 | `model file … does not exist` | The `model:` path doesn't match an uploaded file | Upload the file or fix the name |
 | A report page errors or the build fails with no validation message | A `<` or `{` in the report text | Remove or reword it |

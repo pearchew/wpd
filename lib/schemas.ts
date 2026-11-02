@@ -82,7 +82,8 @@ export const MetaSchema = z.object({
   lastReconciled: isoDate.nullable(),
   riskFreeRate: z.number().min(0).max(0.25),
   benchmark: z.string().min(1),
-  maxPositionWeight: z.number().gt(0).max(1),
+  /** Optional position cap (0.2 is 20%). Leave it out for no cap. */
+  maxPositionWeight: z.number().gt(0).max(1).optional(),
 });
 export type Meta = z.infer<typeof MetaSchema>;
 

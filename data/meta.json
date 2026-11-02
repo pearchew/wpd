@@ -3,6 +3,5 @@
   "reportingCurrency": "USD",
   "lastReconciled": null,
   "riskFreeRate": 0.04,
-  "benchmark": "SPY",
-  "maxPositionWeight": 0.2
+  "benchmark": "SPY"
 }

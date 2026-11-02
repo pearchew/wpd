@@ -35,7 +35,7 @@ export interface LedgerCheck {
 export function checkLedger(
   ledger: Trade[],
   inst: Instrument[],
-  m: Pick<Meta, "maxPositionWeight"> & Partial<Pick<Meta, "reportingCurrency">>,
+  m: Partial<Pick<Meta, "maxPositionWeight" | "reportingCurrency">>,
   rowOf: (i: number) => string = (i) => `trades.csv row ${i + 2}`,
   fx?: FxLookup,
 ): LedgerCheck {
@@ -92,15 +92,16 @@ export function checkLedger(
   }
   if (cash < -0.005) fail(`trades.csv: cash goes negative (${cash.toFixed(2)}); a deposit or sale is missing`);
 
-  // 25% cap, measured on cost basis so validation never depends on the price feed
+  // Optional position cap (maxPositionWeight), measured on cost basis so validation never depends on the price feed
   const realKeys = [...qty.keys()].filter((k) => k.startsWith("real:") && (qty.get(k) ?? 0) > 1e-9);
-  const capApplies = realKeys.length >= 4; // a cap is meaningless with fewer than four holdings
+  const cap = m.maxPositionWeight;
+  const capApplies = cap !== undefined && realKeys.length >= 4; // a cap is meaningless with fewer than four holdings
   const invested = realKeys.reduce((s, k) => s + (cost.get(k) ?? 0), 0);
   const total = invested + Math.max(cash, 0);
   for (const k of realKeys) {
     const w = (cost.get(k) ?? 0) / total;
-    if (capApplies && w > m.maxPositionWeight) {
-      fail(`${k.slice(5)} is ${(w * 100).toFixed(1)}% of the fund at cost, over the ${(m.maxPositionWeight * 100).toFixed(0)}% cap`);
+    if (capApplies && w > cap) {
+      fail(`${k.slice(5)} is ${(w * 100).toFixed(1)}% of the fund at cost, over the ${(cap * 100).toFixed(0)}% cap`);
     }
   }
 

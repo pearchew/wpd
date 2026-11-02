@@ -1052,24 +1052,10 @@ a.rcard:hover {
   border: 1px solid var(--rule);
   color: var(--ink);
 }
-.rules-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  text-align: center;
-}
-@media (max-width: 760px) {
-  .rules-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.rules-grid ul {
-  margin: 8px 0 0;
-  list-style-position: inside;
-  padding-left: 0;
-}
-.rules-grid li {
-  margin-bottom: 6px;
+.rules-paused {
+  max-width: 620px;
+  margin: 0 auto;
+  color: var(--muted);
 }
 .filter-form {
   display: flex;

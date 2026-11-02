@@ -294,26 +294,9 @@ TOTAL                100.0%  $103.42 +3.42%
                                  Fund Rules
                       How the fund decides what to own.
 
-          HOUSE RULES                           DECISION THRESHOLDS
-   · Asset class targets: equities       Include  entry trigger has fired
-     35–65%, bonds 15–35%, commodities            and the evidence holds up
-     and gold 5–25%, cash 0–15%                   (sample size stated), or
-   · No position above 20%, no theme              lowers vol / raises Sharpe
-     above 40%                                    at a 10% weight
-   · Every report ends long / short /     Watch    trigger not fired yet, or
-     neutral / watch; every view is                evidence still thin
-     published                           Reject   evidence says the rule
-   · Names the strategy it tests and               fails here, or the risk
-     shows the evidence so far                     case fails
-   · Include needs 2 of 3 votes; the
-     author's vote alone never carries
-   · Exit rule written at entry;
-     when it fires, sell unless 2 of 3
-     vote to keep
-   · Down 20% → re-vote; every exit
-     gets a post-mortem
-   · No trade under about $5;
-     derivatives stay on paper
+        House rules are paused while we get started. For now the fund
+      allocates, records its trades and publishes its research; the rules
+          come back once we've agreed them. Votes are still recorded below.
 
                                 Vote history
               Newest first. A change of mind is a new vote.

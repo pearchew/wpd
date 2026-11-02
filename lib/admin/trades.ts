@@ -31,8 +31,13 @@ export interface TradeInput {
   amount: string;
   price: string;
   fees: string;
+  /** Futures and options only: dollars of the fund this paper position stands in for (Combined view) */
+  slice: string;
   note: string;
 }
+
+/** Futures and options are paper trades: no real cash moves, and the Combined view scales them to `slice`. */
+export const isPaperKind = (kind?: Instrument["kind"]) => kind === "future" || kind === "option";
 
 export const emptyTrade = (date: string): TradeInput => ({
   date,
@@ -43,6 +48,7 @@ export const emptyTrade = (date: string): TradeInput => ({
   amount: "",
   price: "",
   fees: "",
+  slice: "",
   note: "",
 });
 
@@ -86,6 +92,8 @@ export function tradeProblems(
   known: Set<string>,
   /** Tickers with price history; a buy in anything else would break the pages, which value holdings daily */
   priced?: Set<string>,
+  /** Futures and options: traded on the paper book in whole contracts */
+  paper?: Set<string>,
 ): Partial<Record<keyof TradeInput, string>> {
   const out: Partial<Record<keyof TradeInput, string>> = {};
   if (!/^\d{4}-\d{2}-\d{2}$/.test(t.date) || Number.isNaN(Date.parse(t.date))) out.date = "YYYY-MM-DD";
@@ -111,25 +119,32 @@ export function tradeProblems(
     if (!(num(t.amount) > 0)) out.amount = "A positive amount";
   }
   if (t.action === "split" && !(num(t.shares) > 0)) out.shares = "The ratio, e.g. 2 for 2-for-1";
+  if (paper?.has(t.ticker.trim().toUpperCase())) {
+    if (t.action !== "buy" && t.action !== "sell") out.action = "Futures and options are only bought or sold";
+    if (t.sizeBy !== "shares") out.amount = "Enter the number of contracts";
+    if (t.action === "buy" && !(num(t.slice) > 0)) out.slice = "Dollars of the fund this position stands in for";
+  }
   return out;
 }
 
 /** A checked row → the ledger's own Trade shape, as `npm run validate` would read it. */
-export function toTrade(t: TradeInput, inst: Pick<Instrument, "ticker" | "currency">[]): Trade {
+export function toTrade(t: TradeInput, inst: (Pick<Instrument, "ticker" | "currency"> & Partial<Pick<Instrument, "kind">>)[]): Trade {
   const cash = CASH_ACTIONS.includes(t.action);
   const ticker = cash ? "CASH" : t.ticker.trim().toUpperCase();
-  const currency = inst.find((i) => i.ticker === ticker)?.currency ?? "USD";
+  const asset = inst.find((i) => i.ticker === ticker);
+  const currency = asset?.currency ?? "USD";
+  const paper = isPaperKind(asset?.kind);
   const amountInPrice = cash || t.action === "dividend";
   return TradeSchema.parse({
     date: t.date,
-    book: "real",
+    book: paper ? "paper" : "real",
     ticker,
     action: t.action,
     shares: t.action === "split" ? String(num(t.shares)) : String(sharesFor(t) ?? ""),
     price: amountInPrice ? String(num(t.amount)) : t.action === "split" ? "" : String(num(t.price)),
     fees: t.action === "buy" || t.action === "sell" ? (given(t.fees) ? String(num(t.fees)) : "0") : "",
     currency,
-    notional_slice: "",
+    notional_slice: paper && t.action === "buy" && given(t.slice) ? String(num(t.slice)) : "",
     note: t.note.trim(),
   });
 }
